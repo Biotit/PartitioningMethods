@@ -1,3 +1,14 @@
 testsphinx.sh
 venv/
 docs/build/
+.git
+*.part
+*.pyc
+__pycache__/*
+*.egg-info/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+

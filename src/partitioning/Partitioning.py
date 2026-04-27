@@ -247,7 +247,7 @@ class Partitioning(object):
         if (self.valid_data < percData) and self.valid:
             self.valid = False
             raise ValueError(
-                f"*** Too many missing points {maxNAN}. Less than {percData}\% is available for partitioning. Delete period and try again.\n"
+                f"*** Too many missing points {maxNAN}. Less than {percData}% is available for partitioning. Delete period and try again.\n"
             )
         if dropna_:
             self.data.dropna(inplace=True)
@@ -514,8 +514,8 @@ class Partitioning(object):
         )  # density of dry air [kg/m3]
         # Obtain termodynamic and virtual temperatures ------------------------
         q = (
-            self.data["h2o"] * 10**-3 / self.data["rho_dry_air"]
-        )  # Instantaneous mixing ratio kg/kg
+            self.data["h2o"] * 10**-3 / self.data["rho_moist_air"]
+        )  # specific humidity kg/kg
         self.data["T"] = (self.data["Ts"] + 273.15) / (
             1.0 + 0.51 * q
         ) - 273.15  # termodynamic temperature from sonic temperature [C]
