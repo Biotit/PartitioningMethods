@@ -127,6 +127,9 @@ class Partitioning(object):
         self.length = length * ureg.minute
         self.valid = True
         self.default_argsQC = {
+            "physical_bounds":True, # If True, data outside of specified physical bounds is set to NA.
+            "despike":True, # If True, outliers in the data are removed by despiking.
+            "coord_rotation":True, # If True, a double coordinate rotation is performed to deminish the mean vertical wind speed.
             "time_lag_correction": False,  # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
             "max_lag_seconds": 5,  # Maximum time lag in seconds to consider for correlation
             "saveplotlag": False,  # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series
@@ -135,9 +138,9 @@ class Partitioning(object):
             "filtercut": 5,  # Cutoff timescale to filter low frequencies (in minutes). Needed when FL is selected as fluctuation method
             "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)
             "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
-            "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
             "steadyness": False,  # Compute statistic to check stationarity (will not delete data based on this test)
-            "saveprocessed": False,  # If True, save the intermediate processed data including all corrections and fluctuations
+            "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
+            "saveprocessed": False  # If True, save the intermediate processed data including all corrections and fluctuations
         }
 
         self.argsQC = {**self.default_argsQC, **argsQC}
@@ -168,22 +171,27 @@ class Partitioning(object):
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"))
         self._checkUnits()
         if PreProcessing:
-            self._checkPhysicalBounds()
-            self._despike()
-            self._rotation()
+            if self.argsQC.get("physical_bounds"):
+                self._checkPhysicalBounds()
+            if self.argsQC.get("despike"):
+                self._despike()
+            if self.argsQC.get("coord_rotation"):
+                self._rotation()
             if self.argsQC.get("time_lag_correction"):
                 self._time_lag_correction(
                     max_lag_seconds=self.argsQC.get("max_lag_seconds"),
                     type_lag=self.argsQC.get("type_lag"),
                     saveplotlag=self.argsQC.get("saveplotlag"),
                 )
-            self._fluctuations(
-                method=self.argsQC.get("fluctuations"),
-                filter_cut=self.argsQC.get("filtercut"),
-            )
+            if self.argsQC.get("fluctuations"):
+                self._fluctuations(
+                    method=self.argsQC.get("fluctuations"),
+                    filter_cut=self.argsQC.get("filtercut"),
+                )
             if self.argsQC.get("density_correction"):
                 self._densityCorrections(method=self.argsQC.get("fluctuations"))
-            self._fillGaps(self.argsQC.get("maxGapsInterpolate"))
+            if self.argsQC.get("maxGapsInterpolate"):
+                self._fillGaps(self.argsQC.get("maxGapsInterpolate"))
             if self.argsQC.get("steadyness"):
                 self._steadynessTest()
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"), dropna_=True)
@@ -960,7 +968,7 @@ class Partitioning(object):
 
         if vpd < 0:
             raise ValueError(
-                "Negative vapor pressure deficit. Check the input data and try again or remove period.\n"
+                (f"Negative vapor pressure deficit. Check the input data and try again or remove period. Data is ambient_h2o {ambient_h2o}, leaf_T {leaf_T}, vpd {vpd}.")
             )
 
         # Calculating inside stomata co2 concentration
