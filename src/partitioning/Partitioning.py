@@ -145,8 +145,6 @@ class Partitioning(object):
             "saveprocessed": False  # If True, save the intermediate processed data including all corrections and fluctuations
         }
         
-        self.statistics = statistics
-        
         self.argsQC = {**self.default_argsQC, **argsQC}
         
         self.default_argsQThres = {
@@ -154,7 +152,8 @@ class Partitioning(object):
             "cec_per_points_each": 3,  # smallest percentage of points in each quadrant
             "mrea_per_points_Q1Q2": 15,
             "mrea_per_points_each": 3,
-            "cea_per_points_each": 2
+            "cea_per_points_each": 2,
+            "t_scale_gap_threshold":10
             }
         if argsQThres is False:
             self.argsQThres = {
@@ -162,7 +161,8 @@ class Partitioning(object):
                 "cec_per_points_each": 0,  # smallest percentage of points in each quadrant
                 "mrea_per_points_Q1Q2": 0,
                 "mrea_per_points_each": 0,
-                "cea_per_points_each": 0
+                "cea_per_points_each": 0,
+                "t_scale_gap_threshold":0
                 }
         else:
             self.argsQThres = {**self.default_argsQThres, **argsQThres}
@@ -217,6 +217,9 @@ class Partitioning(object):
             if self.argsQC.get("steadyness"):
                 self._steadynessTest()
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"), dropna_=True)
+        
+        self.statistics = statistics
+        self.data["num_idx"] = range(len(self.data))
 
     def _checkUnits(self):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
@@ -798,6 +801,52 @@ class Partitioning(object):
             "LE": LE_wm2,
             "H": H_wm2,
         }
+        
+    def TScale(self, sdata):
+        """
+        Calculates the mean time scale in seconds of sampled events
+        
+        Main reference:
+        - Thomas et al., 2008 (Agr For Met). 
+          Estimating daytime subcanopy respiration from conditional sampling methods applied to multi-scalar high frequency turbulence time series
+          https://www.sciencedirect.com/science/article/pii/S0168192308000737
+        
+        Parameters
+        ----------
+        sdata : pandas.DataFrame
+            Data already subsetted to only contain data of a specific quadrant
+            Needs to have the column "num_idx" which was a continous numeric index
+                before subsetting.
+          
+        Returns
+        ----------
+        t_scale : float (in case sdata is empty np.nan)
+            Mean time scale in seconds of an event within the sdata
+        
+        """
+        assert "num_idx" in sdata.columns, "Subsetted dataframe needs to contain the column num_idx -- a continous numeric index before subsetting."
+        
+        if sdata.empty:
+            return np.nan
+        
+        else:
+            # check if there were gaps produced by subsetting the 
+            # original dataframe for this quadrant
+            # If this is the case the num_idx  (continous index for the total dataset)
+            # changes more than the
+            # gap threshold+1 to its value before
+            gaps = sdata["num_idx"].diff()
+            new_event = gaps >= (self.argsQThres["t_scale_gap_threshold"] + 1)
+            # Using cumsum for each event (seperated by gaps) 
+            # we assign a new index number
+            sdata["event"] = new_event.cumsum()
+            # And count how many datapoints there are for each event
+            streak_counts = sdata.groupby("event").size()
+            # And recalculate using the sampling frequency into the time domain
+            t_scale = streak_counts.mean() * (1/self.freq) * ureg.second
+            return t_scale
+
+        
 
     def WaterUseEfficiency(self, ppath="C3"):
         """
@@ -1103,7 +1152,8 @@ class Partitioning(object):
             * np.mean(auxET["h2o_p"].values * auxET["w_p"].values)
         )  # flux [all quadrants] given in  W/m2
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the first quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the first quadrant
         auxE = self.data[
             (self.data["w_p"] > 0)
             & (self.data["co2_p"] > 0)
@@ -1112,7 +1162,7 @@ class Partitioning(object):
                 abs(self.data["co2_p"] / self.data["co2_p"].std())
                 > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         R_condition_Fc = (
             np.sum(auxE["co2_p"].values * auxE["w_p"].values) / N
         )  # conditional flux [1st quadrant and w'>0] given in mg/(s m2)
@@ -1126,7 +1176,8 @@ class Partitioning(object):
             auxE["w_p"].index.size / N
         ) * 100  # Percentage of points in the first quadrant
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the second quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the second quadrant
         auxT = self.data[
             (self.data["w_p"] > 0)
             & (self.data["co2_p"] < 0)
@@ -1135,7 +1186,7 @@ class Partitioning(object):
                 abs(self.data["co2_p"] / self.data["co2_p"].std())
                 > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         P_condition_Fc = (
             np.sum(auxT["co2_p"].values * auxT["w_p"].values) / N
         )  # conditional flux [2nd quadrant and w'>0] given in mg/(s m2)
@@ -1153,7 +1204,9 @@ class Partitioning(object):
         if self.statistics:
             self.fluxesCEC = {
                 "Q1tfrac_cec": (sumQ1 / 100) * ureg.dimensionless,
-                "Q2tfrac_cec": (sumQ2 / 100) * ureg.dimensionless
+                "Q2tfrac_cec": (sumQ2 / 100) * ureg.dimensionless,
+                "Q1tscale_cec": self.TScale(auxE),
+                "Q2tscale_cec": self.TScale(auxT)
                 }
         else:
             self.fluxesCEC = {}
@@ -1264,8 +1317,6 @@ class Partitioning(object):
         cseries = np.array(self.data["co2_p"].values)  # mg/m3
         qseries = np.array(self.data["h2o_p"].values)  #  g/m3
         sigmaw = np.std(wseries)  # standard deviation of vertical velocity (m/s)
-        sigmac = np.std(cseries)  # standard deviation of co2 density
-        sigmaq = np.std(qseries)  # standard deviation of water vapor density
         beta = sigmaw / (
             np.mean(wseries[wseries > 0]) - np.mean(wseries[wseries < 0])
         )  # similarity constant
@@ -1274,55 +1325,53 @@ class Partitioning(object):
             np.cov(wseries, qseries)[0][1] * (10**-3) * Constants.Lv.magnitude
         )  # latent heat flux [W/m2]
         NN = len(wseries)  # total number of points
-
-        # For carbon fluxes: numerator and denominator of equation 11 in Thomas et al., 2008
-        cnum = cseries[
-            (qseries > 0)
-            & (cseries > 0)
-            & (wseries > 0)
-            & ((qseries / sigmaq) > (H * sigmac / cseries))
-            & ((cseries / sigmac) > (H * sigmaq / qseries))
-        ]
-        cdiv = cseries[
-            (abs(qseries / sigmaq) > abs(H * sigmac / cseries))
-            & (abs(cseries / sigmac) > abs(H * sigmaq / qseries))
-            & (wseries > 0)
-        ]
-
-        # For water vapor fluxes: numerator and denominator of equation 11 in Thomas et al., 2008
-        qnum = qseries[
-            (qseries > 0)
-            & (cseries > 0)
-            & (wseries > 0)
-            & ((qseries / sigmaq) > (H * sigmac / cseries))
-            & ((cseries / sigmac) > (H * sigmaq / qseries))
-        ]
-        qdiv = qseries[
-            (abs(qseries / sigmaq) > abs(H * sigmac / cseries))
-            & (abs(cseries / sigmac) > abs(H * sigmaq / qseries))
-            & (wseries > 0)
-        ]
+        
+        # Updrafts conditioned on first quadrant
+        # numerator of equation 11 in Thomas et al., 2008
+        auxE = self.data[
+            (self.data["w_p"] > 0)
+            & (self.data["co2_p"] > 0)
+            & (self.data["h2o_p"] > 0)
+            & (
+                abs(self.data["co2_p"] / self.data["co2_p"].std())
+                > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
+            )
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
+        
+        # Updrafts from all quadrants respecting H
+        # Denominator of equation 11 in Thomas et al., 2008
+        auxAll = self.data[
+            self.data["w_p"] > 0
+            & (
+                abs(self.data["h2o_p"] / self.data["h2o_p"].std())
+                > abs(H * self.data["co2_p"].std() / self.data["co2_p"])
+            )
+            & (
+                abs(self.data["co2_p"] / self.data["co2_p"].std())
+                > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
+            )
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
 
         # Count number of points in the first and second quadrant (no H is used here)
         # Q1sum = (len(cseries[(qseries > 0) & (cseries > 0) & (wseries > 0)]) / NN) * 100
         # Q2sum = (len(cseries[(qseries > 0) & (cseries < 0) & (wseries > 0)]) / NN) * 100
         
         # Count number of points in first and second quadrant (using H!)
-        Q1sum = (qnum.size / NN) * 100  # Percentage of points in the first quadrant
-        Q2sum = (len(cseries[ # Percentage of points in the second quadrant
-            (qseries > 0) 
-            & (cseries < 0) 
-            & (wseries > 0)
+        Q1sum = (auxE["w_p"].index.size / NN) * 100 
+        Q2sum = (len(self.data[ # Percentage of points in the second quadrant
+            (self.data["w_p"] > 0)
+            & (self.data["co2_p"] < 0)
+            & (self.data["h2o_p"] > 0)
             & (
-                abs(cseries / sigmac)
-            > abs(H * sigmaq / qseries)
-            )
-            ]) / NN) * 100
+                abs(self.data["co2_p"] / self.data["co2_p"].std())
+                > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
+            )]) / NN) * 100
         
         if self.statistics:
             self.fluxesREA = {
+                "Q1tscale_mrea": self.TScale(auxE),
                 "Q1tfrac_mrea": (Q1sum / 100) * ureg.dimensionless,
-                "Q2tfrac_mrea": (Q2sum / 100) * ureg.dimensionless
+                # "Q2tfrac_mrea": (Q2sum / 100) * ureg.dimensionless
                 }
         else:
             self.fluxesREA = {}
@@ -1336,8 +1385,8 @@ class Partitioning(object):
             finalstatus = "Q1+Q2<20"
         elif ((Q1sum > per_poits_each) and (Q2sum > per_poits_each)):
             # Compute fluxes
-            R = beta * sigmaw * (sum(cnum) / len(cdiv))  # Respiration [mg / (s m2)]
-            E = beta * sigmaw * (sum(qnum) / len(qdiv))  # Evaporation [g / (s m2)]
+            R = beta * sigmaw * (sum(auxE["co2_p"]) / len(auxAll["co2_p"]))  # Respiration [mg / (s m2)]
+            E = beta * sigmaw * (sum(auxE["h2o_p"]) / len(auxAll["h2o_p"]))  # Evaporation [g / (s m2)]
             E = E * (10**-3) * Constants.Lv.magnitude  # Latent heat flux [W/m2]
             P = Fc - R  # Photosynthesis  [mg/(s m2)]
             T = ET - E  # Transpiration   [W/m2]
@@ -1652,7 +1701,8 @@ class Partitioning(object):
             auxETcov["h2o_p"]["w_p"] * unitLE
         )  # flux [all quadrants] given in  W/m2
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the first quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the first quadrant
         auxE = df[
             (df["w_p"] > 0)
             & (df["co2_p"] > 0)
@@ -1661,7 +1711,10 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
+        
+        # Creates a dataframe with variables of interest and conditioned 
+        # on downdrafts and on the first quadrant
         auxE_n = df[
             (df["w_p"] < 0)
             & (df["co2_p"] < 0)
@@ -1670,7 +1723,7 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         C1 = auxE["co2_p"].mean()
         C2 = auxE_n["co2_p"].mean()
         Q1 = auxE["h2o_p"].mean()
@@ -1682,7 +1735,8 @@ class Partitioning(object):
             auxE_n["co2_p"].index.size / N
         ) * 100  # Number of points on the first quadrant
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the second quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the second quadrant
         auxT = df[
             (df["w_p"] > 0)
             & (df["co2_p"] < 0)
@@ -1691,7 +1745,10 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
+        
+        # Creates a dataframe with variables of interest and conditioned 
+        # on downdrafts and on the second quadrant
         auxT_n = df[
             (df["w_p"] < 0)
             & (df["co2_p"] > 0)
@@ -1700,7 +1757,7 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         C3 = auxT["co2_p"].mean()
         C4 = auxT_n["co2_p"].mean()
         Q3 = auxT["h2o_p"].mean()
@@ -1714,6 +1771,10 @@ class Partitioning(object):
         
         if self.statistics:
             self.fluxesCEA = {
+                "Q1UPtscale_cea" : self.TScale(auxE),
+                "Q1DOWNtscale_cea" : self.TScale(auxE_n),
+                "Q2UPtscale_cea" : self.TScale(auxT),
+                "Q2DOWNtscale_cea" : self.TScale(auxT_n),
                 "Q1UPtfrac_cea": (sum1 / 100) * ureg.dimensionless,
                 "Q1DOWNtfrac_cea": (sum2 / 100) * ureg.dimensionless,
                 "Q2UPtfrac_cea": (sum3 / 100) *  ureg.dimensionless,
@@ -1836,7 +1897,8 @@ class Partitioning(object):
             }
             return 0
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the first quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the first quadrant
         auxE = df[
             (df["w_p"] > 0)
             & (df["co2_p"] > 0)
@@ -1849,7 +1911,8 @@ class Partitioning(object):
         R_condition_Fc = sum(auxE["co2_p"] * auxE["w_p"]) / N
         E_condition_ET = sum(auxE["h2o_p"] * auxE["w_p"]) / N
 
-        # Creates a dataframe with variables of interest and conditioned on updrafts and on the second quadrant
+        # Creates a dataframe with variables of interest and conditioned 
+        # on updrafts and on the second quadrant
         auxT = df[
             (df["w_p"] > 0)
             & (df["co2_p"] < 0)
