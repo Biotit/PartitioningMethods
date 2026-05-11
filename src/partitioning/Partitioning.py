@@ -119,7 +119,9 @@ class Partitioning(object):
     will only need time series of w_p, h2o_p, co2_p.
     """
 
-    def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC):
+    def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC, 
+                 statistics=False,
+                 argsQThres={}):
         self.hi = hi * ureg.meter
         self.zi = zi * ureg.meter
         self.data = df
@@ -142,8 +144,28 @@ class Partitioning(object):
             "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
             "saveprocessed": False  # If True, save the intermediate processed data including all corrections and fluctuations
         }
-
+        
+        self.statistics = statistics
+        
         self.argsQC = {**self.default_argsQC, **argsQC}
+        
+        self.default_argsQThres = {
+            "cec_per_points_Q1Q2": 15,  # smallest percentage of points that must be available in the first two quadrants
+            "cec_per_points_each": 3,  # smallest percentage of points in each quadrant
+            "mrea_per_points_Q1Q2": 15,
+            "mrea_per_points_each": 3,
+            "cea_per_points_each": 2
+            }
+        if argsQThres is False:
+            self.argsQThres = {
+                "cec_per_points_Q1Q2": 0,  # smallest percentage of points that must be available in the first two quadrants
+                "cec_per_points_each": 0,  # smallest percentage of points in each quadrant
+                "mrea_per_points_Q1Q2": 0,
+                "mrea_per_points_each": 0,
+                "cea_per_points_each": 0
+                }
+        else:
+            self.argsQThres = {**self.default_argsQThres, **argsQThres}
 
         self.units = {
             # Raw data
@@ -1065,9 +1087,9 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
-
-        per_points_Q1Q2 = 15  # smallest percentage of points that must be available in the first two quadrants
-        per_poits_each = 3  # smallest percentage of points in each quadrant
+        
+        per_points_Q1Q2 = self.argsQThres.get("cec_per_points_Q1Q2", 15)  # smallest percentage of points that must be available in the first two quadrants
+        per_poits_each = self.argsQThres.get("cec_per_points_each", 3)
 
         # Creates a dataframe with variables of interest and no constraints
         auxET = self.data[["co2_p", "h2o_p", "w_p"]].copy()
@@ -1126,21 +1148,20 @@ class Partitioning(object):
 
         # Computing flux ratios and flux components of ET and Fc
         E, T, P, R, ratioET, ratioRP = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
-
+        
+        # Calculating method statistics
+        if self.statistics:
+            self.fluxesCEC = {
+                "Q1tfrac_cec": (sumQ1 / 100) * ureg.dimensionless,
+                "Q2tfrac_cec": (sumQ2 / 100) * ureg.dimensionless
+                }
+        else:
+            self.fluxesCEC = {}
+        
         # First condition: do we have enough points in Q1 and Q2?
         if (sumQ1 + sumQ2) < per_points_Q1Q2:
-            self.fluxesCEC = {
-                "ETcec": total_ET * ureg.watt / ureg.meter**2,
-                "Ecec": E * ureg.watt / ureg.meter**2,
-                "Tcec": T * ureg.watt / ureg.meter**2,
-                "Fccec": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Pcec": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rcec": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                # "rRPcec": ratioRP,
-                # "rETcec": ratioET,
-                "statuscec": "Q1+Q2<20",
-            }
-        elif (sumQ1 >= per_poits_each) and (sumQ2 >= per_poits_each):
+            pass # let all partitioned fluxes be defined NaN
+        elif ((sumQ1 > per_poits_each) and (sumQ2 > per_poits_each)):
             # ET components
             ratioET = E_condition_ET / T_condition_ET
             T = total_ET / (1.0 + ratioET)
@@ -1150,7 +1171,7 @@ class Partitioning(object):
             ratioRP = R_condition_Fc / P_condition_Fc
             P = total_Fc / (1.0 + ratioRP)
             R = total_Fc / (1.0 + 1.0 / ratioRP)
-        elif (sumQ1 < per_poits_each) and (sumQ2 > per_poits_each):
+        elif (sumQ1 <= per_poits_each) and (sumQ2 >= per_poits_each):
             # In this case, all water vapor flux is assumed to be transpiration
             ratioET = 0.0
             T = total_ET
@@ -1173,13 +1194,17 @@ class Partitioning(object):
 
         # Check CO2 flux components ratio
         #   CO2 fluxes might be noisy in this range
-        if -1.2 < ratioRP < -0.8:
+        if (sumQ1 + sumQ2) < per_points_Q1Q2:
+            finalstat = "Q1+Q2<20"
+        elif -1.2 < ratioRP < -0.8:
             finalstat = "Small ratioRP"
         else:
             finalstat = "OK"
-
-        # Additional constraints may be added based on the strength of the fluxes and other combinations
-        self.fluxesCEC = {
+            
+        
+        # Additional constraints may be added based on the strength of the fluxes 
+        # and other combinations
+        self.fluxesCEC.update({
             "ETcec": total_ET * ureg.watt / ureg.meter**2,
             "Ecec": E * ureg.watt / ureg.meter**2,
             "Tcec": T * ureg.watt / ureg.meter**2,
@@ -1189,7 +1214,8 @@ class Partitioning(object):
             # "rRP": ratioRP,
             # "rET": ratioET,
             "statuscec": finalstat,
-        }
+        })
+
 
     def partREA(self, H=0):
         """
@@ -1229,9 +1255,9 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
-
-        per_points_Q1Q2 = 15  # smallest percentage of points that must be available in the first two quadrants
-        per_poits_each = 3  # smallest percentage of points in each quadrant
+     
+        per_points_Q1Q2 = self.argsQThres.get("mrea_per_points_Q1Q2", 15) # smallest percentage of points that must be available in the first two quadrants
+        per_poits_each = self.argsQThres.get("mrea_per_points_each", 3) # smallest percentage of points in each quadrant
 
         # REA parameters ---------------------------------------------------
         wseries = np.array(self.data["w_p"].values)  #  m/s
@@ -1278,21 +1304,37 @@ class Partitioning(object):
         ]
 
         # Count number of points in the first and second quadrant (no H is used here)
-        Q1sum = (len(cseries[(qseries > 0) & (cseries > 0) & (wseries > 0)]) / NN) * 100
-        Q2sum = (len(cseries[(qseries > 0) & (cseries < 0) & (wseries > 0)]) / NN) * 100
-
-        # Check availability of points in each quadrant
-        if (Q1sum + Q2sum) < per_points_Q1Q2:
+        # Q1sum = (len(cseries[(qseries > 0) & (cseries > 0) & (wseries > 0)]) / NN) * 100
+        # Q2sum = (len(cseries[(qseries > 0) & (cseries < 0) & (wseries > 0)]) / NN) * 100
+        
+        # Count number of points in first and second quadrant (using H!)
+        Q1sum = (qnum.size / NN) * 100  # Percentage of points in the first quadrant
+        Q2sum = (len(cseries[ # Percentage of points in the second quadrant
+            (qseries > 0) 
+            & (cseries < 0) 
+            & (wseries > 0)
+            & (
+                abs(cseries / sigmac)
+            > abs(H * sigmaq / qseries)
+            )
+            ]) / NN) * 100
+        
+        if self.statistics:
             self.fluxesREA = {
-                "ETmrea": ET * ureg.watt / ureg.meter**2,
-                "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Emrea": np.nan * ureg.watt / ureg.meter**2,
-                "Tmrea": np.nan * ureg.watt / ureg.meter**2,
-                "Pmrea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rmrea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                "statusmrea": "Q1+Q2<20",
-            }
-        elif (Q1sum >= per_poits_each) and (Q2sum >= per_poits_each):
+                "Q1tfrac_mrea": (Q1sum / 100) * ureg.dimensionless,
+                "Q2tfrac_mrea": (Q2sum / 100) * ureg.dimensionless
+                }
+        else:
+            self.fluxesREA = {}
+        
+        # Initialize defaults
+        E, T, P, R = np.nan, np.nan, np.nan, np.nan
+        finalstatus = "Undefined"
+        
+        # Check availability of points in each quadrant
+        if ((Q1sum + Q2sum) < per_points_Q1Q2):
+            finalstatus = "Q1+Q2<20"
+        elif ((Q1sum > per_poits_each) and (Q2sum > per_poits_each)):
             # Compute fluxes
             R = beta * sigmaw * (sum(cnum) / len(cdiv))  # Respiration [mg / (s m2)]
             E = beta * sigmaw * (sum(qnum) / len(qdiv))  # Evaporation [g / (s m2)]
@@ -1304,43 +1346,33 @@ class Partitioning(object):
             # To test realistic fluxes
             if E > 1.01 * ET:
                 finalstatus = "E>ET"
-                E = np.nan
-                T = np.nan
-                R = np.nan
-                P = np.nan
-            self.fluxesREA = {
-                "ETmrea": ET * ureg.watt / ureg.meter**2,
-                "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Emrea": E * ureg.watt / ureg.meter**2,
-                "Tmrea": T * ureg.watt / ureg.meter**2,
-                "Pmrea": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rmrea": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                "statusmrea": finalstatus,
-            }
-        elif (Q1sum < per_poits_each) and (Q2sum > per_poits_each):
+                E, T, R, P = np.nan, np.nan, np.nan, np.nan
+        elif (Q1sum <= per_poits_each) and (Q2sum >= per_poits_each):
             # Assuming that all fluxes are from the canopy
-            self.fluxesREA = {
-                "ETmrea": ET * ureg.watt / ureg.meter**2,
-                "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Emrea": 0 * ureg.watt / ureg.meter**2,
-                "Tmrea": ET * ureg.watt / ureg.meter**2,
-                "Pmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rmrea": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                "statusmrea": "OK",
-            }
+            E = 0
+            T = ET
+            P = Fc
+            R = 0
+            finalstatus = "OK"
         elif (Q1sum > per_poits_each) and (Q2sum < per_poits_each):
             # Assuming that all fluxes are from the ground
-            self.fluxesREA = {
-                "ETmrea": ET * ureg.watt / ureg.meter**2,
-                "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Emrea": ET * ureg.watt / ureg.meter**2,
-                "Tmrea": 0 * ureg.watt / ureg.meter**2,
-                "Pmrea": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "statusmrea": "OK",
-            }
+            E = ET
+            T = 0
+            P = 0
+            R = Fc
+            finalstatus = "OK"
         else:
             pass
+        
+        self.fluxesREA.update({
+            "ETmrea": ET * ureg.watt / ureg.meter**2,
+            "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+            "Emrea": E * ureg.watt / ureg.meter**2,
+            "Tmrea": T * ureg.watt / ureg.meter**2,
+            "Pmrea": P * ureg.milligram / ureg.meter**2 / ureg.second,
+            "Rmrea": R * ureg.milligram / ureg.meter**2 / ureg.second,
+            "statusmrea": finalstatus,
+        })
 
     def partFVS(self, W):
         """
@@ -1606,6 +1638,9 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
+        
+        per_points_each = self.argsQThres.get("cea_per_points_each", 2)
+        
         # Creates a dataframe with variables of interest and no constraints
         unitLE = Constants.Lv.magnitude * 10**-3
         df = self.data.copy()
@@ -1676,9 +1711,23 @@ class Partitioning(object):
         sum4 = (
             auxT_n["co2_p"].index.size / N
         ) * 100  # Number of points on the first quadrant
+        
+        if self.statistics:
+            self.fluxesCEA = {
+                "Q1UPtfrac_cea": (sum1 / 100) * ureg.dimensionless,
+                "Q1DOWNtfrac_cea": (sum2 / 100) * ureg.dimensionless,
+                "Q2UPtfrac_cea": (sum3 / 100) *  ureg.dimensionless,
+                "Q2DOWNtfrac_cea": (sum4 / 100) *  ureg.dimensionless
+                }
+        else:
+            self.fluxesCEA = {}
+        
 
         # Computing flux ratios and flux components of ET and Fc
-        if (sum1 > 2) and (sum2 > 2) and (sum3 > 2) and (sum4 > 2):
+        if ((sum1 > per_points_each) 
+            and (sum2 > per_points_each) 
+            and (sum3 > per_points_each) 
+            and (sum4 > per_points_each)):
             ratioET = (Q1 - Q2) / (Q3 - Q4)
             T = total_ET / (1.0 + ratioET)
             E = total_ET / (1.0 + 1.0 / ratioET)
@@ -1696,7 +1745,7 @@ class Partitioning(object):
                 E = np.nan
                 status_message = "unrealistic fluxes"
 
-            self.fluxesCEA = {
+            self.fluxesCEA.update({
                 "ETcea": total_ET * ureg.watt / ureg.meter**2,
                 "Ecea": E * ureg.watt / ureg.meter**2,
                 "Tcea": T * ureg.watt / ureg.meter**2,
@@ -1709,9 +1758,10 @@ class Partitioning(object):
                 #  "sumQ2cea": sum3 + sum4,
                 "wuecea": P * 10**-3 / (T / unitLE),
                 "statuscea": status_message,
-            }
+            })
+            
         else:
-            self.fluxesCEA = {
+            self.fluxesCEA.update({
                 "ETcea": total_ET * ureg.watt / ureg.meter**2,
                 "Ecea": np.nan * ureg.watt / ureg.meter**2,
                 "Tcea": np.nan * ureg.watt / ureg.meter**2,
@@ -1724,7 +1774,7 @@ class Partitioning(object):
                 # "sumQ2cea": sum3 + sum4,
                 "wuecea": np.nan,
                 "statuscea": "Not enough points",
-            }
+            })
 
     def partCECw(self, W, H=0.00):
         """
