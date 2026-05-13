@@ -375,3 +375,64 @@ def max_time_lag_crosscorrel(
         plt.close()
 
     return best_lag_co2, best_lag_h2o
+
+
+def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
+    """
+    checks if the provided data timestamp is continous. 
+    If not, it may be filled, or an error is raised for too large gaps.
+    
+    Parameters
+    ----------
+        data - pandas.DataFrame
+            The data to check. Need to contain a column "TIMESTAMP"
+        dt - float
+            Data aquisition time stamp gap. Should be 1/aquisition_frequency.
+        fill_with_NA - bool, default True
+            If the data is not continous, shall it be filled with NA, to make the timestamps continous. 
+        max_gap - int, default 2*60*60
+            Allowed maximum gap in the data in seconds. If larger, an error is raised and the function returns None.
+    
+    Returns
+    ----------
+        data - pandas.DataFrame
+            The continous dataframe in case of fill_with_NA=True. Otherwise the original dataframe. 
+            In case of a gap to large None is returned.
+    """
+
+ 
+    data.index = pd.to_datetime(data.index)
+    time_diffs = data.index.diff().dropna()
+    expected_delta = pd.Timedelta(seconds=dt)
+    
+    is_discontinuous = abs((time_diffs - expected_delta).total_seconds()) > 1e-5
+    is_discontinuous = np.insert(is_discontinuous, 0, False)
+    
+    gap_count = is_discontinuous.sum()
+    
+    
+    if gap_count > 0:
+        gap_pos = np.where(is_discontinuous)[0]
+        for pos in gap_pos:
+            gap_end = data.index[pos]
+            gap_start = data.index[pos-1] # The last good timestamp
+            print(f"Timestamp missing between {gap_start} and {gap_end}")            
+            duration = (gap_end - gap_start).total_seconds()
+            if duration > max_gap:
+                #logger.error(f"CRITICAL GAP: {duration} seconds of data timestamp missing!")
+                #logger.warning("Returning None. This will cause this data chunk to be skipped.")
+                raise ValueError(f"CRITICAL GAP: {duration} seconds of data timestamp missing!")
+                return None
+                
+        if fill_with_NA:
+            start = data.index.min()
+            end = data.index.max()
+            perfect_index = pd.date_range(start=start, end=end, freq=f"{dt}s")
+            data_filled = data.reindex(perfect_index)
+            print("Gaps in the timestamp filled.")        
+            return data_filled
+        else:
+            return data
+        
+    else:
+        return data

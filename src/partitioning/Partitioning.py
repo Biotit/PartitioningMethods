@@ -17,6 +17,7 @@ from .auxfunctions import (
     FilterLowFrequencies,
     max_time_lag_crosscorrel,
     Constants,
+    check_continous_data
 )
 
 # Create a unit registry
@@ -234,7 +235,9 @@ class Partitioning(object):
             "Tv_p": ureg.kelvin,
             "rho_moist_air": ureg.kilogram / ureg.meter**3,
         }
-
+        
+        # make time stamp continous for "num_idx"
+        # and remove period if too many missing data
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"))
         self._checkUnits()
         if PreProcessing:
@@ -261,10 +264,13 @@ class Partitioning(object):
                 self._fillGaps(self.argsQC.get("maxGapsInterpolate"))
             if self.argsQC.get("steadyness"):
                 self._steadynessTest()
+                
+        # define continous index before dropping any NaN data
+        self.data["num_idx"] = range(len(self.data))
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"), dropna_=True)
         
         self.statistics = statistics
-        self.data["num_idx"] = range(len(self.data))
+        
 
     def _checkUnits(self):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
@@ -302,11 +308,12 @@ class Partitioning(object):
     def _checkMissingdata(self, percData, dropna_=False):
         """
         Checks how many missing points are present and only accepts periods when valid data points >= percData.
+        If gaps are in the timestamps of the data those gaps are filled with NaN.
 
         Parameters
         ----------
         percData : int
-            Percentage of the data that needs to be valid (i.e., excluding gaps) in order to implement partitioning.
+            Percentage of the data that needs to be valid in order to implement partitioning.
             If less than percData is available, the entire half-hour period is discarded. Must be between 0 and 100.
 
         Stores
@@ -314,18 +321,27 @@ class Partitioning(object):
         self.valid_data : float
             The percentage of valid data points.
         """
-        maxNAN, indMAX = (  # noqa: F841
-            self.data.isnull().sum().max(),
-            self.data.isnull().sum().idxmax(),
-        )
         total_size = (
             self.freq.magnitude * self.length.magnitude * 60
         )  # total number of points in period
-        self.valid_data = ((total_size - maxNAN) / total_size) * 100
+        
+        # check if data timestamp is continous
+        # if not fill with NaN
+        # it does only make the time stamps continous
+        # if in the beginning or the end data is missing, its not filled.
+        max_gap_s = (1-(percData/100)) * total_size * (1/self.freq.magnitude)
+        self.data = check_continous_data(self.data, dt=1/self.freq.magnitude,
+                             fill_with_NA=True, max_gap=max_gap_s)
+        
+        # Count non-NaN data
+        valid_count = self.data.count().min()
+        
+        self.valid_data = (valid_count / total_size) * 100
         if (self.valid_data < percData) and self.valid:
             self.valid = False
+            missing_points = total_size - valid_count
             raise ValueError(
-                f"*** Too many missing points {maxNAN}. Less than {percData}% is available for partitioning. Delete period and try again.\n"
+                f"*** Too many missing points {missing_points}. Less than {percData}% is available for partitioning. Delete period and try again.\n"
             )
         if dropna_:
             self.data.dropna(inplace=True)
@@ -892,7 +908,8 @@ class Partitioning(object):
         sdata : pandas.DataFrame
             Data already subsetted to only contain data of a specific quadrant
             Needs to have the column "num_idx" which was a continous numeric index
-                before subsetting.
+                of the continously increasing timestamp before exclusion of NaN and
+                before subsetting. 
           
         Returns
         ----------
