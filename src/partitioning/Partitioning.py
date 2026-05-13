@@ -105,8 +105,46 @@ class Partitioning(object):
             type_lag - str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
+    
+    statistics : bool, optional
+        If True the time fraction and time scale of sampled events within each quadrant are calculated.
+    
+    argsOut : dict, optional
+        Contains options in which units the results are given. Defaults are that the output is in mass based units.
+        Possible to activate all simultanously.
 
-
+        Keys
+        -----
+            energetic_units - bool
+                True if the H2O flux shall be provided in energetic units in W/m2
+            mass_units - bool
+                True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
+            molar_units - bool
+                True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
+    
+    argsQThres : dict, optional
+        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to 
+        partition the fluxes.
+    
+        Keys
+        -----
+            cec_per_points_Q1Q2 - int
+                For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
+                Otherwise no partitioning is performed.
+            cec_per_points_each - int
+                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. 
+            mrea_per_points_Q1Q2 - int
+                For MREA more % of data needs to be present within quadrant 1 and 2 to partition. 
+                Otherwise no partitioning is performed.
+            mrea_per_points_each - int
+                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. 
+            cea_per_points_each - int
+                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both 
+                up- and downdrafts, no partitioning is performed.
+            t_scale_gap_threshold - int
+                For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
+    
+    
     Notes: Available Partitioning Methods
         - Conditional Eddy Covariance (CEC)
         - Modified Relaxed Eddy Accumulation (MREA)
@@ -741,12 +779,26 @@ class Partitioning(object):
                     correlation between H2O and temperature
                 'rct': float
                     correlation between CO2 and temperature
-                'Fc': float
-                    covariance between w and CO2 [mg/m2/s]
-                'LE': float
-                    latent heat flux [W/m2]
                 'H': float
                     sensible heat flux [W/m2]
+                
+                In case of self.argsOut.get("energetic_units"):
+                    'LE': float
+                        latent heat flux [W/m2]
+                
+                In case of self.argsOut.get("mass_units"):
+                    'ET_m': float
+                        evapotranspiration, covariance between w and h2o [g/(m2 s)]
+                    'Fc': float
+                        carbon dioxide flux, covariance between w and CO2 [mg/m2/s]
+                
+                In case of self.argsOut.get("molar_units"):
+                    'ET_a': float
+                        evapotranspiration [mmol/(m2 s)]
+                    'Fc_a': float
+                        carbon dioxide flux [mmol/(m2 s)]
+                
+                
         """
         aux = self.data[["u_p", "v_p", "w_p", "co2_p", "h2o_p", "Ts_p"]].copy()
         matrixCov = aux.cov()  # Covariance matrix
@@ -1139,19 +1191,44 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesCEC
             Contains all the flux components and status of the calculation.
-
-            - ET - float
-                Total evapotranspiration (W/m2).
-            - T - float
-                Plant transpiration (W/m2).
-            - Ecec - float
-                Soil/surface evaporation (W/m2).
-            - Fc - float
-                Carbon dioxide flux (mg/m2/s).
-            - Rcec - float
-                Soil/surface respiration (mg/m2/s).
-            - Pcec - float
-                Plant net photosynthesis* (mg/m2/s).
+            
+            in case of self.statistics:
+                - Q1tfrac_cec - float
+                    Time fraction of sampled events within Quadrant 1.
+                - Q2tfrac_cec - float
+                    Time fraction of sampled events within Quadrant 2.
+                - Q1tscale_cec - float
+                    Mean time scale of sampled events within Quadrant 1.
+                - Q2tscale_cec - float
+                    Mean time scale of sampled events within Quadrant 2.
+            
+            in case of self.argsOut.get("energetic_units"):
+                - Tcec - float
+                    Plant transpiration (W/m2).
+                - Ecec - float
+                    Soil/surface evaporation (W/m2).
+            
+            in case of self.argsOut.get("mass_units"):
+                - Ecec_m - float
+                    Soil/surface evaporation (g/(m2 s)).
+                - Tcec_m - float
+                    Plant transpiration (g/(m2 s)).
+                - Pcec - float
+                    Plant net photosynthesis* (mg/m2/s).
+                - Rcec - float
+                    Soil/surface respiration (mg/m2/s).
+            
+            in case of self.argsOut.get("molar_units"):
+                - Ecec_a - float
+                    Soil/surface evaporation (mmol/(m2 s)).
+                - Tcec_a - float
+                    Plant transpiration (mmol/(m2 s)).
+                - Pcec_a - float
+                    Plant net photosynthesis* (mmol/m2/s).
+                - Rcec_a - float
+                    Soil/surface respiration (mmol/m2/s).
+                    
+                    
             - statuscec - str
                 Status of the calculation.
 
@@ -1161,7 +1238,7 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         
-        per_points_Q1Q2 = self.argsQThres.get("cec_per_points_Q1Q2", 15)  # smallest percentage of points that must be available in the first two quadrants
+        per_points_Q1Q2 = self.argsQThres.get("cec_per_points_Q1Q2", 15)  # more percentage of points need to be available in the first two quadrants
         per_poits_each = self.argsQThres.get("cec_per_points_each", 3)
 
         # Creates a dataframe with variables of interest and no constraints
@@ -1368,19 +1445,44 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesREA
             Dictionary with the following flux components:
-
-            - ET - float
-                Total evapotranspiration (W/m2).
-            - Tmrea - float
-                Plant transpiration (W/m2).
-            - Emrea - float
-                Soil/surface evaporation (W/m2).
-            - Fc - float
-                Net carbon dioxide flux (mg/m2/s).
-            - Rmrea - float
-                Soil/surface respiration (mg/m2/s).
-            - Pmrea - float
-                Plant net photosynthesis* (mg/m2/s).
+                
+            in case of self.statistics:
+                - Q1tfrac_mrea - float
+                    Time fraction of sampled events within Quadrant 1.
+                - Q2tfrac_mrea - float
+                    Time fraction of sampled events within Quadrant 2.
+                - Q1tscale_mrea - float
+                    Mean time scale of sampled events within Quadrant 1.
+                - Q2tscale_mrea - float
+                    Mean time scale of sampled events within Quadrant 2.
+            
+            in case of self.argsOut.get("energetic_units"):
+                - Tmrea - float
+                    Plant transpiration (W/m2).
+                - Emrea - float
+                    Soil/surface evaporation (W/m2).
+            
+            in case of self.argsOut.get("mass_units"):
+                - Emrea_m - float
+                    Soil/surface evaporation (g/(m2 s)).
+                - Tmrea_m - float
+                    Plant transpiration (g/(m2 s)).
+                - Pmrea - float
+                    Plant net photosynthesis* (mg/m2/s).
+                - Rmrea - float
+                    Soil/surface respiration (mg/m2/s).
+            
+            in case of self.argsOut.get("molar_units"):
+                - Emrea_a - float
+                    Soil/surface evaporation (mmol/(m2 s)).
+                - Tmrea_a - float
+                    Plant transpiration (mmol/(m2 s)).
+                - Pmrea_a - float
+                    Plant net photosynthesis* (mmol/m2/s).
+                - Rmrea_a - float
+                    Soil/surface respiration (mmol/m2/s).
+                    
+                    
             - statusmrea - str
                 Status of the calculation.
 
@@ -1595,20 +1697,34 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesFVS
             Contains all the flux components and status of the calculation.
-
-            - ET - float
-                Total evapotranspiration (W/m2).
-            - Tfvs - float
-                Plant transpiration (W/m2).
-            - Efvs - float
-                Soil/surface evaporation (W/m2).
-            - Fc - float
-                Net carbon dioxide flux (mg/m2/s).
-            - Rfvs - float
-                Soil/surface respiration (mg/m2/s).
-            - Pfvs - float
-                Plant net photosynthesis* (mg/m2/s).
-            - status - str
+            
+            in case of self.argsOut.get("energetic_units"):
+                - Tfvs - float
+                    Plant transpiration (W/m2).
+                - Efvs - float
+                    Soil/surface evaporation (W/m2).
+            
+            in case of self.argsOut.get("mass_units"):
+                - Efvs_m - float
+                    Soil/surface evaporation (g/(m2 s)).
+                - Tfvs_m - float
+                    Plant transpiration (g/(m2 s)).
+                - Pfvs - float
+                    Plant net photosynthesis* (mg/m2/s).
+                - Rfvs - float
+                    Soil/surface respiration (mg/m2/s).
+            
+            in case of self.argsOut.get("molar_units"):
+                - Efvs_a - float
+                    Soil/surface evaporation (mmol/(m2 s)).
+                - Tfvs_a - float
+                    Plant transpiration (mmol/(m2 s)).
+                - Pfvs_a - float
+                    Plant net photosynthesis* (mmol/m2/s).
+                - Rfvs_a - float
+                    Soil/surface respiration (mmol/m2/s).
+                    
+            - statusfvs - str
                 Status of the calculation.
 
         Notes
@@ -1825,19 +1941,43 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesCEA
             Contains all the flux components and status of the calculation.
-
-            - ET - float
-                Total evapotranspiration (W/m2).
-            - Tcea - float
-                Plant transpiration (W/m2).
-            - Ecea - float
-                Soil/surface evaporation (W/m2).
-            - Fc - float
-                Carbon dioxide flux (mg/m2/s).
-            - Rcea - float
-                Soil/surface respiration (mg/m2/s).
-            - Pcea - float
-                Plant net photosynthesis* (mg/m2/s).
+            
+            in case of self.statistics:
+                - Q1tfrac_cea - float
+                    Time fraction of sampled events within Quadrant 1.
+                - Q2tfrac_cea - float
+                    Time fraction of sampled events within Quadrant 2.
+                - Q1tscale_cea - float
+                    Mean time scale of sampled events within Quadrant 1.
+                - Q2tscale_cea - float
+                    Mean time scale of sampled events within Quadrant 2.
+            
+            in case of self.argsOut.get("energetic_units"):
+                - Tcea - float
+                    Plant transpiration (W/m2).
+                - Ecea - float
+                    Soil/surface evaporation (W/m2).
+            
+            in case of self.argsOut.get("mass_units"):
+                - Ecea_m - float
+                    Soil/surface evaporation (g/(m2 s)).
+                - Tcea_m - float
+                    Plant transpiration (g/(m2 s)).
+                - Pcea - float
+                    Plant net photosynthesis* (mg/m2/s).
+                - Rcea - float
+                    Soil/surface respiration (mg/m2/s).
+            
+            in case of self.argsOut.get("molar_units"):
+                - Ecea_a - float
+                    Soil/surface evaporation (mmol/(m2 s)).
+                - Tcea_a - float
+                    Plant transpiration (mmol/(m2 s)).
+                - Pcea_a - float
+                    Plant net photosynthesis* (mmol/m2/s).
+                - Rcea_a - float
+                    Soil/surface respiration (mmol/m2/s).
+                    
             - statuscea - str
                 Status of the calculation.
 
