@@ -919,7 +919,7 @@ class Partitioning(object):
             # And count how many datapoints there are for each event
             streak_counts = sdata.groupby("event").size()
             # And recalculate using the sampling frequency into the time domain
-            t_scale = streak_counts.mean() * (1/self.freq) * ureg.second
+            t_scale = streak_counts.mean() * (1/self.freq.magnitude) * ureg.second
             return t_scale
 
         
@@ -2232,20 +2232,44 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesCECw
             Contains all the flux components and status of the calculation.
-
             Dictionary with the following flux components:
-            - ET - float
-                Total evapotranspiration (W/m2).
-            - Tcecw - float
-                Plant transpiration (W/m2).
-            - Ececw - float
-                Soil/surface evaporation (W/m2).
-            - Fc - float
-                Net carbon dioxide flux (mg/m2/s).
-            - Rcecw - float
-                Soil/surface respiration (mg/m2/s).
-            - Pcecw - float
-                Plant net photosynthesis* (mg/m2/s).
+            
+            in case of self.statistics:
+                - Q1tfrac_cecw - float
+                    Time fraction of sampled events within Quadrant 1.
+                - Q2tfrac_cecw - float
+                    Time fraction of sampled events within Quadrant 2.
+                - Q1tscale_cecw - float
+                    Mean time scale of sampled events within Quadrant 1.
+                - Q2tscale_cecw - float
+                    Mean time scale of sampled events within Quadrant 2.
+            
+            in case of self.argsOut.get("energetic_units"):
+                - Tcecw - float
+                    Plant transpiration (W/m2).
+                - Ececw - float
+                    Soil/surface evaporation (W/m2).
+            
+            in case of self.argsOut.get("mass_units"):
+                - Ececw_m - float
+                    Soil/surface evaporation (g/(m2 s)).
+                - Tcecw_m - float
+                    Plant transpiration (g/(m2 s)).
+                - Pcecw - float
+                    Plant net photosynthesis* (mg/m2/s).
+                - Rcecw - float
+                    Soil/surface respiration (mg/m2/s).
+            
+            in case of self.argsOut.get("molar_units"):
+                - Ececw_a - float
+                    Soil/surface evaporation (mmol/(m2 s)).
+                - Tcecw_a - float
+                    Plant transpiration (mmol/(m2 s)).
+                - Pcecw_a - float
+                    Plant net photosynthesis* (mmol/m2/s).
+                - Rcecw_a - float
+                    Soil/surface respiration (mmol/m2/s).
+                    
             - statuscecw - str
                 Status of the calculation.
 
@@ -2264,6 +2288,10 @@ class Partitioning(object):
         self.fluxesCECw = {}
 
         if W > (total_Fc / (10**3 * total_ET)):
+            # If W > (total_Fc / (10**3 * total_ET),
+            # then eq. 19 from Zahn 2024 would result in negative R
+            # and T. Hence, we need to check it here.
+            
             if self.argsOut.get("energetic_units"):
                 self.fluxesCECw.update({
                     # Energetic units
@@ -2301,6 +2329,8 @@ class Partitioning(object):
                     #/ ureg.second,
                     "Ececw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
                     "Tcecw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second})
+            self.fluxesCECw.update({
+                "statuscecw": "Invalid WUE ratio for Eq. 19"})
             return 0
 
         # Creates a dataframe with variables of interest and conditioned 
@@ -2313,9 +2343,13 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         R_condition_Fc = sum(auxE["co2_p"] * auxE["w_p"]) / N
         E_condition_ET = sum(auxE["h2o_p"] * auxE["w_p"]) / N
+        sumQ1 = (
+            auxE["w_p"].index.size / N
+        ) * 100  # Percentage of points in the first quadrant
+
 
         # Creates a dataframe with variables of interest and conditioned 
         # on updrafts and on the second quadrant
@@ -2327,13 +2361,25 @@ class Partitioning(object):
                 abs(df["co2_p"] / df["co2_p"].std())
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
-        ][["co2_p", "h2o_p", "w_p"]]
+        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
         P_condition_Fc = (
             sum(auxT["co2_p"] * auxT["w_p"]) / N
         )  # conditional flux [2nd quadrant and w'>0] given in mg/(s m2)
         T_condition_ET = (
             sum(auxT["h2o_p"] * auxT["w_p"]) / N
         )  # conditional flux [2nd quadrant and w'>0] flux given in  W/m2
+        sumQ2 = (
+            auxT["w_p"].index.size / N
+        ) * 100  # Percentage of points in the second quadrant
+        
+        # Method statistics
+        if self.statistics:
+            self.fluxesCECw = {
+                "Q1tfrac_cecw": (sumQ1 / 100) * ureg.dimensionless,
+                "Q2tfrac_cecw": (sumQ2 / 100) * ureg.dimensionless,
+                "Q1tscale_cecw": self.TScale(auxE),
+                "Q2tscale_cecw": self.TScale(auxT)
+                }
 
         # Compute needed parameters (ratios first)
         if T_condition_ET > 0:
@@ -2381,6 +2427,8 @@ class Partitioning(object):
                     / Constants.MWvapor.magnitude
                     * ureg.millimole / ureg.meter**2 / ureg.second,
                     "Tcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second})
+            self.fluxesCECw.update({
+                "statuscecw": "T < 0, all E"})
             return 0
 
         # Compute Z -------------------------------
@@ -2428,6 +2476,8 @@ class Partitioning(object):
                     "Tcecw_a": total_ET 
                     / Constants.MWvapor.magnitude
                     * ureg.millimole / ureg.meter**2 / ureg.second})
+            self.fluxesCECw.update({
+                    "statuscecw": "E < 0, all T"})
             return 0
 
         # Compute flux components -----------------
@@ -2487,3 +2537,5 @@ class Partitioning(object):
                 / Constants.Lv.magnitude
                 / Constants.MWvapor.magnitude
                 * ureg.millimole / ureg.meter**2 / ureg.second})
+        self.fluxesCECw.update({
+                    "statuscecw": "fully OK"})
