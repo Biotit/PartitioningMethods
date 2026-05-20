@@ -233,12 +233,14 @@ def CallPartitioning(filei,
         for key in part.wue.keys():
             part_results[f"W_{key}"] = part.wue[key]
             units[f"W_{key}"] = "" # WUE usually dimensionless or handled manually
+        part_results["statuswue"] = "ok"
     except ValueError as e:
         print("Error while file %s" % (filei))
         print("Error caused by: %s" % e)
-        for _w in part.wue.keys():
-            part_results[f"statusfvs{_w}"] = "VPD negative. Cant calculate methods depending on WUE."
-            # part_results[f"statuscecw{_w}"] = "VPD negative. Cant calculate methods depending on WUE."
+        part_results["statuswue"] = "VPD < 0"
+        for _w in part.wue.keys():  
+            part_results[f"statusfvs_{_w}"] = "VPD < 0. No WUE."
+            part_results[f"statuscecw_{_w}"] = "VPD < 0. No WUE."
         return {"data": part_results, "units": units}
 
     for _w in part.wue.keys():
