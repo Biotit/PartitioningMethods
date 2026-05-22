@@ -1034,13 +1034,6 @@ class Partitioning(object):
         aux = self.data.copy()
 
         # Create dictionary that will store water use efficiency from different methods
-        # self.wue = {
-        #     "const_ppm": np.nan,
-        #     "const_ratio": np.nan,
-        #     "linear": np.nan,
-        #     "sqrt": np.nan,
-        #     "opt": np.nan,
-        # }
         self.wue = {}
 
         # Statistics  --------------------
@@ -1135,7 +1128,7 @@ class Partitioning(object):
 
         if vpd < 0:
             raise ValueError(
-                ("Negative vapor pressure deficit. Check the input data and try again or remove period. No water use efficiency calculation possible.")
+                ("Negative vapor pressure deficit at leaf level using log-law profiles. Check the input data and try again or remove period. No water use efficiency calculation possible.")
             )
 
         # Calculating inside stomata co2 concentration
@@ -1204,8 +1197,6 @@ class Partitioning(object):
                         * (ambient_co2 + Constants.diff_ratio * vpdm * m)
                     )
                 ) / (Constants.diff_ratio * vpdm)
-        # else:
-            # self.wue["opt"] = np.nan  # Model is not suitable for C4 and CAM plants
         del aux
 
     def partCEC(self, H=0.0):
