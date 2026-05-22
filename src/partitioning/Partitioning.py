@@ -1022,6 +1022,8 @@ class Partitioning(object):
                 WUE from constant ratio [kg_co2/kg_h2o].
             - 'linear': float
                 WUE from linear model [kg_co2/kg_h2o].
+                
+            In case of C3 plants additional available is:
             - 'sqrt': float
                 WUE from sqrt model [kg_co2/kg_h2o].
             - 'opt': float
@@ -1032,13 +1034,14 @@ class Partitioning(object):
         aux = self.data.copy()
 
         # Create dictionary that will store water use efficiency from different methods
-        self.wue = {
-            "const_ppm": np.nan,
-            "const_ratio": np.nan,
-            "linear": np.nan,
-            "sqrt": np.nan,
-            "opt": np.nan,
-        }
+        # self.wue = {
+        #     "const_ppm": np.nan,
+        #     "const_ratio": np.nan,
+        #     "linear": np.nan,
+        #     "sqrt": np.nan,
+        #     "opt": np.nan,
+        # }
+        self.wue = {}
 
         # Statistics  --------------------
         matrixCov = aux.cov()  # Covariance matrix
@@ -1132,11 +1135,10 @@ class Partitioning(object):
 
         if vpd < 0:
             raise ValueError(
-                (f"Negative vapor pressure deficit. Check the input data and try again or remove period. Data is ambient_h2o {ambient_h2o}, leaf_T {leaf_T}, vpd {vpd}.")
+                ("Negative vapor pressure deficit. Check the input data and try again or remove period. No water use efficiency calculation possible.")
             )
 
         # Calculating inside stomata co2 concentration
-
         ci_mod_const_ppm = ci_const_ppm(
             P,
             leaf_T,
@@ -1152,17 +1154,30 @@ class Partitioning(object):
             Constants.wue_constants[ppath]["linear"][0],
             Constants.wue_constants[ppath]["linear"][1].magnitude,
         )
-        ci_mod_sqrt = cica_sqrt(
-            ambient_co2, vpd, Constants.wue_constants[ppath]["sqrt"].magnitude
-        )
+        if not np.isnan(Constants.wue_constants[ppath]["sqrt"]):
+            # The sqrt model does not contain a value for C4 plants
+            # see also Fluxpart
+            # https://github.com/usda-ars-ussl/fluxpart/blob/master/fluxpart/wue.py
+            # but could just add a value in auxfunctions.py - wue_constants
+            # and it should work.
+            ci_mod_sqrt = cica_sqrt(
+                ambient_co2, vpd, Constants.wue_constants[ppath]["sqrt"].magnitude
+            )
+        else:
+            ci_mod_sqrt = None
 
         # 3 - Compute water use efficiency ----------------------------------------------------------------------------
-        for ci, mod in [
-            [ci_mod_const_ppm, "const_ppm"],
-            [ci_mod_const_ratio, "const_ratio"],
-            [ci_mod_linear, "linear"],
-            [ci_mod_sqrt, "sqrt"],
-        ]:
+        
+        # find all available models
+        wue_calculate = [(ci, mod) for ci, mod in [
+                    (ci_mod_const_ppm, "const_ppm"),
+                    (ci_mod_const_ratio, "const_ratio"),
+                    (ci_mod_linear, "linear"),
+                    (ci_mod_sqrt, "sqrt"),
+                ] if ci is not None] # ci_mod_sqrt is None for C4, so skip this model (see above).
+        
+        # calculate wue for each of them
+        for ci, mod in wue_calculate:
             coef = 1.0 / Constants.diff_ratio
             wuei = coef * (ambient_co2 - ci) / (ambient_h2o - inter_h2o)
             self.wue[mod] = wuei
@@ -1189,8 +1204,8 @@ class Partitioning(object):
                         * (ambient_co2 + Constants.diff_ratio * vpdm * m)
                     )
                 ) / (Constants.diff_ratio * vpdm)
-        else:
-            self.wue["opt"] = np.nan  # Model is not suitable for C4 and CAM plants
+        # else:
+            # self.wue["opt"] = np.nan  # Model is not suitable for C4 and CAM plants
         del aux
 
     def partCEC(self, H=0.0):
@@ -2157,7 +2172,7 @@ class Partitioning(object):
                 T_a = np.nan
                 E_a = np.nan
                 
-                status_message = "unrealistic fluxes"
+                status_message = "unrealistic fluxes (P>0)"
             
             
             if self.argsOut.get("energetic_units"):

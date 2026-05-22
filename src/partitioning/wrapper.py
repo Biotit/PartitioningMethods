@@ -44,6 +44,8 @@ def CallPartitioning(filei,
                 length of data file in minutes
             "PreProcessing": bool
                 If pre-processing takes place.
+            "ppath": str
+                Type of photosynthesis ('C3' or 'C4'), for WUE calculation.
                 
         
     argsQC : dict
@@ -116,6 +118,24 @@ def CallPartitioning(filei,
                 up- and downdrafts, no partitioning is performed.
             t_scale_gap_threshold - int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
+            H - float or dict
+                Hyperbolic threshold criteria. If not specified 0 is used for all methods.
+                If float: MREA, CEC, CEA, CECw get calculated using this threshold.
+                If dict:
+                    Hyperbolic threshold per method used.
+                    If for a method no threshold is defined its set to 0.
+                    
+                    Keys
+                    -------
+                    "MREA" - float
+                        Hyperbolic threshold for MREA
+                    "CEC" - float
+                        Hyperbolic threshold for CEC
+                    "CEA" - float
+                        Hyperbolic threshold for CEA
+                    "CECw" - float
+                        Hyperbolic threshold for CECw
+                    
     
     loadfnct : str
         Function name as a string used for loading the data.
@@ -174,17 +194,21 @@ def CallPartitioning(filei,
     part_results = {}
     units = {}  # Dictionary to store units
     
+    # Load data
     try:
+        # Load which function to use for loading
        current_module = sys.modules[__name__]
        loadfnct_f = getattr(current_module, loadfnct)
        
+       # Load data
        df = loadfnct_f(filei, loadkwargs, **versatile_loadkwargs)
        
        
     except AttributeError:
        print(f"Error: '{loadfnct}' doesn't exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.")
        return None
-        
+     
+   # Setting up partitioning class, including PreProcessing during init
     try:
         part = Partitioning(
                 hi=siteDetails["hi"],
@@ -214,22 +238,43 @@ def CallPartitioning(filei,
             else:
                 target_dict[dict_key] = value
                 unit_dict[dict_key] = ""
+    
+    # Setting hyperbolic threshold
+    if not "H" in argsQThres:
+        # if not defined, set to 0
+        argsQThres["H"] = 0
+    
+    if isinstance(argsQThres["H"], (int, float)):
+        # if a number set this number for all methods
+        argsQThres["H"] = {
+            "MREA": argsQThres["H"],
+            "CEC": argsQThres["H"],
+            "CECw": argsQThres["H"],
+            "CEA": argsQThres["H"]
+            }
+    
+    for _M in ("MREA", "CEC", "CECw", "CEA"):
+        if _M not in argsQThres['H']:
+            # if a method was not specified (but another was), set to 0.
+            argsQThres['H'][_M] = 0
+    
 
     # Processing all methods
     part.TurbulentStats()
     extract_data(part.turbstats, part_results, units)
 
-    part.partCEC()
+    part.partCEC(H = argsQThres["H"]["CEC"])
     extract_data(part.fluxesCEC, part_results, units)
 
-    part.partREA()
+    part.partREA(H = argsQThres["H"]["MREA"])
     extract_data(part.fluxesREA, part_results, units)
     
-    part.partCEA()
+    part.partCEA(H = argsQThres["H"]["CEA"])
     extract_data(part.fluxesCEA, part_results, units)
 
     try: 
-        part.WaterUseEfficiency(ppath="C3")
+        # Calculate Water Use Efficicency if possible
+        part.WaterUseEfficiency(ppath=siteDetails["ppath"])
         for key in part.wue.keys():
             part_results[f"W_{key}"] = part.wue[key]
             units[f"W_{key}"] = "" # WUE usually dimensionless or handled manually
@@ -244,10 +289,12 @@ def CallPartitioning(filei,
         return {"data": part_results, "units": units}
 
     for _w in part.wue.keys():
+        # Run methods relying on water use efficency for all
+        # water use efficiencies available
         part.partFVS(W=part.wue[_w])
         extract_data(part.fluxesFVS, part_results, units, suffix=f"_{_w}")
 
-        part.partCECw(W=part.wue[_w])
+        part.partCECw(W=part.wue[_w], H = argsQThres["H"]["CECw"])
         extract_data(part.fluxesCECw, part_results, units, suffix=f"_{_w}")
 
     # Return both data and units
@@ -289,6 +336,8 @@ def process(siteDetails,
                     length of data file in minutes
                 "PreProcessing": bool
                     If pre-processing takes place.
+                "ppath" : str
+                    Type of photosynthesis ('C3' or 'C4'), for WUE calculation.
                     
         infolder - str
             Path to the folder where the input data is located. Needs to end with slash or backslash.
@@ -370,6 +419,23 @@ def process(siteDetails,
                     up- and downdrafts, no partitioning is performed.
                 t_scale_gap_threshold - int
                     For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
+                H - float or dict
+                    Hyperbolic threshold criteria. If not specified 0 is used for all methods.
+                    If float: MREA, CEC, CEA, CECw get calculated using this threshold.
+                    If dict:
+                        Hyperbolic threshold per method used.
+                        If for a method no threshold is defined its set to 0.
+                        
+                        Keys
+                        -------
+                        "MREA" - float
+                            Hyperbolic threshold for MREA
+                        "CEC" - float
+                            Hyperbolic threshold for CEC
+                        "CEA" - float
+                            Hyperbolic threshold for CEA
+                        "CECw" - float
+                            Hyperbolic threshold for CECw
         
         
         loadfnct : str
