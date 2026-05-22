@@ -16,7 +16,9 @@ def CallPartitioning(filei,
                      siteDetails, 
                      argsQC={}, 
                      argsOut={}, 
-                     statistics=False, 
+                     methods=True,
+                     methodsWue=True,
+                     statistics={"TurbStats":True}, 
                      argsQThres={},
                      loadfnct="NormLoad", 
                      loadkwargs={},
@@ -54,29 +56,26 @@ def CallPartitioning(filei,
 
         Keys
         -----
-            density_correction - bool
+            "density_correction" - bool
                 True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).
-            fluctuations - str
+            "fluctuations" - str
                 Describes the type of operation used to extract fluctuations:
                 'BA': block average
                 'LD': Linear detrending
                 'FL': Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.
-            filtercut - int
+            "filtercut" - int
                 Cutoff time in minutes for the low-pass filter. Only used if method is 'FL'.
-            maxGapsInterpolate - int
+            "maxGapsInterpolate" - int
                 Number of consecutive gaps that will be interpolated.
-            RemainingData - int
+            "RemainingData" - int
                 Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
-            steadyness - bool
-                If True, Foken's stationarity test is implemented to check if the data is stationary. If False, the test is not
-                implemented. The test is only informative and does not remove data, which is left to the user's discretion.
-            saveprocessed - bool
+            "saveprocessed" - bool
                 If True, the processed data is saved to a CSV file.
-            time_lag_correction - bool
+            "time_lag_correction" - bool
                 If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
-            max_lag_seconds - int
+            "max_lag_seconds" - int
                 Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.
-            type_lag - str
+            "type_lag" - str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
         
@@ -86,16 +85,61 @@ def CallPartitioning(filei,
 
         Keys
         -----
-            energetic_units - bool
+            "energetic_units" - bool
                 True if the H2O flux shall be provided in energetic units in W/m2
-            mass_units - bool
+            "mass_units" - bool
                 True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
-            molar_units - bool
+            "molar_units" - bool
                 True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
     
+    methods : bool or dict, default True
+        If True, all available partitioning methods are used.
+        If False, no method is used.
+        If dict, the specified methods are used.
+        
+        Keys
+        ----
+        If True, the corresponding method is calculated
+        
+        "MREA" : bool
+        "CEC" : bool
+        "CECw" : bool
+        "CEA" : bool
+        "FVS" : bool
     
-    statistics : bool
-        If True the time fraction and time scale of sampled events within each quadrant are calculated.
+    methodsWue : bool or dict, default True
+        If True, all available water use efficicency methods are used.
+        If False, no method is used.
+        If dict, the specified methods are used.
+        
+        Keys
+        ----
+        If True, the corresponding method is calculated
+        
+        "const_ppm" : bool
+        "const_ratio" : bool
+        "linear" : bool
+        "sqrt" : bool
+        "opt" : bool
+    
+    statistics : bool or dict, default {"TurbStats":True}
+        If True all possible statistics are calculated.
+        If False no statistics are calculated.
+        If dict, the specified statistics are calculated. 
+        
+        Keys
+        ----
+        If True, the corresponding method is calculated
+        Keys not used, are set to False
+
+        "TurbStats" : bool
+            If True basic general turbulence statistics are calculated.
+        "steadyness" : bool
+            If True, Foken's stationarity test is implemented to check if the data is stationary. 
+            If False, the test is not implemented. 
+            The test is only informative and does not remove data, which is left to the user's discretion.
+        "sampledEvents" : bool
+            If True the time fraction and time scale of sampled events within each quadrant are calculated.
     
     argsQThres : dict
         Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to 
@@ -103,22 +147,22 @@ def CallPartitioning(filei,
     
         Keys
         -----
-            cec_per_points_Q1Q2 - int
+            "cec_per_points_Q1Q2" - int
                 For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
-            cec_per_points_each - int
+            "cec_per_points_each" - int
                 For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. 
-            mrea_per_points_Q1Q2 - int
+            "mrea_per_points_Q1Q2" - int
                 For MREA more % of data needs to be present within quadrant 1 and 2 to partition. 
                 Otherwise no partitioning is performed.
-            mrea_per_points_each - int
+            "mrea_per_points_each" - int
                 For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. 
-            cea_per_points_each - int
+            "cea_per_points_each" - int
                 For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both 
                 up- and downdrafts, no partitioning is performed.
-            t_scale_gap_threshold - int
+            "t_scale_gap_threshold" - int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
-            H - float or dict
+            "H" - float or dict
                 Hyperbolic threshold criteria. If not specified 0 is used for all methods.
                 If float: MREA, CEC, CEA, CECw get calculated using this threshold.
                 If dict:
@@ -140,16 +184,16 @@ def CallPartitioning(filei,
     loadfnct : str
         Function name as a string used for loading the data.
         Available options are:
-            VersatileLoad
+            "VersatileLoad"
                 loading, renaming and recalculations can be done with this function.
                 it basically makes the other loading functions useless apart from their
                 shorter notation.
             
-            NormLoad
+            "NormLoad"
                 basically pd.read_csv, pass the arguments to read the data as loadkwargs.
                 the index gets to be the timestamp
                 
-            LoadBmmflux
+            "LoadBmmflux"
                 custom function to read the BMMFlux high-frequency output files.
                 BMMFlux is the EddyCovariance Software of the Micrometeorology Group in Bayreuth.
                 
@@ -168,15 +212,15 @@ def CallPartitioning(filei,
         
         Keys
         ------
-            timestamp_col : str or list of str, optional
+            "timestamp_col" : str or list of str, optional
                 - If a list: Combines split columns (e.g., ['Year', 'Month', 'Day']) into a datetime index.
                 - If a string: Converts that specific column into the datetime index.
                 - If None: Converts the default DataFrame index to datetime.
-            convert_gases : bool, default False
+            "convert_gases" : bool, default False
                 If True, converts 'co2' and 'h2o' from mmol/m³ to mg/m³ and g/m³ respectively.
-            rename_cols : dict, optional
+            "rename_cols" : dict, optional
                 A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
-            select_cols : list of str, optional
+            "select_cols" : list of str, optional
                 A list of specific columns to keep. All other columns will be dropped.
         
     Returns
@@ -186,9 +230,9 @@ def CallPartitioning(filei,
             
         Keys
         -----
-        data : dict
+        "data" : dict
             Partitioned data, each key:value pair corresponds to one return value of the partioning functions.
-        units : dict
+        "units" : dict
             The corresponding unit, as well as key:value pair.
     """
     part_results = {}
@@ -207,8 +251,18 @@ def CallPartitioning(filei,
     except AttributeError:
        print(f"Error: '{loadfnct}' doesn't exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.")
        return None
-     
-   # Setting up partitioning class, including PreProcessing during init
+   
+    # Settings statistics
+    default_stats = {"TurbStats":False, "steadyness":False, "sampledEvents":False}
+    if statistics == True:
+        # activating all methods
+        statistics = {k: True for k in default_stats}
+    elif statistics == False:
+        statistics = default_stats
+    else:
+        statistics = {**default_stats, **statistics}
+       
+   # Setting up partitioning class, including PreProcessing during init 
     try:
         part = Partitioning(
                 hi=siteDetails["hi"],
@@ -219,7 +273,7 @@ def CallPartitioning(filei,
                 PreProcessing=siteDetails["PreProcessing"],
                 argsQC=argsQC,
                 argsOut=argsOut,
-                statistics=statistics,
+                sampledEventsStats=statistics["sampledEvents"],
                 argsQThres=argsQThres
             )
     except (ValueError, TypeError) as e:
@@ -257,24 +311,51 @@ def CallPartitioning(filei,
         if _M not in argsQThres['H']:
             # if a method was not specified (but another was), set to 0.
             argsQThres['H'][_M] = 0
+            
+         
     
-
-    # Processing all methods
-    part.TurbulentStats()
-    extract_data(part.turbstats, part_results, units)
-
-    part.partCEC(H = argsQThres["H"]["CEC"])
-    extract_data(part.fluxesCEC, part_results, units)
-
-    part.partREA(H = argsQThres["H"]["MREA"])
-    extract_data(part.fluxesREA, part_results, units)
+    # Calculate general turbulence statistics
+    if statistics["TurbStats"]:
+        part.TurbulentStats()
+        extract_data(part.turbstats, part_results, units)
     
-    part.partCEA(H = argsQThres["H"]["CEA"])
-    extract_data(part.fluxesCEA, part_results, units)
-
+    # Calculate steadyness statistics
+    if statistics["steadyness"]:
+        part._steadynessTest()
+        extract_data(part.FokenStatTest, part_results, units)
+    
+    
+    # Settings which method to process
+    default_methods = {"MREA":False, "CEC":False, "CECw":False, "CEA":False, "FVS":False}
+    if methods == True:
+        # activating all methods
+        methods = {k: True for k in default_methods}
+    elif methods == False:
+        methods = default_methods
+    else:
+        # if a method was not named in dict set it to false
+        methods = {**default_methods, **methods}
+    
+    
+    # Processing all methods 
+    if methods["CEC"]:
+        part.partCEC(H = argsQThres["H"]["CEC"])
+        extract_data(part.fluxesCEC, part_results, units)
+    
+    if methods["MREA"]:
+        part.partREA(H = argsQThres["H"]["MREA"])
+        extract_data(part.fluxesREA, part_results, units)
+    
+    if methods["CEA"]:
+        part.partCEA(H = argsQThres["H"]["CEA"])
+        extract_data(part.fluxesCEA, part_results, units)
+    
+    
+    
     try: 
         # Calculate Water Use Efficicency if possible
-        part.WaterUseEfficiency(ppath=siteDetails["ppath"])
+        part.WaterUseEfficiency(ppath=siteDetails["ppath"],
+                                methodsWue=methodsWue)
         for key in part.wue.keys():
             part_results[f"W_{key}"] = part.wue[key]
             units[f"W_{key}"] = "" # WUE usually dimensionless or handled manually
@@ -291,11 +372,14 @@ def CallPartitioning(filei,
     for _w in part.wue.keys():
         # Run methods relying on water use efficency for all
         # water use efficiencies available
-        part.partFVS(W=part.wue[_w])
-        extract_data(part.fluxesFVS, part_results, units, suffix=f"_{_w}")
-
-        part.partCECw(W=part.wue[_w], H = argsQThres["H"]["CECw"])
-        extract_data(part.fluxesCECw, part_results, units, suffix=f"_{_w}")
+        
+        if methods["FVS"]:
+            part.partFVS(W=part.wue[_w])
+            extract_data(part.fluxesFVS, part_results, units, suffix=f"_{_w}")
+        
+        if methods["CECw"]:
+            part.partCECw(W=part.wue[_w], H = argsQThres["H"]["CECw"])
+            extract_data(part.fluxesCECw, part_results, units, suffix=f"_{_w}")
 
     # Return both data and units
     datun = {"data": part_results, "units": units}
@@ -311,7 +395,9 @@ def process(siteDetails,
             outname="PartitioningResults",
             argsQC={}, 
             argsOut={}, 
-            statistics=False, 
+            methods=True,
+            methodsWue=True,
+            statistics={"TurbStats":True}, 
             argsQThres={},
             loadfnct="NormLoad",
             loadkwargs={},
@@ -345,7 +431,7 @@ def process(siteDetails,
             Path to the folder where the output data is located. Needs to end with slash or backslash.
         loadpattern - str, default "*.csv"
             Pattern in the filename to match for loading files.
-        outname - str
+        outname - str, default "PartitioningResults"
             Filename for the output data, excluding file ending.
                     
             
@@ -355,29 +441,26 @@ def process(siteDetails,
 
             Keys
             -----
-                density_correction - bool
+                "density_correction" - bool
                     True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).
-                fluctuations - str
+                "fluctuations" - str
                     Describes the type of operation used to extract fluctuations:
                     'BA': block average
                     'LD': Linear detrending
                     'FL': Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.
-                filtercut - int
+                "filtercut" - int
                     Cutoff time in minutes for the low-pass filter. Only used if method is 'FL'.
-                maxGapsInterpolate - int
+                "maxGapsInterpolate" - int
                     Number of consecutive gaps that will be interpolated.
-                RemainingData - int
+                "RemainingData" - int
                     Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
-                steadyness - bool
-                    If True, Foken's stationarity test is implemented to check if the data is stationary. If False, the test is not
-                    implemented. The test is only informative and does not remove data, which is left to the user's discretion.
-                saveprocessed - bool
+                "saveprocessed" - bool
                     If True, the processed data is saved to a CSV file.
-                time_lag_correction - bool
+                "time_lag_correction" - bool
                     If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
-                max_lag_seconds - int
+                "max_lag_seconds" - int
                     Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.
-                type_lag - str
+                "type_lag" - str
                     Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                     'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
             
@@ -387,39 +470,85 @@ def process(siteDetails,
 
             Keys
             -----
-                energetic_units - bool
+                "energetic_units" - bool
                     True if the H2O flux shall be provided in energetic units in W/m2
-                mass_units - bool
+                "mass_units" - bool
                     True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
-                molar_units - bool
+                "molar_units" - bool
                     True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
         
+        methods : bool or dict, default True
+            If True, all available partitioning methods are used.
+            If False, no method is used.
+            If dict, the specified methods are used.
+            
+            Keys
+            ----
+            If True, the corresponding method is calculated
+            
+            "MREA" : bool
+            "CEC" : bool
+            "CECw" : bool
+            "CEA" : bool
+            "FVS" : bool
         
-        statistics : bool
-            If True the time fraction and time scale of sampled events within each quadrant are calculated.
+        methodsWue : bool or dict, default True
+            If True, all available water use efficicency methods are used.
+            If False, no method is used.
+            If dict, the specified methods are used.
+            
+            Keys
+            ----
+            If True, the corresponding method is calculated
+            
+            "const_ppm" : bool
+            "const_ratio" : bool
+            "linear" : bool
+            "sqrt" : bool
+            "opt" : bool
+        
+        statistics : bool or dict, default {"TurbStats":True}
+            If True all possible statistics are calculated.
+            If False no statistics are calculated.
+            If dict, the specified statistics are calculated. 
+            
+            Keys
+            ----
+            If True, the corresponding method is calculated
+            Keys not used, are set to False
+
+            "TurbStats" : bool
+                If True basic general turbulence statistics are calculated.
+            "steadyness" : bool
+                If True, Foken's stationarity test is implemented to check if the data is stationary. 
+                If False, the test is not implemented. 
+                The test is only informative and does not remove data, which is left to the user's discretion.
+            "sampledEvents" : bool
+                If True the time fraction and time scale of sampled events within each quadrant are calculated.
         
         argsQThres : dict
             Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to 
-            partition the fluxes.
+            partition the fluxes. Also the settings regarding the hyperbolic threshold and
+            about the time scale of sampled events can be given here.
         
             Keys
             -----
-                cec_per_points_Q1Q2 - int
+                "cec_per_points_Q1Q2" - int
                     For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
                     Otherwise no partitioning is performed.
-                cec_per_points_each - int
+                "cec_per_points_each" - int
                     For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. 
-                mrea_per_points_Q1Q2 - int
+                "mrea_per_points_Q1Q2" - int
                     For MREA more % of data needs to be present within quadrant 1 and 2 to partition. 
                     Otherwise no partitioning is performed.
-                mrea_per_points_each - int
+                "mrea_per_points_each" - int
                     For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. 
-                cea_per_points_each - int
+                "cea_per_points_each" - int
                     For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both 
                     up- and downdrafts, no partitioning is performed.
-                t_scale_gap_threshold - int
+                "t_scale_gap_threshold" - int
                     For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
-                H - float or dict
+                "H" - float or dict
                     Hyperbolic threshold criteria. If not specified 0 is used for all methods.
                     If float: MREA, CEC, CEA, CECw get calculated using this threshold.
                     If dict:
@@ -441,16 +570,16 @@ def process(siteDetails,
         loadfnct : str
             Function name as a string used for loading the data.
             Available options are:
-                VersatileLoad
+                "VersatileLoad"
                     loading, renaming and recalculations can be done with this function.
                     it basically makes the other loading functions useless apart from their
                     shorter notation.
                 
-                NormLoad
+                "NormLoad"
                     basically pd.read_csv, pass the arguments to read the data as loadkwargs.
                     the index gets to be the timestamp
                     
-                LoadBmmflux
+                "LoadBmmflux"
                     custom function to read the BMMFlux high-frequency output files.
                     BMMFlux is the EddyCovariance Software of the Micrometeorology Group in Bayreuth.
                     
@@ -469,21 +598,25 @@ def process(siteDetails,
             
             Keys
             ------
-                timestamp_col : str or list of str, optional
+                "timestamp_col" : str or list of str, optional
                     - If a list: Combines split columns (e.g., ['Year', 'Month', 'Day']) into a datetime index.
                     - If a string: Converts that specific column into the datetime index.
                     - If None: Converts the default DataFrame index to datetime.
-                convert_gases : bool, default False
+                "convert_gases" : bool, default False
                     If True, converts 'co2' and 'h2o' from mmol/m³ to mg/m³ and g/m³ respectively.
-                rename_cols : dict, optional
+                "rename_cols" : dict, optional
                     A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
-                select_cols : list of str, optional
+                "select_cols" : list of str, optional
                     A list of specific columns to keep. All other columns will be dropped.
         
     Saves
     ----------
        df_data - pandas.DataFrame
            Processed and partioned data as csv-file with metadata header.
+    Return
+    ----------
+       df_data - pandas.DataFrame
+           Processed and partioned data
     """
     
     
@@ -503,6 +636,8 @@ def process(siteDetails,
                                siteDetails=siteDetails, 
                                argsQC=argsQC, 
                                argsOut=argsOut, 
+                               methods=methods,
+                               methodsWue=methodsWue,
                                statistics=statistics, 
                                argsQThres=argsQThres,
                                loadfnct=loadfnct,
@@ -559,7 +694,7 @@ def process(siteDetails,
             df_data.to_csv(f, na_rep='NaN', index=False)
             
         print(f"File saved successfully to {output_path}")
-    
+        return df_data
     else:
         print("No valid results. No file saved.")
 

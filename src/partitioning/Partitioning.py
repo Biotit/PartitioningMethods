@@ -94,9 +94,6 @@ class Partitioning(object):
                 Number of consecutive gaps that will be interpolated.
             RemainingData - int
                 Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
-            steadyness - bool
-                If True, Foken's stationarity test is implemented to check if the data is stationary. If False, the test is not
-                implemented. The test is only informative and does not remove data, which is left to the user's discretion.
             saveprocessed - bool
                 If True, the processed data is saved to a CSV file.
             time_lag_correction - bool
@@ -107,7 +104,7 @@ class Partitioning(object):
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
     
-    statistics : bool, optional
+    sampledEventsStats : bool, optional
         If True the time fraction and time scale of sampled events within each quadrant are calculated.
     
     argsOut : dict, optional
@@ -125,7 +122,8 @@ class Partitioning(object):
     
     argsQThres : dict, optional
         Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to 
-        partition the fluxes.
+        partition the fluxes. Also the settings regarding the hyperbolic threshold and
+        about the time scale of sampled events can be given here.
     
         Keys
         -----
@@ -144,6 +142,23 @@ class Partitioning(object):
                 up- and downdrafts, no partitioning is performed.
             t_scale_gap_threshold - int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
+            H - float or dict
+                Hyperbolic threshold criteria. If not specified 0 is used for all methods.
+                If float: MREA, CEC, CEA, CECw get calculated using this threshold.
+                If dict:
+                    Hyperbolic threshold per method used.
+                    If for a method no threshold is defined its set to 0.
+                    
+                    Keys
+                    -------
+                    "MREA" - float
+                        Hyperbolic threshold for MREA
+                    "CEC" - float
+                        Hyperbolic threshold for CEC
+                    "CEA" - float
+                        Hyperbolic threshold for CEA
+                    "CECw" - float
+                        Hyperbolic threshold for CECw
     
     
     Notes: Available Partitioning Methods
@@ -159,7 +174,7 @@ class Partitioning(object):
     """
 
     def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC, 
-                 statistics=False, argsOut={},
+                 sampledEventsStats=False, argsOut={},
                  argsQThres={}):
         self.hi = hi * ureg.meter
         self.zi = zi * ureg.meter
@@ -179,7 +194,6 @@ class Partitioning(object):
             "filtercut": 5,  # Cutoff timescale to filter low frequencies (in minutes). Needed when FL is selected as fluctuation method
             "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)
             "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
-            "steadyness": False,  # Compute statistic to check stationarity (will not delete data based on this test)
             "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
             "saveprocessed": False  # If True, save the intermediate processed data including all corrections and fluctuations
         }
@@ -262,14 +276,12 @@ class Partitioning(object):
                 self._densityCorrections(method=self.argsQC.get("fluctuations"))
             if self.argsQC.get("maxGapsInterpolate"):
                 self._fillGaps(self.argsQC.get("maxGapsInterpolate"))
-            if self.argsQC.get("steadyness"):
-                self._steadynessTest()
                 
         # define continous index before dropping any NaN data
         self.data["num_idx"] = range(len(self.data))
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"), dropna_=True)
         
-        self.statistics = statistics
+        self.sampledEventsStats = sampledEventsStats
         
 
     def _checkUnits(self):
@@ -748,14 +760,14 @@ class Partitioning(object):
         # Compare 30-min to 5-min windows -----------------------
         stat_fk = dict(abs((stats_all - aver_5min) / stats_all) * 100)
         self.FokenStatTest = {
-            "fkstat_%s" % svar: stat_fk[svar]
+            "fkstat_%s" % svar: stat_fk[svar] * ureg.percent
             for svar in ["wc", "wq", "wt", "ww", "cc", "qq", "tt"]
         }
         # print results as a table with wc wq wt ww cc qq tt on top and their respective values below
-        print("------------------------")
-        print(" Foken's Stationarity Test (%)")
-        print(pd.DataFrame(self.FokenStatTest, index=[0]))
-        print("\n")
+        #print("------------------------")
+        #print(" Foken's Stationarity Test (%)")
+        #print(pd.DataFrame(self.FokenStatTest, index=[0]))
+        #print("\n")
 
     def TurbulentStats(self):
         """
@@ -941,7 +953,7 @@ class Partitioning(object):
 
         
 
-    def WaterUseEfficiency(self, ppath="C3"):
+    def WaterUseEfficiency(self, ppath="C3", methodsWue=True):
         """
         Calculates water use efficiency in kg_co2/kg_h2o.
 
@@ -960,6 +972,21 @@ class Partitioning(object):
         ----------
         ppath : str
             Type of photosynthesis ('C3' or 'C4').
+            
+        methodsWue : bool or dict, default True
+            If True, all available methods are used.
+            If False, no method is used.
+            If dict, the specified methods are used.
+            
+            Keys
+            ----
+            If True, the corresponding method is calculated
+            
+            const_ppm : bool
+            const_ratio : bool
+            linear : bool
+            sqrt : bool
+            opt : bool
 
         Models
 
@@ -1130,24 +1157,36 @@ class Partitioning(object):
             raise ValueError(
                 ("Negative vapor pressure deficit at leaf level using log-law profiles. Check the input data and try again or remove period. No water use efficiency calculation possible.")
             )
+        
+        defaults_methods = {"const_ppm":False, "const_ratio":False, "linear":False, "sqrt":False, "opt":False}
+        if methodsWue == True:
+            # activating all methods
+            methodsWue = {k: True for k in defaults_methods}
+        else:
+            # if a method was not named in dict set it to false
+            methodsWue = {**defaults_methods, **methodsWue}
 
         # Calculating inside stomata co2 concentration
-        ci_mod_const_ppm = ci_const_ppm(
-            P,
-            leaf_T,
-            Constants.Rco2.magnitude,
-            Constants.wue_constants[ppath]["const_ppm"].magnitude,
-        )
-        ci_mod_const_ratio = cica_const_ratio(
-            ambient_co2, Constants.wue_constants[ppath]["const_ratio"]
-        )
-        ci_mod_linear = cica_linear(
-            ambient_co2,
-            vpd,
-            Constants.wue_constants[ppath]["linear"][0],
-            Constants.wue_constants[ppath]["linear"][1].magnitude,
-        )
-        if not np.isnan(Constants.wue_constants[ppath]["sqrt"]):
+        ci_mod_const_ppm, ci_mod_const_ratio, ci_mod_linear, ci_mod_sqrt = None, None, None, None
+        if methodsWue["const_ppm"]:
+            ci_mod_const_ppm = ci_const_ppm(
+                P,
+                leaf_T,
+                Constants.Rco2.magnitude,
+                Constants.wue_constants[ppath]["const_ppm"].magnitude,
+            )
+        if methodsWue["const_ratio"]:
+            ci_mod_const_ratio = cica_const_ratio(
+                ambient_co2, Constants.wue_constants[ppath]["const_ratio"]
+            )
+        if methodsWue["linear"]:
+            ci_mod_linear = cica_linear(
+                ambient_co2,
+                vpd,
+                Constants.wue_constants[ppath]["linear"][0],
+                Constants.wue_constants[ppath]["linear"][1].magnitude,
+            )
+        if methodsWue["sqrt"] and not np.isnan(Constants.wue_constants[ppath]["sqrt"]):
             # The sqrt model does not contain a value for C4 plants
             # see also Fluxpart
             # https://github.com/usda-ars-ussl/fluxpart/blob/master/fluxpart/wue.py
@@ -1157,7 +1196,7 @@ class Partitioning(object):
                 ambient_co2, vpd, Constants.wue_constants[ppath]["sqrt"].magnitude
             )
         else:
-            ci_mod_sqrt = None
+            methodsWue["sqrt"] = False
 
         # 3 - Compute water use efficiency ----------------------------------------------------------------------------
         
@@ -1167,7 +1206,7 @@ class Partitioning(object):
                     (ci_mod_const_ratio, "const_ratio"),
                     (ci_mod_linear, "linear"),
                     (ci_mod_sqrt, "sqrt"),
-                ] if ci is not None] # ci_mod_sqrt is None for C4, so skip this model (see above).
+                ] if methodsWue[mod] == True] 
         
         # calculate wue for each of them
         for ci, mod in wue_calculate:
@@ -1176,7 +1215,7 @@ class Partitioning(object):
             self.wue[mod] = wuei
 
         # Optimization model from Scanlon et al., 2019 - only applicable to C3 plants
-        if ppath == "C3":
+        if ppath == "C3" and methodsWue["opt"]:
             m = -(varc * cov_wq - corr_qc * sigmaq * sigmac * cov_wc) / (
                 varq * cov_wc - corr_qc * sigmaq * sigmac * cov_wq
             )
@@ -1215,7 +1254,7 @@ class Partitioning(object):
         Attributes: self.fluxesCEC
             Contains all the flux components and status of the calculation.
             
-            in case of self.statistics:
+            in case of self.sampledEventsStats:
                 - Q1tfrac_cec - float
                     Time fraction of sampled events within Quadrant 1.
                 - Q2tfrac_cec - float
@@ -1341,7 +1380,7 @@ class Partitioning(object):
         ratioET, ratioRP = np.nan, np.nan
         
         # Calculating method statistics
-        if self.statistics:
+        if self.sampledEventsStats:
             self.fluxesCEC = {
                 "Q1tfrac_cec": (sumQ1 / 100) * ureg.dimensionless,
                 "Q2tfrac_cec": (sumQ2 / 100) * ureg.dimensionless,
@@ -1469,7 +1508,7 @@ class Partitioning(object):
         Attributes: self.fluxesREA
             Dictionary with the following flux components:
                 
-            in case of self.statistics:
+            in case of self.sampledEventsStats:
                 - Q1tfrac_mrea - float
                     Time fraction of sampled events within Quadrant 1.
                 - Q2tfrac_mrea - float
@@ -1584,7 +1623,7 @@ class Partitioning(object):
                 > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
             )]) / NN) * 100
         
-        if self.statistics:
+        if self.sampledEventsStats:
             self.fluxesREA = {
                 "Q1tscale_mrea": self.TScale(auxE),
                 "Q1tfrac_mrea": (Q1sum / 100) * ureg.dimensionless,
@@ -1965,7 +2004,7 @@ class Partitioning(object):
         Attributes: self.fluxesCEA
             Contains all the flux components and status of the calculation.
             
-            in case of self.statistics:
+            in case of self.sampledEventsStats:
                 - Q1tfrac_cea - float
                     Time fraction of sampled events within Quadrant 1.
                 - Q2tfrac_cea - float
@@ -2104,7 +2143,7 @@ class Partitioning(object):
             auxT_n["co2_p"].index.size / N
         ) * 100  # Number of points on the first quadrant
         
-        if self.statistics:
+        if self.sampledEventsStats:
             self.fluxesCEA = {
                 "Q1UPtscale_cea" : self.TScale(auxE),
                 "Q1DOWNtscale_cea" : self.TScale(auxE_n),
@@ -2257,7 +2296,7 @@ class Partitioning(object):
             Contains all the flux components and status of the calculation.
             Dictionary with the following flux components:
             
-            in case of self.statistics:
+            in case of self.sampledEventsStats:
                 - Q1tfrac_cecw - float
                     Time fraction of sampled events within Quadrant 1.
                 - Q2tfrac_cecw - float
@@ -2396,7 +2435,7 @@ class Partitioning(object):
         ) * 100  # Percentage of points in the second quadrant
         
         # Method statistics
-        if self.statistics:
+        if self.sampledEventsStats:
             self.fluxesCECw = {
                 "Q1tfrac_cecw": (sumQ1 / 100) * ureg.dimensionless,
                 "Q2tfrac_cecw": (sumQ2 / 100) * ureg.dimensionless,

@@ -6,6 +6,7 @@ import os
 import pint
 
 ureg = pint.UnitRegistry()
+ureg.define('percent = 0.01 * dimensionless = %')
 
 # Auxiliary functions to compute the water-use efficiency
 # These functions are from the algorithm fluxpart:
