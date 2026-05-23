@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import math
 import pint
+import logging
 from .auxfunctions import (
     ci_const_ppm,
     cica_const_ratio,
@@ -22,6 +23,9 @@ from .auxfunctions import (
 
 # Create a unit registry
 ureg = pint.UnitRegistry()
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 class Partitioning(object):
@@ -176,6 +180,7 @@ class Partitioning(object):
     def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC={}, 
                  sampledEventsStats=False, argsOut={},
                  argsQThres={}):
+        logger.debug("Setting up Partitioning object.")
         self.hi = hi * ureg.meter
         self.zi = zi * ureg.meter
         self.data = df
@@ -286,6 +291,7 @@ class Partitioning(object):
 
     def _checkUnits(self):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
+        logger.debug("Check units.")
         temp_range = [0, 70]  # C
         co2_range = [200, 1200]  # mg/m3
         h2o_range = [0, 50]  # g/m3
@@ -301,21 +307,17 @@ class Partitioning(object):
         mean_P = self.data[self.data["P"] > 0]["P"].median()
 
         if not temp_range[0] < mean_Ts < temp_range[1]:
-            raise ValueError(
-                f"Mean sonic temperature {mean_Ts} not in Celsius or data quality is poor\n"
-            )
+            msg = f"Mean sonic temperature {mean_Ts} not in Celsius or data quality is poor\n"
+            raise ValueError(msg)
         if not co2_range[0] < mean_co2 < co2_range[1]:
-            raise ValueError(
-                f"Mean CO2 {mean_co2} not in mg/m3 or data quality is poor\n"
-            )
+            msg = f"Mean CO2 {mean_co2} not in mg/m3 or data quality is poor\n"
+            raise ValueError(msg)
         if not h2o_range[0] < mean_h2o < h2o_range[1]:
-            raise ValueError(
-                f"Mean H2O {mean_h2o} not in g/m3 or data quality is poor\n"
-            )
+            msg = f"Mean H2O {mean_h2o} not in g/m3 or data quality is poor\n"
+            raise ValueError(msg)
         if not press_range[0] < mean_P < press_range[1]:
-            raise ValueError(
-                f"Mean atm pressure {mean_P} not in kPa or data quality is poor\n"
-            )
+            msg = f"Mean atm pressure {mean_P} not in kPa or data quality is poor\n"
+            raise ValueError(msg)
 
     def _checkMissingdata(self, percData, dropna_=False):
         """
@@ -333,6 +335,7 @@ class Partitioning(object):
         self.valid_data : float
             The percentage of valid data points.
         """
+        logger.debug("Check missing data.")
         total_size = (
             self.freq.magnitude * self.length.magnitude * 60
         )  # total number of points in period
@@ -352,9 +355,8 @@ class Partitioning(object):
         if (self.valid_data < percData) and self.valid:
             self.valid = False
             missing_points = total_size - valid_count
-            raise ValueError(
-                f"*** Too many missing points {missing_points}. Less than {percData}% is available for partitioning. Delete period and try again.\n"
-            )
+            msg = f"*** Too many missing points {missing_points}. Less than {percData}% is available for partitioning. Delete period and try again.\n"
+            raise ValueError(msg)
         if dropna_:
             self.data.dropna(inplace=True)
 
@@ -383,6 +385,7 @@ class Partitioning(object):
 
         For each variable in `self.data`, if the variable is in `_bounds`, values outside the specified bounds are set to NaN.
         """
+        logger.debug("Check physical bounds and replace with NaN if necessary.")
         _bounds = {
             "u": (-20, 20),
             "v": (-20, 20),
@@ -424,7 +427,7 @@ class Partitioning(object):
         2. Separation into 2-minute windows.
         3. Identification and replacement of spikes with NaN values for the above variables.
         """
-
+        logger.debug("Despike")
         aux = self.data[["co2", "h2o", "Ts", "w", "u", "v"]].copy()
         tt = np.arange(aux["co2"].index.size)
 
@@ -475,6 +478,7 @@ class Partitioning(object):
         3. Rotation of coordinates using these angles.
         4. Updating the DataFrame with the rotated velocities.
         """
+        logger.debug("Coordinate rotation")
         aux = self.data[["u", "v", "w"]].copy()
         Umean = aux.mean()
         # Calculating the angles between mean velocities
@@ -517,6 +521,7 @@ class Partitioning(object):
         Returns:
         - None: The method updates the 'co2' and 'h2o' columns in the instance's data attribute in place.
         """
+        logger.debug("Time lag correction.")
         lag_co2, lag_h2o = max_time_lag_crosscorrel(
             df=self.data[["co2", "h2o", "w"]],
             sampling_freq=self.freq.magnitude,
@@ -557,6 +562,7 @@ class Partitioning(object):
         -----
         Adds the time series of fluctuations (variable_name + '_p') to the DataFrame.
         """
+        logger.debug("Calculate Fluctuations/Perturbations.")
         Lvars = ["u", "v", "w", "co2", "h2o", "Ts"]
 
         if method == "LD":
@@ -573,9 +579,8 @@ class Partitioning(object):
             for ii, _var in enumerate(Lvars):
                 self.data[_var + "_p"] = self.data[_var] - self.data[_var].mean()
         else:
-            raise TypeError(
-                "Method to extract fluctuations must be 'LD', 'BA' or 'FL \n"
-            )
+            msg = "Method to extract fluctuations must be 'LD', 'BA' or 'FL \n"
+            raise TypeError(msg)
 
     def _densityCorrections(self, method):
         """
@@ -610,6 +615,7 @@ class Partitioning(object):
         TypeError
             If the method to compute temperature fluctuations is not 'LD' or 'BA'.
         """
+        logger.debug("Density corrections.")
         # Calculate air density------------------------------------------------
         Rd = Constants.Rd.magnitude  # J/kg.K
         self.data["rho_moist_air"] = (
@@ -695,10 +701,10 @@ class Partitioning(object):
         self.data : pandas.DataFrame
             DataFrame containing the input data with potential gaps.
         """
+        logger.debug("Fill gaps.")
         if maxGaps > 20:
-            raise TypeError(
-                "Too many consecutive points to be interpolated. Consider a smaller gap (up to 20 points). \n"
-            )
+            msg =  "Too many consecutive points to be interpolated. Consider a smaller gap (up to 20 points). \n"
+            raise TypeError(msg)
 
         self.data.interpolate(
             method="linear", limit=maxGaps, limit_direction="both", inplace=True
@@ -739,6 +745,7 @@ class Partitioning(object):
         - Computes 5-minute window statistics.
         - Compares 30-minute statistics to the average of 5-minute windows.
         """
+        logger.debug("Steadyness test.")
         # Five minute window statistics -------------------------
         stats5min = self.data.groupby(pd.Grouper(freq="5Min")).apply(Stats5min).dropna()
         aver_5min = stats5min.mean()
@@ -828,6 +835,8 @@ class Partitioning(object):
                 
                 
         """
+        logger.debug("Turbulence statistics.")
+        
         aux = self.data[["u_p", "v_p", "w_p", "co2_p", "h2o_p", "Ts_p"]].copy()
         matrixCov = aux.cov()  # Covariance matrix
         matrixSTD = aux.std()  # Covariance matrix
@@ -929,7 +938,11 @@ class Partitioning(object):
             Mean time scale in seconds of an event within the sdata
         
         """
-        assert "num_idx" in sdata.columns, "Subsetted dataframe needs to contain the column num_idx -- a continous numeric index before subsetting."
+        logger.debug("Calculating time frame of sampled events.")
+        
+        if "num_idx" not in sdata.columns:
+            msg = "Subsetted dataframe needs to contain the column 'num_idx' -- a continuous numeric index before subsetting."
+            raise ValueError(msg)
         
         if sdata.empty:
             return np.nan
@@ -1056,7 +1069,8 @@ class Partitioning(object):
             - 'opt': float
                 WUE from optimization model [kg_co2/kg_h2o].
         """
-
+        logger.debug(f"Calculating water use efficiencies: {methodsWue} for {ppath} plants.")
+        
         # Create a copy of the dataframe with variables that will be needed
         aux = self.data.copy()
 
@@ -1154,9 +1168,10 @@ class Partitioning(object):
         vpd = vapor_press_deficit(ambient_h2o, leaf_T, Constants.Rvapor.magnitude)
 
         if vpd < 0:
-            raise ValueError(
-                ("Negative vapor pressure deficit at leaf level using log-law profiles. Check the input data and try again or remove period. No water use efficiency calculation possible.")
-            )
+            msg = ("Negative vapor pressure deficit at leaf level using log-law profiles."
+                   " For this period, no water use efficiency calculation possible.") 
+                    # "Check the input data and try again or remove period."
+            raise ValueError(msg)
         
         defaults_methods = {"const_ppm":False, "const_ratio":False, "linear":False, "sqrt":False, "opt":False}
         if methodsWue == True:
@@ -1299,6 +1314,7 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
+        logger.debug(f"CEC partitioning with H {H}.")
         
         per_points_Q1Q2 = self.argsQThres.get("cec_per_points_Q1Q2", 15)  # more percentage of points need to be available in the first two quadrants
         per_poits_each = self.argsQThres.get("cec_per_points_each", 3)
@@ -1553,7 +1569,8 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
-     
+        logger.debug(f"MREA partitioning with H {H}.")
+        
         per_points_Q1Q2 = self.argsQThres.get("mrea_per_points_Q1Q2", 15) # smallest percentage of points that must be available in the first two quadrants
         per_poits_each = self.argsQThres.get("mrea_per_points_each", 3) # smallest percentage of points in each quadrant
 
@@ -1794,7 +1811,8 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
-
+        logger.debug(f"FVS partitioning with W {W}.")
+        
         aux = self.data[
             ["co2_p", "h2o_p", "w_p"]
         ].copy()  # Create dataframe with q, c, and w only
@@ -1938,11 +1956,11 @@ class Partitioning(object):
         # Convert total fluxes
         # Mass fluxes
         Fc = Fc * 10**3  # mg/m2/s
-        Fq_m = Fq.copy() # g/(m2 s)
+        # Fq_m = Fq.copy() # g/(m2 s)
         
         # Molar fluxes
-        Fc_a = Fc * (10**-3) / Constants.MWco2.magnitude # in mmol/(m2 s)
-        Fq_a = Fq_m / Constants.MWvapor.magnitude # in mmol/(m2 s)
+        # Fc_a = Fc * (10**-3) / Constants.MWco2.magnitude # in mmol/(m2 s)
+        # Fq_a = Fq_m / Constants.MWvapor.magnitude # in mmol/(m2 s)
         
         # Energetic fluxes
         Fq = Fq * (10**-3) * Constants.Lv.magnitude  # in W/m2
@@ -2048,6 +2066,7 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
+        logger.debug(f"CEA partitioning with H {H}.")
         
         per_points_each = self.argsQThres.get("cea_per_points_each", 2)
         
@@ -2340,6 +2359,8 @@ class Partitioning(object):
         This component represents carboxylation minus photorespiration and leaf respiration; therefore,
         it is different from gross primary productivity.
         """
+        logger.debug(f"CECw partitioning with H {H} and W {W}.")
+        
         # Creates a dataframe with variables of interest and no constraints
         df = self.data.copy()
         auxET = df[["co2_p", "h2o_p", "w_p"]].copy()

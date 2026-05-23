@@ -4,9 +4,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import pint
+import logging
 
 ureg = pint.UnitRegistry()
 ureg.define('percent = 0.01 * dimensionless = %')
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Auxiliary functions to compute the water-use efficiency
 # These functions are from the algorithm fluxpart:
@@ -400,7 +404,7 @@ def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
             The continous dataframe in case of fill_with_NA=True. Otherwise the original dataframe. 
             In case of a gap to large None is returned.
     """
-
+    logger.debug(f"Checking for continous data, and fill_with_NA {fill_with_NA}, max_gap {max_gap}.")
  
     data.index = pd.to_datetime(data.index)
     time_diffs = data.index.diff().dropna()
@@ -417,11 +421,9 @@ def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
         for pos in gap_pos:
             gap_end = data.index[pos]
             gap_start = data.index[pos-1] # The last good timestamp
-            print(f"Timestamp missing between {gap_start} and {gap_end}")            
+            logger.warning(f"Timestamp missing between {gap_start} and {gap_end}")            
             duration = (gap_end - gap_start).total_seconds()
             if duration > max_gap:
-                #logger.error(f"CRITICAL GAP: {duration} seconds of data timestamp missing!")
-                #logger.warning("Returning None. This will cause this data chunk to be skipped.")
                 raise ValueError(f"CRITICAL GAP: {duration} seconds of data timestamp missing!")
                 return None
                 
@@ -430,10 +432,59 @@ def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
             end = data.index.max()
             perfect_index = pd.date_range(start=start, end=end, freq=f"{dt}s")
             data_filled = data.reindex(perfect_index)
-            print("Gaps in the timestamp filled.")        
+            logger.info("Gaps in the timestamp filled with NaN.")        
             return data_filled
         else:
             return data
         
     else:
         return data
+    
+    
+def setup_logging(filepath, level=logging.INFO):
+    """
+    Configures the root logger to output messages to both a file and the console.
+
+    This function sets the root logger level and attaches a FileHandler 
+    and a StreamHandler. It is idempotent; if the root logger already has 
+    handlers configured, it will return immediately to prevent duplicate logging.
+
+    Parameters
+    ----------
+    filepath : str
+        The absolute or relative path to the file where logs should be written. 
+        The parent directory will be created if it does not exist.
+    level : int, optional
+        The logging threshold for the root logger. Defaults to logging.INFO. 
+        Common values are logging.DEBUG, logging.INFO, or logging.WARNING.
+
+    Returns
+    -------
+    None
+    """
+    logger = logging.getLogger()
+    
+    
+    # Create log folder if it does not exist
+    log_dir = os.path.dirname(filepath)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+    logger.setLevel(level)
+    
+    # ALWAYS clear handlers to ensure a clean state, 
+    # especially in interactive environments.
+    if logger.hasHandlers():
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+            handler.close()
+
+    # 1. File Handler (for the file)
+    file_handler = logging.FileHandler(filepath)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(file_handler)
+
+    # 2. Stream Handler (for the console/terminal)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(console_handler)

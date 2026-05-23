@@ -7,9 +7,12 @@ from glob import glob
 import multiprocessing
 import datetime
 from functools import partial
+import logging
 from .Partitioning import Partitioning
-from .auxfunctions import Constants
+from .auxfunctions import Constants, setup_logging
 
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 def CallPartitioning(filei,
@@ -249,17 +252,20 @@ def CallPartitioning(filei,
        
        
     except AttributeError:
-       print(f"Error: '{loadfnct}' doesn't exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.")
+       logger.error(f"Error: '{loadfnct}' doesn't exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.")
        return None
    
     # Settings statistics
     default_stats = {"TurbStats":False, "steadyness":False, "sampledEvents":False}
     if statistics == True:
+        logger.debug("Activating all statistic methods")
         # activating all methods
         statistics = {k: True for k in default_stats}
     elif statistics == False:
+        logger.debug("Deactivating all statistic methods")
         statistics = default_stats
     else:
+        logger.debug("Set only some statistic methods")
         statistics = {**default_stats, **statistics}
        
    # Setting up partitioning class, including PreProcessing during init 
@@ -277,7 +283,7 @@ def CallPartitioning(filei,
                 argsQThres=argsQThres
             )
     except (ValueError, TypeError) as e:
-        print(f"Error in {filei}: {e}")
+        logger.error(f"Error in {filei}: {e}")
         return None
 
     part_results["datetime_start"] = df.index[0]
@@ -295,10 +301,12 @@ def CallPartitioning(filei,
     
     # Setting hyperbolic threshold
     if not "H" in argsQThres:
+        logger.debug("Set all hyperbolic thresholds to 0.")
         # if not defined, set to 0
         argsQThres["H"] = 0
     
     if isinstance(argsQThres["H"], (int, float)):
+        logger.debug(f"Set all hyperbolic thresholds to {argsQThres['H']}.")
         # if a number set this number for all methods
         argsQThres["H"] = {
             "MREA": argsQThres["H"],
@@ -308,6 +316,7 @@ def CallPartitioning(filei,
             }
     
     for _M in ("MREA", "CEC", "CECw", "CEA"):
+        logger.debug("Some methods with hyperbolic threshold, some without.")
         if _M not in argsQThres['H']:
             # if a method was not specified (but another was), set to 0.
             argsQThres['H'][_M] = 0
@@ -316,11 +325,13 @@ def CallPartitioning(filei,
     
     # Calculate general turbulence statistics
     if statistics["TurbStats"]:
+        logger.debug("Calculating general turbulence characteristics.")
         part.TurbulentStats()
         extract_data(part.turbstats, part_results, units)
     
     # Calculate steadyness statistics
     if statistics["steadyness"]:
+        logger.debug("Calculating steadyness characteristics.")
         part._steadynessTest()
         extract_data(part.FokenStatTest, part_results, units)
     
@@ -328,31 +339,38 @@ def CallPartitioning(filei,
     # Settings which method to process
     default_methods = {"MREA":False, "CEC":False, "CECw":False, "CEA":False, "FVS":False}
     if methods == True:
+        logger.debug("Activating all methods for partitioning.")
         # activating all methods
         methods = {k: True for k in default_methods}
     elif methods == False:
+        logger.debug("Deactivating all methods for partitioning.")
         methods = default_methods
     else:
+        logger.debug("Only some methods for partitioning activated.")
         # if a method was not named in dict set it to false
         methods = {**default_methods, **methods}
     
     
     # Processing all methods 
     if methods["CEC"]:
+        logger.debug("Partitioning using CEC.")
         part.partCEC(H = argsQThres["H"]["CEC"])
         extract_data(part.fluxesCEC, part_results, units)
     
     if methods["MREA"]:
+        logger.debug("Partitioning using MREA.")
         part.partREA(H = argsQThres["H"]["MREA"])
         extract_data(part.fluxesREA, part_results, units)
     
     if methods["CEA"]:
+        logger.debug("Partitioning using CEA.")
         part.partCEA(H = argsQThres["H"]["CEA"])
         extract_data(part.fluxesCEA, part_results, units)
     
     
     
     try: 
+        logger.debug("Calculating Water Use Efficiencies")
         # Calculate Water Use Efficicency if possible
         part.WaterUseEfficiency(ppath=siteDetails["ppath"],
                                 methodsWue=methodsWue)
@@ -361,8 +379,7 @@ def CallPartitioning(filei,
             units[f"W_{key}"] = "" # WUE usually dimensionless or handled manually
         part_results["statuswue"] = "ok"
     except ValueError as e:
-        print("Error while file %s" % (filei))
-        print("Error caused by: %s" % e)
+        logger.error("Error while processing file %s. Error caused by: %s", filei, e)
         part_results["statuswue"] = "VPD < 0"
         for _w in part.wue.keys():  
             part_results[f"statusfvs_{_w}"] = "VPD < 0. No WUE."
@@ -374,10 +391,12 @@ def CallPartitioning(filei,
         # water use efficiencies available
         
         if methods["FVS"]:
+            logger.debug("Partitioning using FVS.")
             part.partFVS(W=part.wue[_w])
             extract_data(part.fluxesFVS, part_results, units, suffix=f"_{_w}")
         
         if methods["CECw"]:
+            logger.debug("Partitioning using CECw.")
             part.partCECw(W=part.wue[_w], H = argsQThres["H"]["CECw"])
             extract_data(part.fluxesCECw, part_results, units, suffix=f"_{_w}")
 
@@ -401,7 +420,8 @@ def process(siteDetails,
             argsQThres={},
             loadfnct="NormLoad",
             loadkwargs={},
-            versatile_loadkwargs={}):
+            versatile_loadkwargs={},
+            logginglevel=logging.INFO):
     """
     Loading the raw data, (optionally) pre-process, partition and save the results.
     
@@ -608,6 +628,9 @@ def process(siteDetails,
                     A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
                 "select_cols" : list of str, optional
                     A list of specific columns to keep. All other columns will be dropped.
+        logginglevel : int, optional
+            The logging threshold for the root logger. Defaults to logging.INFO. 
+            Common values are logging.DEBUG, logging.INFO, or logging.WARNING.
         
     Saves
     ----------
@@ -618,15 +641,20 @@ def process(siteDetails,
        df_data - pandas.DataFrame
            Processed and partioned data
     """
+    # Start logger
+    filename = f"log/run_{datetime.datetime.now().strftime('%y%m%d_%H%M%S')}.log"
+    setup_logging(outfolder + filename, level=logginglevel)
+    logger.info("PartitioningMethods: Starting processing and partitioning.")
     
-    
+    # Find files
+    logger.info("Looking for files to process.")
     listfiles = glob(infolder + loadpattern)
     
     if not listfiles:
-        raise FileNotFoundError(
-            f"No files matching pattern '{loadpattern}' were found in '{infolder}'. "
-            f"Please check your path or pattern."
-        )
+        error_msg = (f"No files matching pattern '{loadpattern}' were found in '{infolder}'. "
+                     f"Please check your path or pattern.")
+        logger.critical(error_msg)
+        raise FileNotFoundError(error_msg)
         
     
     # only the listfiles argument is different from run to run of the
@@ -645,6 +673,7 @@ def process(siteDetails,
                                versatile_loadkwargs=versatile_loadkwargs)
     
     # Run multiprocessing
+    logger.info("Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.")
     pool = multiprocessing.Pool(4)
     raw_output = pool.map(partial_CallPart, listfiles)
     pool.close()
@@ -654,6 +683,8 @@ def process(siteDetails,
     valid_results = [r for r in raw_output if r is not None]
 
     if valid_results:
+        logger.debug("Found valid_results.")
+        
         # Build the main data frame
         df_data = pd.DataFrame([r['data'] for r in valid_results])
         df_data.set_index("datetime_start", inplace=True)
@@ -693,10 +724,10 @@ def process(siteDetails,
             f.write("\n")
             df_data.to_csv(f, na_rep='NaN', index=False)
             
-        print(f"File saved successfully to {output_path}")
+        logger.info(f"Results saved successfully to {output_path}")
         return df_data
     else:
-        print("No valid results. No file saved.")
+        logger.error("No valid results. No file saved.")
 
 
 # Loading functions ------------------------------------------------------------
@@ -729,6 +760,9 @@ def VersatileLoad(path, loadkwargs=None, timestamp_col=None,
     df : pandas.DataFrame
         The loaded data.
     """
+    
+    logger.debug("Loading the data with VersatileLoad.")
+    
     # Ensure loadkwargs is a dictionary to prevent errors if passed as None
     if loadkwargs is None:
         loadkwargs = {}
@@ -748,7 +782,7 @@ def VersatileLoad(path, loadkwargs=None, timestamp_col=None,
             if timestamp_col in df.columns:
                 df.index = pd.to_datetime(df[timestamp_col])
     else:
-        # Fallback: Convert the default row index to datetime (like NormLoad)
+        # Convert the default row index to datetime (like NormLoad)
         df.index = pd.to_datetime(df.index)
         
     # 3. Rename Columns (if provided)
@@ -792,7 +826,7 @@ def NormLoad(path, loadkwargs, **kwargs):
     df - pandas.DataFrame
         The loaded data.
     """
-        
+    logger.debug("Loading the data with NormLoad.")    
     df = pd.read_csv(path, **loadkwargs)
     df.index = pd.to_datetime(df.index)
     return df
@@ -817,9 +851,9 @@ def LoadBmmflux(path, loadkwargs, **kwargs):
     df - pandas.DataFrame
         The loaded data.
     """
-    
+    logger.debug("Loading the data with LoadBmmflux.")   
     if loadkwargs:
-        print("BMMFlux loading function ignores loading arguments!")
+        logger.warning("BMMFlux loading function ignores loading arguments!")
     
     # Reading CSV
     df = pd.read_csv(
