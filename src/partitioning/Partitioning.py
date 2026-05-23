@@ -173,7 +173,7 @@ class Partitioning(object):
     will only need time series of w_p, h2o_p, co2_p.
     """
 
-    def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC, 
+    def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC={}, 
                  sampledEventsStats=False, argsOut={},
                  argsQThres={}):
         self.hi = hi * ureg.meter
