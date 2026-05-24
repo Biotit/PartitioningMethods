@@ -1,8 +1,5 @@
 title = "A flux partitioning package"
 
-[owner]
-name = "Einara Zahn"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -14,8 +11,10 @@ description = "A partitioning package"
 requires-python = ">=3.9"
 authors = [
   {name = "Einara Zahn", email = "einara.zahn@gmail.com"},
+  {name = "Daniel Schöndorf", email = "Daniel.Schoendorf@uni-bayreuth.de"},
   ]
 maintainers = [
+  {name = "Daniel Schöndorf", email = "Daniel.Schoendorf@uni-bayreuth.de"},
   {name = "Einara Zahn", email = "einara.zahn@gmail.com"},
 ]
 readme = "README.md"

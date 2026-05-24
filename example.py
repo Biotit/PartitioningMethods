@@ -167,7 +167,12 @@ data = partitioning.process(
     
     # 14) Further loading options for VersatileLoad
     # in our case we dont need any. See documentation for available options.
-    versatile_loadkwargs={}
+    versatile_loadkwargs={},
+    
+    # 15) Logger level
+    logginglevel = 20 # corresponds to logger.INFO, which is also the default
+    # to see all logging for development go to 10 (logger.DEBUG).
+    # A logger file is created in the log- folder in the outfolder path.
     )
 
 # Just running as skript -----------------------------------------------------

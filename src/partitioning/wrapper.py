@@ -421,7 +421,7 @@ def process(siteDetails,
             loadfnct="NormLoad",
             loadkwargs={},
             versatile_loadkwargs={},
-            logginglevel=logging.INFO):
+            logginglevel=20):
     """
     Loading the raw data, (optionally) pre-process, partition and save the results.
     
@@ -628,9 +628,9 @@ def process(siteDetails,
                     A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
                 "select_cols" : list of str, optional
                     A list of specific columns to keep. All other columns will be dropped.
-        logginglevel : int, optional
-            The logging threshold for the root logger. Defaults to logging.INFO. 
-            Common values are logging.DEBUG, logging.INFO, or logging.WARNING.
+        logginglevel : int, optional, default 20
+            The logging threshold for the root logger. Defaults to logging.INFO (20). 
+            Common values are logging.DEBUG (10), logging.INFO (20), or logging.WARNING (30).
         
     Saves
     ----------

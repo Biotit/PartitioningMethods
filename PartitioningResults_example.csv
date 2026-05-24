@@ -1,5 +1,5 @@
 # Source:, PartitioningMethods
-# RunDate:, 2026-05-23 18:30:52
+# RunDate:, 2026-05-23 19:27:01
 # argsQC:, {'physical_bounds': True, 'despike': True, 'coord_rotation': True, 'density_correction': True, 'fluctuations': 'LD', 'filtercut': 5, 'maxGapsInterpolate': 5, 'RemainingData': 95, 'saveprocessed': False}
 # siteDetails:, {'hi': 2.5, 'zi': 4.0, 'freq': 20, 'length': 30, 'PreProcessing': True, 'ppath': 'C3'}
 # argsQThres:, {'cec_per_points_Q1Q2': 15, 'cec_per_points_each': 3, 'mrea_per_points_Q1Q2': 15, 'mrea_per_points_each': 3, 'cea_per_points_each': 2, 't_scale_gap_threshold': 10, 'H': {'MREA': 0.25}}

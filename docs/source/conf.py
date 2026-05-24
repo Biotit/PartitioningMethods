@@ -20,11 +20,11 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # -- Project information -----------------------------------------------------
 
 project = "Partitioning"
-copyright = "2024, Einara Zahn"
-author = "Einara Zahn"
+copyright = "2026, Einara Zahn, Daniel Schöndorf"
+author = "Einara Zahn, Daniel Schöndorf"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.1"
+release = "3.0.0"
 
 
 # -- General configuration ---------------------------------------------------
