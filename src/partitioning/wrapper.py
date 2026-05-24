@@ -31,158 +31,151 @@ def CallPartitioning(
     """
     Calls different partitioning methods and returns the data and units.
 
-    Attributes
+    Parameters
     ----------
     filei : str
         String with path to file being loaded and partitoned.
-
     siteDetails : dict
         Dictionary with details about the measurement site.
-
+        
         Keys
-        -----
-            "hi": int/float,
+        ----
+            hi : int/float,
                 Canopy mean height in meters
-            "zi": int/float,
+            zi : int/float,
                 EC measurement height in meters
-            "freq": int/float,
+            freq : int/float,
                 EC measurement frequency in Hz
-            "length": int/float,
+            length : int/float,
                 length of data file in minutes
-            "PreProcessing": bool
+            PreProcessing : bool
                 If pre-processing takes place.
-            "ppath": str
+            ppath : str
                 Type of photosynthesis ('C3' or 'C4'), for WUE calculation.
-
-
     argsQC : dict
         Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are
         necessary. All options have default values, but can be modified if needed.
-
+        
         Keys
-        -----
-            "density_correction" - bool
+        ----
+            density_correction : bool
                 True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).
-            "fluctuations" - str
+            fluctuations : str
                 Describes the type of operation used to extract fluctuations:
                 'BA': block average
                 'LD': Linear detrending
                 'FL': Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.
-            "filtercut" - int
+            filtercut : int
                 Cutoff time in minutes for the low-pass filter. Only used if method is 'FL'.
-            "maxGapsInterpolate" - int
+            maxGapsInterpolate : int
                 Number of consecutive gaps that will be interpolated.
-            "RemainingData" - int
+            RemainingData : int
                 Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
-            "saveprocessed" - bool
+            saveprocessed : bool
                 If True, the processed data is saved to a CSV file.
-            "time_lag_correction" - bool
+            time_lag_correction : bool
                 If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
-            "max_lag_seconds" - int
+            max_lag_seconds : int
                 Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.
-            "type_lag" - str
+            type_lag : str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
-
     argsOut : dict
         Contains options in which units the results are given. Defaults are that the output is in mass based units.
         Possible to activate all simultanously.
-
+        
         Keys
-        -----
-            "energetic_units" - bool
+        ----
+            energetic_units : bool
                 True if the H2O flux shall be provided in energetic units in W/m2
-            "mass_units" - bool
+            mass_units : bool
                 True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
-            "molar_units" - bool
+            molar_units : bool
                 True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
-
     methods : bool or dict, default True
         If True, all available partitioning methods are used.
         If False, no method is used.
         If dict, the specified methods are used.
-
+        
         Keys
         ----
         If True, the corresponding method is calculated
 
-        "MREA" : bool
-        "CEC" : bool
-        "CECw" : bool
-        "CEA" : bool
-        "FVS" : bool
-
+        MREA : bool
+        CEC : bool
+        CECw : bool
+        CEA : bool
+        FVS : bool
     methodsWue : bool or dict, default True
         If True, all available water use efficicency methods are used.
         If False, no method is used.
         If dict, the specified methods are used.
-
+        
         Keys
         ----
         If True, the corresponding method is calculated
 
-        "const_ppm" : bool
-        "const_ratio" : bool
-        "linear" : bool
-        "sqrt" : bool
-        "opt" : bool
+        const_ppm : bool
+        const_ratio : bool
+        linear : bool
+        sqrt : bool
+        opt : bool
 
     statistics : bool or dict, default {"TurbStats":True}
         If True all possible statistics are calculated.
         If False no statistics are calculated.
-        If dict, the specified statistics are calculated.
-
-        Keys
-        ----
+        If dict, the specified statistics are calculated. 
         If True, the corresponding method is calculated
         Keys not used, are set to False
-
-        "TurbStats" : bool
+        
+        Keys
+        ----
+        TurbStats : bool
             If True basic general turbulence statistics are calculated.
-        "steadyness" : bool
+        steadyness : bool
             If True, Foken's stationarity test is implemented to check if the data is stationary.
             If False, the test is not implemented.
             The test is only informative and does not remove data, which is left to the user's discretion.
-        "sampledEvents" : bool
+        sampledEvents : bool
             If True the time fraction and time scale of sampled events within each quadrant are calculated.
 
     argsQThres : dict
         Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to
         partition the fluxes.
-
+        
         Keys
-        -----
-            "cec_per_points_Q1Q2" - int
+        ----
+            cec_per_points_Q1Q2 : int
                 For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
-            "cec_per_points_each" - int
+            cec_per_points_each : int
                 For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
-            "mrea_per_points_Q1Q2" - int
+            mrea_per_points_Q1Q2 : int
                 For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
-            "mrea_per_points_each" - int
+            mrea_per_points_each : int
                 For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
-            "cea_per_points_each" - int
+            cea_per_points_each : int
                 For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                 up- and downdrafts, no partitioning is performed.
-            "t_scale_gap_threshold" - int
+            t_scale_gap_threshold : int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
-            "H" - float or dict
+            H : float or dict
                 Hyperbolic threshold criteria. If not specified 0 is used for all methods.
                 If float: MREA, CEC, CEA, CECw get calculated using this threshold.
                 If dict:
                     Hyperbolic threshold per method used.
                     If for a method no threshold is defined its set to 0.
-
+                    
                     Keys
-                    -------
-                    "MREA" - float
+                    ----
+                    MREA : float
                         Hyperbolic threshold for MREA
-                    "CEC" - float
+                    CEC : float
                         Hyperbolic threshold for CEC
-                    "CEA" - float
+                    CEA : float
                         Hyperbolic threshold for CEA
-                    "CECw" - float
+                    CECw : float
                         Hyperbolic threshold for CECw
 
 
@@ -214,30 +207,30 @@ def CallPartitioning(
 
     versatile_loadkwargs : dict
         Arguments passed to the VersatileLoad function.
-
+        
         Keys
-        ------
-            "timestamp_col" : str or list of str, optional
+        ----
+            timestamp_col : str or list of str, optional
                 - If a list: Combines split columns (e.g., ['Year', 'Month', 'Day']) into a datetime index.
                 - If a string: Converts that specific column into the datetime index.
                 - If None: Converts the default DataFrame index to datetime.
-            "convert_gases" : bool, default False
+            convert_gases : bool, default False
                 If True, converts 'co2' and 'h2o' from mmol/m³ to mg/m³ and g/m³ respectively.
-            "rename_cols" : dict, optional
+            rename_cols : dict, optional
                 A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
-            "select_cols" : list of str, optional
+            select_cols : list of str, optional
                 A list of specific columns to keep. All other columns will be dropped.
 
     Returns
-    ----------
+    -------
         datun : dict
             Dictionary with partitioned data and units.
-
+            
         Keys
-        -----
-        "data" : dict
+        ----
+        data : dict
             Partitioned data, each key:value pair corresponds to one return value of the partioning functions.
-        "units" : dict
+        units : dict
             The corresponding unit, as well as key:value pair.
     """
     part_results = {}
@@ -433,18 +426,18 @@ def process(
             Dictionary with details about the measurement site.
 
             Keys
-            -----
-                "hi": int/float,
+            ----
+                hi : int/float,
                     Canopy mean height in meters
-                "zi": int/float,
+                zi : int/float,
                     EC measurement height in meters
-                "freq": int/float,
+                freq : int/float,
                     EC measurement frequency in Hz
-                "length": int/float,
+                length : int/float,
                     length of data file in minutes
-                "PreProcessing": bool
+                PreProcessing : bool
                     If pre-processing takes place.
-                "ppath" : str
+                ppath : str
                     Type of photosynthesis ('C3' or 'C4'), for WUE calculation.
 
         infolder - str
@@ -462,27 +455,27 @@ def process(
             necessary. All options have default values, but can be modified if needed.
 
             Keys
-            -----
-                "density_correction" - bool
+            ----
+                density_correction : bool
                     True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).
-                "fluctuations" - str
+                fluctuations : str
                     Describes the type of operation used to extract fluctuations:
                     'BA': block average
                     'LD': Linear detrending
                     'FL': Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.
-                "filtercut" - int
+                filtercut : int
                     Cutoff time in minutes for the low-pass filter. Only used if method is 'FL'.
-                "maxGapsInterpolate" - int
+                maxGapsInterpolate : int
                     Number of consecutive gaps that will be interpolated.
-                "RemainingData" - int
+                RemainingData : int
                     Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
-                "saveprocessed" - bool
+                saveprocessed : bool
                     If True, the processed data is saved to a CSV file.
-                "time_lag_correction" - bool
+                time_lag_correction : bool
                     If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
-                "max_lag_seconds" - int
+                max_lag_seconds : int
                     Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.
-                "type_lag" - str
+                type_lag : str
                     Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                     'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
 
@@ -491,12 +484,12 @@ def process(
             Possible to activate all simultanously.
 
             Keys
-            -----
-                "energetic_units" - bool
+            ----
+                energetic_units : bool
                     True if the H2O flux shall be provided in energetic units in W/m2
-                "mass_units" - bool
+                mass_units : bool
                     True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
-                "molar_units" - bool
+                molar_units : bool
                     True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
 
         methods : bool or dict, default True
@@ -508,11 +501,11 @@ def process(
             ----
             If True, the corresponding method is calculated
 
-            "MREA" : bool
-            "CEC" : bool
-            "CECw" : bool
-            "CEA" : bool
-            "FVS" : bool
+            MREA : bool
+            CEC : bool
+            CECw : bool
+            CEA : bool
+            FVS : bool
 
         methodsWue : bool or dict, default True
             If True, all available water use efficicency methods are used.
@@ -523,11 +516,11 @@ def process(
             ----
             If True, the corresponding method is calculated
 
-            "const_ppm" : bool
-            "const_ratio" : bool
-            "linear" : bool
-            "sqrt" : bool
-            "opt" : bool
+            const_ppm : bool
+            const_ratio : bool
+            linear : bool
+            sqrt : bool
+            opt : bool
 
         statistics : bool or dict, default {"TurbStats":True}
             If True all possible statistics are calculated.
@@ -539,13 +532,13 @@ def process(
             If True, the corresponding method is calculated
             Keys not used, are set to False
 
-            "TurbStats" : bool
+            TurbStats : bool
                 If True basic general turbulence statistics are calculated.
-            "steadyness" : bool
+            steadyness : bool
                 If True, Foken's stationarity test is implemented to check if the data is stationary.
                 If False, the test is not implemented.
                 The test is only informative and does not remove data, which is left to the user's discretion.
-            "sampledEvents" : bool
+            sampledEvents : bool
                 If True the time fraction and time scale of sampled events within each quadrant are calculated.
 
         argsQThres : dict
@@ -554,23 +547,23 @@ def process(
             about the time scale of sampled events can be given here.
 
             Keys
-            -----
-                "cec_per_points_Q1Q2" - int
+            ----
+                cec_per_points_Q1Q2 : int
                     For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
                     Otherwise no partitioning is performed.
-                "cec_per_points_each" - int
+                cec_per_points_each : int
                     For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
-                "mrea_per_points_Q1Q2" - int
+                mrea_per_points_Q1Q2 : int
                     For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                     Otherwise no partitioning is performed.
-                "mrea_per_points_each" - int
+                mrea_per_points_each : int
                     For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
-                "cea_per_points_each" - int
+                cea_per_points_each : int
                     For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                     up- and downdrafts, no partitioning is performed.
-                "t_scale_gap_threshold" - int
+                t_scale_gap_threshold : int
                     For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
-                "H" - float or dict
+                H : float or dict
                     Hyperbolic threshold criteria. If not specified 0 is used for all methods.
                     If float: MREA, CEC, CEA, CECw get calculated using this threshold.
                     If dict:
@@ -578,14 +571,14 @@ def process(
                         If for a method no threshold is defined its set to 0.
 
                         Keys
-                        -------
-                        "MREA" - float
+                        ----
+                        MREA : float
                             Hyperbolic threshold for MREA
-                        "CEC" - float
+                        CEC : float
                             Hyperbolic threshold for CEC
-                        "CEA" - float
+                        CEA : float
                             Hyperbolic threshold for CEA
-                        "CECw" - float
+                        CECw : float
                             Hyperbolic threshold for CECw
 
 
@@ -619,16 +612,16 @@ def process(
             Arguments passed to the VersatileLoad function.
 
             Keys
-            ------
-                "timestamp_col" : str or list of str, optional
+            ----
+                timestamp_col : str or list of str, optional
                     - If a list: Combines split columns (e.g., ['Year', 'Month', 'Day']) into a datetime index.
                     - If a string: Converts that specific column into the datetime index.
                     - If None: Converts the default DataFrame index to datetime.
-                "convert_gases" : bool, default False
+                convert_gases : bool, default False
                     If True, converts 'co2' and 'h2o' from mmol/m³ to mg/m³ and g/m³ respectively.
-                "rename_cols" : dict, optional
+                rename_cols : dict, optional
                     A dictionary mapping old column names to new ones (e.g., {"Pressure": "P"}).
-                "select_cols" : list of str, optional
+                select_cols : list of str, optional
                     A list of specific columns to keep. All other columns will be dropped.
         logginglevel : int, optional, default 20
             The logging threshold for the root logger. Defaults to logging.INFO (20).
@@ -636,11 +629,11 @@ def process(
 
     Saves
     ----------
-       df_data - pandas.DataFrame
+       df_data : pandas.DataFrame
            Processed and partioned data as csv-file with metadata header.
     Return
     ----------
-       df_data - pandas.DataFrame
+       df_data : pandas.DataFrame
            Processed and partioned data
     """
     # Start logger
@@ -835,7 +828,7 @@ def NormLoad(path, loadkwargs, **kwargs):
 
     Returns
     -------
-    df - pandas.DataFrame
+    df : pandas.DataFrame
         The loaded data.
     """
     logger.debug("Loading the data with NormLoad.")
@@ -860,7 +853,7 @@ def LoadBmmflux(path, loadkwargs, **kwargs):
 
     Returns
     -------
-    df - pandas.DataFrame
+    df : pandas.DataFrame
         The loaded data.
     """
     logger.debug("Loading the data with LoadBmmflux.")
