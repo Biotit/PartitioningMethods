@@ -62,12 +62,11 @@ data = partitioning.process(
         "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
         "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
         "saveprocessed": True,  # If True, save the intermediate processed data including all corrections and fluctuations in the outfolder
-        "time_lag_correction": True, # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
-        "max_lag_seconds": 5,         # Maximum time lag in seconds to consider for cross correlation analyses
-        "saveplotlag": True,         # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the outfolder
-        'type_lag': 'both',       # Specifies the type of lag to consider ('negative', 'positive', or 'both')
+        "time_lag_correction": True,  # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
+        "max_lag_seconds": 5,  # Maximum time lag in seconds to consider for cross correlation analyses
+        "saveplotlag": True,  # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the outfolder
+        "type_lag": "both",  # Specifies the type of lag to consider ('negative', 'positive', or 'both')
     },
-    
     # 7) Units in output. Defaults are that the output is in mass based units.
     argsOut={
         "energetic_units": True,  # return latent heat flux in energetic units (W/m2)

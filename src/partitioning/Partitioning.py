@@ -105,7 +105,7 @@ class Partitioning(object):
             type_lag - str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
-            saveplotlag - bool 
+            saveplotlag - bool
                 If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.
             outfolder - str
                  If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.
@@ -212,7 +212,7 @@ class Partitioning(object):
             "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)
             "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
             "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
-            "outfolder" : None, # If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.
+            "outfolder": None,  # If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.
         }
 
         self.argsQC = {**self.default_argsQC, **argsQC}
@@ -540,7 +540,7 @@ class Partitioning(object):
             max_lag_seconds=max_lag_seconds,
             type_lag=type_lag,
             saveplotlag=saveplotlag,
-            outfolder=self.argsQC.get("outfolder")
+            outfolder=self.argsQC.get("outfolder"),
         )
         self.data["co2"] = self.data["co2"].shift(-lag_co2)
         self.data["h2o"] = self.data["h2o"].shift(-lag_h2o)
