@@ -37,7 +37,7 @@ def CallPartitioning(
         String with path to file being loaded and partitoned.
     siteDetails : dict
         Dictionary with details about the measurement site.
-        
+
         Keys
         ----
             hi : int/float,
@@ -55,7 +55,7 @@ def CallPartitioning(
     argsQC : dict
         Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are
         necessary. All options have default values, but can be modified if needed.
-        
+
         Keys
         ----
             density_correction : bool
@@ -83,7 +83,7 @@ def CallPartitioning(
     argsOut : dict
         Contains options in which units the results are given. Defaults are that the output is in mass based units.
         Possible to activate all simultanously.
-        
+
         Keys
         ----
             energetic_units : bool
@@ -96,7 +96,7 @@ def CallPartitioning(
         If True, all available partitioning methods are used.
         If False, no method is used.
         If dict, the specified methods are used.
-        
+
         Keys
         ----
         If True, the corresponding method is calculated
@@ -110,7 +110,7 @@ def CallPartitioning(
         If True, all available water use efficicency methods are used.
         If False, no method is used.
         If dict, the specified methods are used.
-        
+
         Keys
         ----
         If True, the corresponding method is calculated
@@ -124,10 +124,10 @@ def CallPartitioning(
     statistics : bool or dict, default {"TurbStats":True}
         If True all possible statistics are calculated.
         If False no statistics are calculated.
-        If dict, the specified statistics are calculated. 
+        If dict, the specified statistics are calculated.
         If True, the corresponding method is calculated
         Keys not used, are set to False
-        
+
         Keys
         ----
         TurbStats : bool
@@ -142,7 +142,7 @@ def CallPartitioning(
     argsQThres : dict
         Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to
         partition the fluxes.
-        
+
         Keys
         ----
             cec_per_points_Q1Q2 : int
@@ -166,7 +166,7 @@ def CallPartitioning(
                 If dict:
                     Hyperbolic threshold per method used.
                     If for a method no threshold is defined its set to 0.
-                    
+
                     Keys
                     ----
                     MREA : float
@@ -207,7 +207,7 @@ def CallPartitioning(
 
     versatile_loadkwargs : dict
         Arguments passed to the VersatileLoad function.
-        
+
         Keys
         ----
             timestamp_col : str or list of str, optional
@@ -225,7 +225,7 @@ def CallPartitioning(
     -------
         datun : dict
             Dictionary with partitioned data and units.
-            
+
         Keys
         ----
         data : dict
