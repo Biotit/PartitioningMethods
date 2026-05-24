@@ -7,7 +7,7 @@
 Original author: Einara Zahn\
 email: einaraz@princeton.edu, einara.zahn@gmail.com
 
-This version: Daniel Schöndorf
+This version: Daniel Schöndorf\
 email: Daniel.Schoendorf@uni-bayreuth.de
 
 ## Flux Partitioning Package
@@ -24,7 +24,7 @@ The modified version includes
 - the sampling thresholds per quadrant can be set manually for each method.
 - the output can be set to mass based units, molar units or energetic units.
 - if timestamps are missing in the input data, they are filled with NaN to ensure a continous dataset.
-- wrapper functions automatically performing the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable to run for almost any use case.
+- wrapper functions now automatically perform the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable processing for almost any use case.
 - further data loading functions are included.
 - logger files for each run are saved in the folder log.
 - minor bug fixes in density correction and C4 plant water use efficiency calculation.
@@ -51,7 +51,7 @@ To install the package, follow these steps:
 
 3. **Create virtual environments** (not required, but recommended to avoid conflicts with local python packages)
 
-**A) Create and activate a virtual environment using base python**:
+    **A) Create and activate a virtual environment using base python**:
 
     > **Note**: A virtual environment is an isolated environment in which you can install packages without affecting your system-wide Python installation. This helps prevent conflicts between package versions and keeps your project dependencies organized. Alternatively, use conda for environment management. See step 3.B) below.
 
@@ -83,9 +83,9 @@ To install the package, follow these steps:
 
       If you see `(Partitioning)` at the beginning of your command prompt, the virtual environment is active. If you don't see it, try running the activation command again. 
 
-**B) Create and activate a virtual environment using conda**:
+    **B) Create and activate a virtual environment using conda**:
 
-    > **Note**: Conda is a package manager with several advantages over pip. If you use conda already, it can be useful here.
+    >**Note**: Conda is a package manager with several advantages over pip. If you use conda already, it can be useful here.
 
     - **Create the virtual environment:**
 
