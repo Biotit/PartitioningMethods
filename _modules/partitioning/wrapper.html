@@ -54,17 +54,19 @@
 
 <div class="viewcode-block" id="CallPartitioning">
 <a class="viewcode-back" href="../../modules.html#partitioning.wrapper.CallPartitioning">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">CallPartitioning</span><span class="p">(</span><span class="n">filei</span><span class="p">,</span>
-                     <span class="n">siteDetails</span><span class="p">,</span> 
-                     <span class="n">argsQC</span><span class="o">=</span><span class="p">{},</span> 
-                     <span class="n">argsOut</span><span class="o">=</span><span class="p">{},</span> 
-                     <span class="n">methods</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                     <span class="n">methodsWue</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                     <span class="n">statistics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> 
-                     <span class="n">argsQThres</span><span class="o">=</span><span class="p">{},</span>
-                     <span class="n">loadfnct</span><span class="o">=</span><span class="s2">&quot;NormLoad&quot;</span><span class="p">,</span> 
-                     <span class="n">loadkwargs</span><span class="o">=</span><span class="p">{},</span>
-                     <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="p">{}):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">CallPartitioning</span><span class="p">(</span>
+    <span class="n">filei</span><span class="p">,</span>
+    <span class="n">siteDetails</span><span class="p">,</span>
+    <span class="n">argsQC</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">argsOut</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">methods</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">methodsWue</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">statistics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="n">argsQThres</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">loadfnct</span><span class="o">=</span><span class="s2">&quot;NormLoad&quot;</span><span class="p">,</span>
+    <span class="n">loadkwargs</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="p">{},</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calls different partitioning methods and returns the data and units.</span>
 
@@ -72,26 +74,26 @@
 <span class="sd">    ----------</span>
 <span class="sd">    filei : str</span>
 <span class="sd">        String with path to file being loaded and partitoned.</span>
-<span class="sd">    </span>
+
 <span class="sd">    siteDetails : dict</span>
 <span class="sd">        Dictionary with details about the measurement site.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        -----</span>
 <span class="sd">            &quot;hi&quot;: int/float,</span>
 <span class="sd">                Canopy mean height in meters</span>
 <span class="sd">            &quot;zi&quot;: int/float,</span>
 <span class="sd">                EC measurement height in meters</span>
-<span class="sd">            &quot;freq&quot;: int/float,  </span>
+<span class="sd">            &quot;freq&quot;: int/float,</span>
 <span class="sd">                EC measurement frequency in Hz</span>
-<span class="sd">            &quot;length&quot;: int/float,  </span>
+<span class="sd">            &quot;length&quot;: int/float,</span>
 <span class="sd">                length of data file in minutes</span>
 <span class="sd">            &quot;PreProcessing&quot;: bool</span>
 <span class="sd">                If pre-processing takes place.</span>
 <span class="sd">            &quot;ppath&quot;: str</span>
 <span class="sd">                Type of photosynthesis (&#39;C3&#39; or &#39;C4&#39;), for WUE calculation.</span>
-<span class="sd">                </span>
-<span class="sd">        </span>
+
+
 <span class="sd">    argsQC : dict</span>
 <span class="sd">        Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are</span>
 <span class="sd">        necessary. All options have default values, but can be modified if needed.</span>
@@ -120,7 +122,7 @@
 <span class="sd">            &quot;type_lag&quot; - str</span>
 <span class="sd">                Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
-<span class="sd">        </span>
+
 <span class="sd">    argsOut : dict</span>
 <span class="sd">        Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">        Possible to activate all simultanously.</span>
@@ -133,42 +135,42 @@
 <span class="sd">                True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</span>
 <span class="sd">            &quot;molar_units&quot; - bool</span>
 <span class="sd">                True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</span>
-<span class="sd">    </span>
+
 <span class="sd">    methods : bool or dict, default True</span>
 <span class="sd">        If True, all available partitioning methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;MREA&quot; : bool</span>
 <span class="sd">        &quot;CEC&quot; : bool</span>
 <span class="sd">        &quot;CECw&quot; : bool</span>
 <span class="sd">        &quot;CEA&quot; : bool</span>
 <span class="sd">        &quot;FVS&quot; : bool</span>
-<span class="sd">    </span>
+
 <span class="sd">    methodsWue : bool or dict, default True</span>
 <span class="sd">        If True, all available water use efficicency methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
-<span class="sd">        </span>
+
 <span class="sd">        &quot;const_ppm&quot; : bool</span>
 <span class="sd">        &quot;const_ratio&quot; : bool</span>
 <span class="sd">        &quot;linear&quot; : bool</span>
 <span class="sd">        &quot;sqrt&quot; : bool</span>
 <span class="sd">        &quot;opt&quot; : bool</span>
-<span class="sd">    </span>
+
 <span class="sd">    statistics : bool or dict, default {&quot;TurbStats&quot;:True}</span>
 <span class="sd">        If True all possible statistics are calculated.</span>
 <span class="sd">        If False no statistics are calculated.</span>
-<span class="sd">        If dict, the specified statistics are calculated. </span>
-<span class="sd">        </span>
+<span class="sd">        If dict, the specified statistics are calculated.</span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
@@ -177,30 +179,30 @@
 <span class="sd">        &quot;TurbStats&quot; : bool</span>
 <span class="sd">            If True basic general turbulence statistics are calculated.</span>
 <span class="sd">        &quot;steadyness&quot; : bool</span>
-<span class="sd">            If True, Foken&#39;s stationarity test is implemented to check if the data is stationary. </span>
-<span class="sd">            If False, the test is not implemented. </span>
+<span class="sd">            If True, Foken&#39;s stationarity test is implemented to check if the data is stationary.</span>
+<span class="sd">            If False, the test is not implemented.</span>
 <span class="sd">            The test is only informative and does not remove data, which is left to the user&#39;s discretion.</span>
 <span class="sd">        &quot;sampledEvents&quot; : bool</span>
 <span class="sd">            If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
-<span class="sd">    </span>
+
 <span class="sd">    argsQThres : dict</span>
-<span class="sd">        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to </span>
+<span class="sd">        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to</span>
 <span class="sd">        partition the fluxes.</span>
-<span class="sd">    </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        -----</span>
 <span class="sd">            &quot;cec_per_points_Q1Q2&quot; - int</span>
 <span class="sd">                For CEC more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            &quot;cec_per_points_each&quot; - int</span>
-<span class="sd">                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. </span>
+<span class="sd">                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">            &quot;mrea_per_points_Q1Q2&quot; - int</span>
-<span class="sd">                For MREA more % of data needs to be present within quadrant 1 and 2 to partition. </span>
+<span class="sd">                For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            &quot;mrea_per_points_each&quot; - int</span>
-<span class="sd">                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. </span>
+<span class="sd">                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">            &quot;cea_per_points_each&quot; - int</span>
-<span class="sd">                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both </span>
+<span class="sd">                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                up- and downdrafts, no partitioning is performed.</span>
 <span class="sd">            &quot;t_scale_gap_threshold&quot; - int</span>
 <span class="sd">                For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</span>
@@ -210,7 +212,7 @@
 <span class="sd">                If dict:</span>
 <span class="sd">                    Hyperbolic threshold per method used.</span>
 <span class="sd">                    If for a method no threshold is defined its set to 0.</span>
-<span class="sd">                    </span>
+
 <span class="sd">                    Keys</span>
 <span class="sd">                    -------</span>
 <span class="sd">                    &quot;MREA&quot; - float</span>
@@ -221,8 +223,8 @@
 <span class="sd">                        Hyperbolic threshold for CEA</span>
 <span class="sd">                    &quot;CECw&quot; - float</span>
 <span class="sd">                        Hyperbolic threshold for CECw</span>
-<span class="sd">                    </span>
-<span class="sd">    </span>
+
+
 <span class="sd">    loadfnct : str</span>
 <span class="sd">        Function name as a string used for loading the data.</span>
 <span class="sd">        Available options are:</span>
@@ -230,28 +232,28 @@
 <span class="sd">                loading, renaming and recalculations can be done with this function.</span>
 <span class="sd">                it basically makes the other loading functions useless apart from their</span>
 <span class="sd">                shorter notation.</span>
-<span class="sd">            </span>
+
 <span class="sd">            &quot;NormLoad&quot;</span>
 <span class="sd">                basically pd.read_csv, pass the arguments to read the data as loadkwargs.</span>
 <span class="sd">                the index gets to be the timestamp</span>
-<span class="sd">                </span>
+
 <span class="sd">            &quot;LoadBmmflux&quot;</span>
 <span class="sd">                custom function to read the BMMFlux high-frequency output files.</span>
 <span class="sd">                BMMFlux is the EddyCovariance Software of the Micrometeorology Group in Bayreuth.</span>
-<span class="sd">                </span>
+
 <span class="sd">                See appendix of</span>
 <span class="sd">                Thomas, C. K., Law, B. E., Irvine, J., Martin, J. G., Pettijohn, J. C., &amp; Davis, K. J. (2009):</span>
 <span class="sd">                    Seasonal hydrology explains interannual and seasonal variation in carbon</span>
 <span class="sd">                    and water exchange in a semiarid mature ponderosa pine forest in central</span>
-<span class="sd">                    Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4). </span>
+<span class="sd">                    Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).</span>
 <span class="sd">                    https://doi.org/10.1029/2009JG001010</span>
-<span class="sd">    </span>
+
 <span class="sd">    loadkwargs : dict</span>
 <span class="sd">        Arguments passed to the pd.read_csv() function in case of NormLoad and VersatileLoad.</span>
-<span class="sd">    </span>
+
 <span class="sd">    versatile_loadkwargs : dict</span>
 <span class="sd">        Arguments passed to the VersatileLoad function.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ------</span>
 <span class="sd">            &quot;timestamp_col&quot; : str or list of str, optional</span>
@@ -264,12 +266,12 @@
 <span class="sd">                A dictionary mapping old column names to new ones (e.g., {&quot;Pressure&quot;: &quot;P&quot;}).</span>
 <span class="sd">            &quot;select_cols&quot; : list of str, optional</span>
 <span class="sd">                A list of specific columns to keep. All other columns will be dropped.</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    ----------</span>
 <span class="sd">        datun : dict</span>
 <span class="sd">            Dictionary with partitioned data and units.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        -----</span>
 <span class="sd">        &quot;data&quot; : dict</span>
@@ -279,23 +281,24 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">part_results</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">units</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Dictionary to store units</span>
-    
+
     <span class="c1"># Load data</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Load which function to use for loading</span>
-       <span class="n">current_module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span>
-       <span class="n">loadfnct_f</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current_module</span><span class="p">,</span> <span class="n">loadfnct</span><span class="p">)</span>
-       
-       <span class="c1"># Load data</span>
-       <span class="n">df</span> <span class="o">=</span> <span class="n">loadfnct_f</span><span class="p">(</span><span class="n">filei</span><span class="p">,</span> <span class="n">loadkwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">versatile_loadkwargs</span><span class="p">)</span>
-       
-       
+        <span class="n">current_module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span>
+        <span class="n">loadfnct_f</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current_module</span><span class="p">,</span> <span class="n">loadfnct</span><span class="p">)</span>
+
+        <span class="c1"># Load data</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">loadfnct_f</span><span class="p">(</span><span class="n">filei</span><span class="p">,</span> <span class="n">loadkwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">versatile_loadkwargs</span><span class="p">)</span>
+
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-       <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: &#39;</span><span class="si">{</span><span class="n">loadfnct</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.&quot;</span><span class="p">)</span>
-       <span class="k">return</span> <span class="kc">None</span>
-   
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Error: &#39;</span><span class="si">{</span><span class="n">loadfnct</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t exist in the package! Use VersatileLoad, NormLoad or LoadBmmflux instead.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
     <span class="c1"># Settings statistics</span>
-    <span class="n">default_stats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;steadyness&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;sampledEvents&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+    <span class="n">default_stats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;steadyness&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;sampledEvents&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">statistics</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Activating all statistic methods&quot;</span><span class="p">)</span>
         <span class="c1"># activating all methods</span>
@@ -306,21 +309,21 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set only some statistic methods&quot;</span><span class="p">)</span>
         <span class="n">statistics</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">default_stats</span><span class="p">,</span> <span class="o">**</span><span class="n">statistics</span><span class="p">}</span>
-       
-   <span class="c1"># Setting up partitioning class, including PreProcessing during init </span>
+
+    <span class="c1"># Setting up partitioning class, including PreProcessing during init</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">part</span> <span class="o">=</span> <span class="n">Partitioning</span><span class="p">(</span>
-                <span class="n">hi</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;hi&quot;</span><span class="p">],</span>
-                <span class="n">zi</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;zi&quot;</span><span class="p">],</span>
-                <span class="n">freq</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">],</span>
-                <span class="n">length</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">],</span>
-                <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
-                <span class="n">PreProcessing</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;PreProcessing&quot;</span><span class="p">],</span>
-                <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC</span><span class="p">,</span>
-                <span class="n">argsOut</span><span class="o">=</span><span class="n">argsOut</span><span class="p">,</span>
-                <span class="n">sampledEventsStats</span><span class="o">=</span><span class="n">statistics</span><span class="p">[</span><span class="s2">&quot;sampledEvents&quot;</span><span class="p">],</span>
-                <span class="n">argsQThres</span><span class="o">=</span><span class="n">argsQThres</span>
-            <span class="p">)</span>
+            <span class="n">hi</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;hi&quot;</span><span class="p">],</span>
+            <span class="n">zi</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;zi&quot;</span><span class="p">],</span>
+            <span class="n">freq</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">],</span>
+            <span class="n">length</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">],</span>
+            <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+            <span class="n">PreProcessing</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;PreProcessing&quot;</span><span class="p">],</span>
+            <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC</span><span class="p">,</span>
+            <span class="n">argsOut</span><span class="o">=</span><span class="n">argsOut</span><span class="p">,</span>
+            <span class="n">sampledEventsStats</span><span class="o">=</span><span class="n">statistics</span><span class="p">[</span><span class="s2">&quot;sampledEvents&quot;</span><span class="p">],</span>
+            <span class="n">argsQThres</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in </span><span class="si">{</span><span class="n">filei</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -331,19 +334,19 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_data</span><span class="p">(</span><span class="n">source_dict</span><span class="p">,</span> <span class="n">target_dict</span><span class="p">,</span> <span class="n">unit_dict</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">source_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">dict_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">suffix</span> <span class="k">else</span> <span class="n">key</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;magnitude&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;magnitude&quot;</span><span class="p">):</span>
                 <span class="n">target_dict</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">magnitude</span>
-                <span class="n">unit_dict</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">units</span><span class="p">)</span> <span class="c1"># Store the unit string</span>
+                <span class="n">unit_dict</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>  <span class="c1"># Store the unit string</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">target_dict</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="n">unit_dict</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    
+
     <span class="c1"># Setting hyperbolic threshold</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;H&quot;</span> <span class="ow">in</span> <span class="n">argsQThres</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;H&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argsQThres</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set all hyperbolic thresholds to 0.&quot;</span><span class="p">)</span>
         <span class="c1"># if not defined, set to 0</span>
         <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set all hyperbolic thresholds to </span><span class="si">{</span><span class="n">argsQThres</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
         <span class="c1"># if a number set this number for all methods</span>
@@ -351,32 +354,35 @@
             <span class="s2">&quot;MREA&quot;</span><span class="p">:</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">],</span>
             <span class="s2">&quot;CEC&quot;</span><span class="p">:</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">],</span>
             <span class="s2">&quot;CECw&quot;</span><span class="p">:</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;CEA&quot;</span><span class="p">:</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]</span>
-            <span class="p">}</span>
-    
+            <span class="s2">&quot;CEA&quot;</span><span class="p">:</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+
     <span class="k">for</span> <span class="n">_M</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;MREA&quot;</span><span class="p">,</span> <span class="s2">&quot;CEC&quot;</span><span class="p">,</span> <span class="s2">&quot;CECw&quot;</span><span class="p">,</span> <span class="s2">&quot;CEA&quot;</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Some methods with hyperbolic threshold, some without.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">_M</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">_M</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">]:</span>
             <span class="c1"># if a method was not specified (but another was), set to 0.</span>
-            <span class="n">argsQThres</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">][</span><span class="n">_M</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-            
-         
-    
+            <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="n">_M</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="c1"># Calculate general turbulence statistics</span>
     <span class="k">if</span> <span class="n">statistics</span><span class="p">[</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">]:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Calculating general turbulence characteristics.&quot;</span><span class="p">)</span>
         <span class="n">part</span><span class="o">.</span><span class="n">TurbulentStats</span><span class="p">()</span>
         <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">turbstats</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-    
+
     <span class="c1"># Calculate steadyness statistics</span>
     <span class="k">if</span> <span class="n">statistics</span><span class="p">[</span><span class="s2">&quot;steadyness&quot;</span><span class="p">]:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Calculating steadyness characteristics.&quot;</span><span class="p">)</span>
         <span class="n">part</span><span class="o">.</span><span class="n">_steadynessTest</span><span class="p">()</span>
         <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">FokenStatTest</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-    
-    
+
     <span class="c1"># Settings which method to process</span>
-    <span class="n">default_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MREA&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;CEC&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;CECw&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;CEA&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;FVS&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+    <span class="n">default_methods</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;MREA&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;CEC&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;CECw&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;CEA&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;FVS&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="k">if</span> <span class="n">methods</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Activating all methods for partitioning.&quot;</span><span class="p">)</span>
         <span class="c1"># activating all methods</span>
@@ -388,39 +394,35 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Only some methods for partitioning activated.&quot;</span><span class="p">)</span>
         <span class="c1"># if a method was not named in dict set it to false</span>
         <span class="n">methods</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">default_methods</span><span class="p">,</span> <span class="o">**</span><span class="n">methods</span><span class="p">}</span>
-    
-    
-    <span class="c1"># Processing all methods </span>
+
+    <span class="c1"># Processing all methods</span>
     <span class="k">if</span> <span class="n">methods</span><span class="p">[</span><span class="s2">&quot;CEC&quot;</span><span class="p">]:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning using CEC.&quot;</span><span class="p">)</span>
-        <span class="n">part</span><span class="o">.</span><span class="n">partCEC</span><span class="p">(</span><span class="n">H</span> <span class="o">=</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CEC&quot;</span><span class="p">])</span>
+        <span class="n">part</span><span class="o">.</span><span class="n">partCEC</span><span class="p">(</span><span class="n">H</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CEC&quot;</span><span class="p">])</span>
         <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">fluxesCEC</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">methods</span><span class="p">[</span><span class="s2">&quot;MREA&quot;</span><span class="p">]:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning using MREA.&quot;</span><span class="p">)</span>
-        <span class="n">part</span><span class="o">.</span><span class="n">partREA</span><span class="p">(</span><span class="n">H</span> <span class="o">=</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;MREA&quot;</span><span class="p">])</span>
+        <span class="n">part</span><span class="o">.</span><span class="n">partREA</span><span class="p">(</span><span class="n">H</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;MREA&quot;</span><span class="p">])</span>
         <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">fluxesREA</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">methods</span><span class="p">[</span><span class="s2">&quot;CEA&quot;</span><span class="p">]:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning using CEA.&quot;</span><span class="p">)</span>
-        <span class="n">part</span><span class="o">.</span><span class="n">partCEA</span><span class="p">(</span><span class="n">H</span> <span class="o">=</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CEA&quot;</span><span class="p">])</span>
+        <span class="n">part</span><span class="o">.</span><span class="n">partCEA</span><span class="p">(</span><span class="n">H</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CEA&quot;</span><span class="p">])</span>
         <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-    
-    
-    
-    <span class="k">try</span><span class="p">:</span> 
+
+    <span class="k">try</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Calculating Water Use Efficiencies&quot;</span><span class="p">)</span>
         <span class="c1"># Calculate Water Use Efficicency if possible</span>
-        <span class="n">part</span><span class="o">.</span><span class="n">WaterUseEfficiency</span><span class="p">(</span><span class="n">ppath</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;ppath&quot;</span><span class="p">],</span>
-                                <span class="n">methodsWue</span><span class="o">=</span><span class="n">methodsWue</span><span class="p">)</span>
+        <span class="n">part</span><span class="o">.</span><span class="n">WaterUseEfficiency</span><span class="p">(</span><span class="n">ppath</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">[</span><span class="s2">&quot;ppath&quot;</span><span class="p">],</span> <span class="n">methodsWue</span><span class="o">=</span><span class="n">methodsWue</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">part_results</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;W_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">units</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;W_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="c1"># WUE usually dimensionless or handled manually</span>
+            <span class="n">units</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;W_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># WUE usually dimensionless or handled manually</span>
         <span class="n">part_results</span><span class="p">[</span><span class="s2">&quot;statuswue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error while processing file </span><span class="si">%s</span><span class="s2">. Error caused by: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filei</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
         <span class="n">part_results</span><span class="p">[</span><span class="s2">&quot;statuswue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;VPD &lt; 0&quot;</span>
-        <span class="k">for</span> <span class="n">_w</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>  
+        <span class="k">for</span> <span class="n">_w</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">part_results</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;statusfvs_</span><span class="si">{</span><span class="n">_w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;VPD &lt; 0. No WUE.&quot;</span>
             <span class="n">part_results</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;statuscecw_</span><span class="si">{</span><span class="n">_w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;VPD &lt; 0. No WUE.&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">part_results</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">units</span><span class="p">}</span>
@@ -428,15 +430,15 @@
     <span class="k">for</span> <span class="n">_w</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="c1"># Run methods relying on water use efficency for all</span>
         <span class="c1"># water use efficiencies available</span>
-        
+
         <span class="k">if</span> <span class="n">methods</span><span class="p">[</span><span class="s2">&quot;FVS&quot;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning using FVS.&quot;</span><span class="p">)</span>
             <span class="n">part</span><span class="o">.</span><span class="n">partFVS</span><span class="p">(</span><span class="n">W</span><span class="o">=</span><span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="p">[</span><span class="n">_w</span><span class="p">])</span>
             <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">fluxesFVS</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">_w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">methods</span><span class="p">[</span><span class="s2">&quot;CECw&quot;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Partitioning using CECw.&quot;</span><span class="p">)</span>
-            <span class="n">part</span><span class="o">.</span><span class="n">partCECw</span><span class="p">(</span><span class="n">W</span><span class="o">=</span><span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="p">[</span><span class="n">_w</span><span class="p">],</span> <span class="n">H</span> <span class="o">=</span> <span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CECw&quot;</span><span class="p">])</span>
+            <span class="n">part</span><span class="o">.</span><span class="n">partCECw</span><span class="p">(</span><span class="n">W</span><span class="o">=</span><span class="n">part</span><span class="o">.</span><span class="n">wue</span><span class="p">[</span><span class="n">_w</span><span class="p">],</span> <span class="n">H</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;CECw&quot;</span><span class="p">])</span>
             <span class="n">extract_data</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="p">,</span> <span class="n">part_results</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">_w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Return both data and units</span>
@@ -445,48 +447,48 @@
 
 
 
-
-
 <div class="viewcode-block" id="process">
 <a class="viewcode-back" href="../../modules.html#partitioning.wrapper.process">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">siteDetails</span><span class="p">,</span>
-            <span class="n">infolder</span><span class="p">,</span> 
-            <span class="n">outfolder</span><span class="p">,</span>
-            <span class="n">loadpattern</span><span class="o">=</span><span class="s2">&quot;*.csv&quot;</span><span class="p">,</span>
-            <span class="n">outname</span><span class="o">=</span><span class="s2">&quot;PartitioningResults&quot;</span><span class="p">,</span>
-            <span class="n">argsQC</span><span class="o">=</span><span class="p">{},</span> 
-            <span class="n">argsOut</span><span class="o">=</span><span class="p">{},</span> 
-            <span class="n">methods</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">methodsWue</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">statistics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> 
-            <span class="n">argsQThres</span><span class="o">=</span><span class="p">{},</span>
-            <span class="n">loadfnct</span><span class="o">=</span><span class="s2">&quot;NormLoad&quot;</span><span class="p">,</span>
-            <span class="n">loadkwargs</span><span class="o">=</span><span class="p">{},</span>
-            <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="p">{},</span>
-            <span class="n">logginglevel</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span>
+    <span class="n">siteDetails</span><span class="p">,</span>
+    <span class="n">infolder</span><span class="p">,</span>
+    <span class="n">outfolder</span><span class="p">,</span>
+    <span class="n">loadpattern</span><span class="o">=</span><span class="s2">&quot;*.csv&quot;</span><span class="p">,</span>
+    <span class="n">outname</span><span class="o">=</span><span class="s2">&quot;PartitioningResults&quot;</span><span class="p">,</span>
+    <span class="n">argsQC</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">argsOut</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">methods</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">methodsWue</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">statistics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TurbStats&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="n">argsQThres</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">loadfnct</span><span class="o">=</span><span class="s2">&quot;NormLoad&quot;</span><span class="p">,</span>
+    <span class="n">loadkwargs</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">logginglevel</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loading the raw data, (optionally) pre-process, partition and save the results.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">        siteDetails : dict</span>
 <span class="sd">            Dictionary with details about the measurement site.</span>
-<span class="sd">            </span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            -----</span>
 <span class="sd">                &quot;hi&quot;: int/float,</span>
 <span class="sd">                    Canopy mean height in meters</span>
 <span class="sd">                &quot;zi&quot;: int/float,</span>
 <span class="sd">                    EC measurement height in meters</span>
-<span class="sd">                &quot;freq&quot;: int/float,  </span>
+<span class="sd">                &quot;freq&quot;: int/float,</span>
 <span class="sd">                    EC measurement frequency in Hz</span>
-<span class="sd">                &quot;length&quot;: int/float,  </span>
+<span class="sd">                &quot;length&quot;: int/float,</span>
 <span class="sd">                    length of data file in minutes</span>
 <span class="sd">                &quot;PreProcessing&quot;: bool</span>
 <span class="sd">                    If pre-processing takes place.</span>
 <span class="sd">                &quot;ppath&quot; : str</span>
 <span class="sd">                    Type of photosynthesis (&#39;C3&#39; or &#39;C4&#39;), for WUE calculation.</span>
-<span class="sd">                    </span>
+
 <span class="sd">        infolder - str</span>
 <span class="sd">            Path to the folder where the input data is located. Needs to end with slash or backslash.</span>
 <span class="sd">        outfolder - str</span>
@@ -495,8 +497,8 @@
 <span class="sd">            Pattern in the filename to match for loading files.</span>
 <span class="sd">        outname - str, default &quot;PartitioningResults&quot;</span>
 <span class="sd">            Filename for the output data, excluding file ending.</span>
-<span class="sd">                    </span>
-<span class="sd">            </span>
+
+
 <span class="sd">        argsQC : dict</span>
 <span class="sd">            Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are</span>
 <span class="sd">            necessary. All options have default values, but can be modified if needed.</span>
@@ -525,7 +527,7 @@
 <span class="sd">                &quot;type_lag&quot; - str</span>
 <span class="sd">                    Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                    &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
-<span class="sd">            </span>
+
 <span class="sd">        argsOut : dict</span>
 <span class="sd">            Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">            Possible to activate all simultanously.</span>
@@ -538,42 +540,42 @@
 <span class="sd">                    True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</span>
 <span class="sd">                &quot;molar_units&quot; - bool</span>
 <span class="sd">                    True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</span>
-<span class="sd">        </span>
+
 <span class="sd">        methods : bool or dict, default True</span>
 <span class="sd">            If True, all available partitioning methods are used.</span>
 <span class="sd">            If False, no method is used.</span>
 <span class="sd">            If dict, the specified methods are used.</span>
-<span class="sd">            </span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            ----</span>
 <span class="sd">            If True, the corresponding method is calculated</span>
-<span class="sd">            </span>
+
 <span class="sd">            &quot;MREA&quot; : bool</span>
 <span class="sd">            &quot;CEC&quot; : bool</span>
 <span class="sd">            &quot;CECw&quot; : bool</span>
 <span class="sd">            &quot;CEA&quot; : bool</span>
 <span class="sd">            &quot;FVS&quot; : bool</span>
-<span class="sd">        </span>
+
 <span class="sd">        methodsWue : bool or dict, default True</span>
 <span class="sd">            If True, all available water use efficicency methods are used.</span>
 <span class="sd">            If False, no method is used.</span>
 <span class="sd">            If dict, the specified methods are used.</span>
-<span class="sd">            </span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            ----</span>
 <span class="sd">            If True, the corresponding method is calculated</span>
-<span class="sd">            </span>
+
 <span class="sd">            &quot;const_ppm&quot; : bool</span>
 <span class="sd">            &quot;const_ratio&quot; : bool</span>
 <span class="sd">            &quot;linear&quot; : bool</span>
 <span class="sd">            &quot;sqrt&quot; : bool</span>
 <span class="sd">            &quot;opt&quot; : bool</span>
-<span class="sd">        </span>
+
 <span class="sd">        statistics : bool or dict, default {&quot;TurbStats&quot;:True}</span>
 <span class="sd">            If True all possible statistics are calculated.</span>
 <span class="sd">            If False no statistics are calculated.</span>
-<span class="sd">            If dict, the specified statistics are calculated. </span>
-<span class="sd">            </span>
+<span class="sd">            If dict, the specified statistics are calculated.</span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            ----</span>
 <span class="sd">            If True, the corresponding method is calculated</span>
@@ -582,31 +584,31 @@
 <span class="sd">            &quot;TurbStats&quot; : bool</span>
 <span class="sd">                If True basic general turbulence statistics are calculated.</span>
 <span class="sd">            &quot;steadyness&quot; : bool</span>
-<span class="sd">                If True, Foken&#39;s stationarity test is implemented to check if the data is stationary. </span>
-<span class="sd">                If False, the test is not implemented. </span>
+<span class="sd">                If True, Foken&#39;s stationarity test is implemented to check if the data is stationary.</span>
+<span class="sd">                If False, the test is not implemented.</span>
 <span class="sd">                The test is only informative and does not remove data, which is left to the user&#39;s discretion.</span>
 <span class="sd">            &quot;sampledEvents&quot; : bool</span>
 <span class="sd">                If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
-<span class="sd">        </span>
+
 <span class="sd">        argsQThres : dict</span>
-<span class="sd">            Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to </span>
+<span class="sd">            Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to</span>
 <span class="sd">            partition the fluxes. Also the settings regarding the hyperbolic threshold and</span>
 <span class="sd">            about the time scale of sampled events can be given here.</span>
-<span class="sd">        </span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            -----</span>
 <span class="sd">                &quot;cec_per_points_Q1Q2&quot; - int</span>
 <span class="sd">                    For CEC more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                    Otherwise no partitioning is performed.</span>
 <span class="sd">                &quot;cec_per_points_each&quot; - int</span>
-<span class="sd">                    For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. </span>
+<span class="sd">                    For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">                &quot;mrea_per_points_Q1Q2&quot; - int</span>
-<span class="sd">                    For MREA more % of data needs to be present within quadrant 1 and 2 to partition. </span>
+<span class="sd">                    For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                    Otherwise no partitioning is performed.</span>
 <span class="sd">                &quot;mrea_per_points_each&quot; - int</span>
-<span class="sd">                    For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. </span>
+<span class="sd">                    For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">                &quot;cea_per_points_each&quot; - int</span>
-<span class="sd">                    For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both </span>
+<span class="sd">                    For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                    up- and downdrafts, no partitioning is performed.</span>
 <span class="sd">                &quot;t_scale_gap_threshold&quot; - int</span>
 <span class="sd">                    For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</span>
@@ -616,7 +618,7 @@
 <span class="sd">                    If dict:</span>
 <span class="sd">                        Hyperbolic threshold per method used.</span>
 <span class="sd">                        If for a method no threshold is defined its set to 0.</span>
-<span class="sd">                        </span>
+
 <span class="sd">                        Keys</span>
 <span class="sd">                        -------</span>
 <span class="sd">                        &quot;MREA&quot; - float</span>
@@ -627,8 +629,8 @@
 <span class="sd">                            Hyperbolic threshold for CEA</span>
 <span class="sd">                        &quot;CECw&quot; - float</span>
 <span class="sd">                            Hyperbolic threshold for CECw</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
+
+
 <span class="sd">        loadfnct : str</span>
 <span class="sd">            Function name as a string used for loading the data.</span>
 <span class="sd">            Available options are:</span>
@@ -636,28 +638,28 @@
 <span class="sd">                    loading, renaming and recalculations can be done with this function.</span>
 <span class="sd">                    it basically makes the other loading functions useless apart from their</span>
 <span class="sd">                    shorter notation.</span>
-<span class="sd">                </span>
+
 <span class="sd">                &quot;NormLoad&quot;</span>
 <span class="sd">                    basically pd.read_csv, pass the arguments to read the data as loadkwargs.</span>
 <span class="sd">                    the index gets to be the timestamp</span>
-<span class="sd">                    </span>
+
 <span class="sd">                &quot;LoadBmmflux&quot;</span>
 <span class="sd">                    custom function to read the BMMFlux high-frequency output files.</span>
 <span class="sd">                    BMMFlux is the EddyCovariance Software of the Micrometeorology Group in Bayreuth.</span>
-<span class="sd">                    </span>
+
 <span class="sd">                    See appendix of</span>
 <span class="sd">                    Thomas, C. K., Law, B. E., Irvine, J., Martin, J. G., Pettijohn, J. C., &amp; Davis, K. J. (2009):</span>
 <span class="sd">                        Seasonal hydrology explains interannual and seasonal variation in carbon</span>
 <span class="sd">                        and water exchange in a semiarid mature ponderosa pine forest in central</span>
-<span class="sd">                        Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4). </span>
+<span class="sd">                        Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).</span>
 <span class="sd">                        https://doi.org/10.1029/2009JG001010</span>
-<span class="sd">        </span>
+
 <span class="sd">        loadkwargs : dict</span>
 <span class="sd">            Arguments passed to the pd.read_csv() function in case of NormLoad and VersatileLoad.</span>
-<span class="sd">        </span>
+
 <span class="sd">        versatile_loadkwargs : dict</span>
 <span class="sd">            Arguments passed to the VersatileLoad function.</span>
-<span class="sd">            </span>
+
 <span class="sd">            Keys</span>
 <span class="sd">            ------</span>
 <span class="sd">                &quot;timestamp_col&quot; : str or list of str, optional</span>
@@ -671,9 +673,9 @@
 <span class="sd">                &quot;select_cols&quot; : list of str, optional</span>
 <span class="sd">                    A list of specific columns to keep. All other columns will be dropped.</span>
 <span class="sd">        logginglevel : int, optional, default 20</span>
-<span class="sd">            The logging threshold for the root logger. Defaults to logging.INFO (20). </span>
+<span class="sd">            The logging threshold for the root logger. Defaults to logging.INFO (20).</span>
 <span class="sd">            Common values are logging.DEBUG (10), logging.INFO (20), or logging.WARNING (30).</span>
-<span class="sd">        </span>
+
 <span class="sd">    Saves</span>
 <span class="sd">    ----------</span>
 <span class="sd">       df_data - pandas.DataFrame</span>
@@ -687,35 +689,40 @@
     <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;log/run_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.log&quot;</span>
     <span class="n">setup_logging</span><span class="p">(</span><span class="n">outfolder</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logginglevel</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PartitioningMethods: Starting processing and partitioning.&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Find files</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Looking for files to process.&quot;</span><span class="p">)</span>
     <span class="n">listfiles</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">infolder</span> <span class="o">+</span> <span class="n">loadpattern</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="n">listfiles</span><span class="p">:</span>
-        <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No files matching pattern &#39;</span><span class="si">{</span><span class="n">loadpattern</span><span class="si">}</span><span class="s2">&#39; were found in &#39;</span><span class="si">{</span><span class="n">infolder</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
-                     <span class="sa">f</span><span class="s2">&quot;Please check your path or pattern.&quot;</span><span class="p">)</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No files matching pattern &#39;</span><span class="si">{</span><span class="n">loadpattern</span><span class="si">}</span><span class="s2">&#39; were found in &#39;</span><span class="si">{</span><span class="n">infolder</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Please check your path or pattern.&quot;</span>
+        <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
-        
-    
+
     <span class="c1"># only the listfiles argument is different from run to run of the</span>
     <span class="c1"># CallPartitioning function, all others are held constant</span>
     <span class="c1"># Create a version of the function where the additional arguments are already set</span>
-    <span class="n">partial_CallPart</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">CallPartitioning</span><span class="p">,</span> 
-                               <span class="n">siteDetails</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">,</span> 
-                               <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC</span><span class="p">,</span> 
-                               <span class="n">argsOut</span><span class="o">=</span><span class="n">argsOut</span><span class="p">,</span> 
-                               <span class="n">methods</span><span class="o">=</span><span class="n">methods</span><span class="p">,</span>
-                               <span class="n">methodsWue</span><span class="o">=</span><span class="n">methodsWue</span><span class="p">,</span>
-                               <span class="n">statistics</span><span class="o">=</span><span class="n">statistics</span><span class="p">,</span> 
-                               <span class="n">argsQThres</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">,</span>
-                               <span class="n">loadfnct</span><span class="o">=</span><span class="n">loadfnct</span><span class="p">,</span>
-                               <span class="n">loadkwargs</span><span class="o">=</span><span class="n">loadkwargs</span><span class="p">,</span>
-                               <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="n">versatile_loadkwargs</span><span class="p">)</span>
-    
+    <span class="n">partial_CallPart</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">CallPartitioning</span><span class="p">,</span>
+        <span class="n">siteDetails</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">,</span>
+        <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC</span><span class="p">,</span>
+        <span class="n">argsOut</span><span class="o">=</span><span class="n">argsOut</span><span class="p">,</span>
+        <span class="n">methods</span><span class="o">=</span><span class="n">methods</span><span class="p">,</span>
+        <span class="n">methodsWue</span><span class="o">=</span><span class="n">methodsWue</span><span class="p">,</span>
+        <span class="n">statistics</span><span class="o">=</span><span class="n">statistics</span><span class="p">,</span>
+        <span class="n">argsQThres</span><span class="o">=</span><span class="n">argsQThres</span><span class="p">,</span>
+        <span class="n">loadfnct</span><span class="o">=</span><span class="n">loadfnct</span><span class="p">,</span>
+        <span class="n">loadkwargs</span><span class="o">=</span><span class="n">loadkwargs</span><span class="p">,</span>
+        <span class="n">versatile_loadkwargs</span><span class="o">=</span><span class="n">versatile_loadkwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
     <span class="c1"># Run multiprocessing</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.&quot;</span>
+    <span class="p">)</span>
     <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">raw_output</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">partial_CallPart</span><span class="p">,</span> <span class="n">listfiles</span><span class="p">)</span>
     <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -726,15 +733,15 @@
 
     <span class="k">if</span> <span class="n">valid_results</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found valid_results.&quot;</span><span class="p">)</span>
-        
+
         <span class="c1"># Build the main data frame</span>
-        <span class="n">df_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">valid_results</span><span class="p">])</span>
+        <span class="n">df_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">valid_results</span><span class="p">])</span>
         <span class="n">df_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;datetime_start&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">df_data</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Get units from the first valid result</span>
-        <span class="n">units_row</span> <span class="o">=</span> <span class="n">valid_results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
-        
+        <span class="n">units_row</span> <span class="o">=</span> <span class="n">valid_results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+
         <span class="c1"># Create Metadata Header</span>
         <span class="c1"># We create a dictionary for the top rows</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
@@ -744,28 +751,28 @@
             <span class="s2">&quot;siteDetails&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">siteDetails</span><span class="p">),</span>
             <span class="s2">&quot;argsQThres&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">argsQThres</span><span class="p">),</span>
             <span class="s2">&quot;statistics&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">statistics</span><span class="p">),</span>
-            <span class="s2">&quot;argsOut&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">argsOut</span><span class="p">)</span>
+            <span class="s2">&quot;argsOut&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">argsOut</span><span class="p">),</span>
         <span class="p">}</span>
 
         <span class="c1"># Construct Multi-index for better CSV structure</span>
         <span class="c1"># Mapping columns to their units</span>
         <span class="n">col_units</span> <span class="o">=</span> <span class="p">[</span><span class="n">units_row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
-        
+
         <span class="n">df_data</span> <span class="o">=</span> <span class="n">df_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-        <span class="n">column_tuples</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">col_units</span><span class="p">,</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
-        
+        <span class="n">column_tuples</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">col_units</span><span class="p">,</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
         <span class="c1"># Create a MultiIndex: Columns -&gt; Units</span>
         <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span><span class="n">column_tuples</span><span class="p">)</span>
 
         <span class="c1"># Save to CSV with Metadata prepended</span>
         <span class="n">output_path</span> <span class="o">=</span> <span class="n">outfolder</span> <span class="o">+</span> <span class="n">outname</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span>
-        
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">_setting</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">_setting</span><span class="si">}</span><span class="s2">:, </span><span class="si">{</span><span class="n">metadata</span><span class="p">[</span><span class="n">_setting</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">df_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s1">&#39;NaN&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            
+            <span class="n">df_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results saved successfully to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df_data</span>
     <span class="k">else</span><span class="p">:</span>
@@ -775,18 +782,25 @@
 
 <span class="c1"># Loading functions ------------------------------------------------------------</span>
 
+
 <div class="viewcode-block" id="VersatileLoad">
 <a class="viewcode-back" href="../../modules.html#partitioning.wrapper.VersatileLoad">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">VersatileLoad</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">loadkwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                  <span class="n">convert_gases</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rename_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">select_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">VersatileLoad</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">loadkwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">timestamp_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_gases</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rename_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">select_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A versatile CSV loading function that accommodates standard formats,</span>
 <span class="sd">    multi-column high-frequency timestamps, gas unit conversions, and column filtering.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : str</span>
-<span class="sd">        Path to the csv file to be loaded.        </span>
+<span class="sd">        Path to the csv file to be loaded.</span>
 <span class="sd">    loadkwargs : dict, optional</span>
 <span class="sd">        Arguments passed directly to pd.read_csv (e.g., header, skiprows, na_values).</span>
 <span class="sd">    timestamp_col : str or list of str, optional</span>
@@ -799,22 +813,22 @@
 <span class="sd">        A dictionary mapping old column names to new ones (e.g., {&quot;Pressure&quot;: &quot;P&quot;}).</span>
 <span class="sd">    select_cols : list of str, optional</span>
 <span class="sd">        A list of specific columns to keep. All other columns will be dropped.</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        The loaded data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with VersatileLoad.&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Ensure loadkwargs is a dictionary to prevent errors if passed as None</span>
     <span class="k">if</span> <span class="n">loadkwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">loadkwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        
+
     <span class="c1"># 1. Load the raw CSV data</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">loadkwargs</span><span class="p">)</span>
-    
+
     <span class="c1"># 2. Process Timestamp Data</span>
     <span class="k">if</span> <span class="n">timestamp_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestamp_col</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -829,27 +843,25 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Convert the default row index to datetime (like NormLoad)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-        
+
     <span class="c1"># 3. Rename Columns (if provided)</span>
     <span class="k">if</span> <span class="n">rename_cols</span><span class="p">:</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rename_cols</span><span class="p">)</span>
-        
+
     <span class="c1"># 4. Filter Specific Columns (if provided)</span>
     <span class="k">if</span> <span class="n">select_cols</span><span class="p">:</span>
         <span class="c1"># Intersect to protect against KeyError if a column is missing</span>
         <span class="n">valid_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">select_cols</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">valid_cols</span><span class="p">]</span>
-        
+
     <span class="c1"># 5. Convert CO2 and H2O units (if requested)</span>
     <span class="k">if</span> <span class="n">convert_gases</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;co2&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
         <span class="k">if</span> <span class="s2">&quot;h2o&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-            
+
     <span class="k">return</span> <span class="n">df</span></div>
-
-
 
 
 
@@ -858,23 +870,23 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">NormLoad</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">loadkwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loading csv data.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : str</span>
-<span class="sd">        Path to the csv file to be loaded.        </span>
+<span class="sd">        Path to the csv file to be loaded.</span>
 <span class="sd">    loadkwargs : dict</span>
 <span class="sd">        Arguments passed to pd.read_csv.</span>
 <span class="sd">        Options include i.a. header, index_col, usecols, names, na_values, skiprows</span>
 <span class="sd">    kwargs : further arguments</span>
 <span class="sd">        ignored</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df - pandas.DataFrame</span>
 <span class="sd">        The loaded data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with NormLoad.&quot;</span><span class="p">)</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with NormLoad.&quot;</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">loadkwargs</span><span class="p">)</span>
     <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
@@ -886,54 +898,48 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">LoadBmmflux</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">loadkwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loading csv data, optimized for BMMFlux high-frequency output files.</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
+
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : str</span>
-<span class="sd">        Path to the csv file to be loaded.        </span>
+<span class="sd">        Path to the csv file to be loaded.</span>
 <span class="sd">    loadkwargs : dict</span>
 <span class="sd">        Not used.</span>
 <span class="sd">    **kwargs : further arguments</span>
 <span class="sd">        ignored</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df - pandas.DataFrame</span>
 <span class="sd">        The loaded data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with LoadBmmflux.&quot;</span><span class="p">)</span>   
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with LoadBmmflux.&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">loadkwargs</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;BMMFlux loading function ignores loading arguments!&quot;</span><span class="p">)</span>
-    
+
     <span class="c1"># Reading CSV</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
-        <span class="n">path</span><span class="p">,</span>
-        <span class="n">header</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">na_values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NaN&quot;</span><span class="p">],</span>
-        <span class="n">skiprows</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="p">)</span>
-    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">na_values</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NaN&quot;</span><span class="p">],</span> <span class="n">skiprows</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
     <span class="c1"># date column adjustment and index column</span>
-    <span class="n">t_present_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">,</span> <span class="s1">&#39;Minute&#39;</span><span class="p">,</span> <span class="s1">&#39;Second&#39;</span><span class="p">,</span> <span class="s1">&#39;Millisecond&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">t_present_col</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">col</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Year&quot;</span><span class="p">,</span> <span class="s2">&quot;Month&quot;</span><span class="p">,</span> <span class="s2">&quot;Day&quot;</span><span class="p">,</span> <span class="s2">&quot;Hour&quot;</span><span class="p">,</span> <span class="s2">&quot;Minute&quot;</span><span class="p">,</span> <span class="s2">&quot;Second&quot;</span><span class="p">,</span> <span class="s2">&quot;Millisecond&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">]</span>
     <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">t_present_col</span><span class="p">])</span>
-    
+
     <span class="c1"># Rename columns and drop unused</span>
     <span class="n">nec_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;Ts&quot;</span><span class="p">,</span> <span class="s2">&quot;co2&quot;</span><span class="p">,</span> <span class="s2">&quot;h2o&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">]</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Pressure&quot;</span><span class="p">:</span><span class="s2">&quot;P&quot;</span><span class="p">})[</span><span class="n">nec_cols</span><span class="p">]</span>
-    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Pressure&quot;</span><span class="p">:</span> <span class="s2">&quot;P&quot;</span><span class="p">})[</span><span class="n">nec_cols</span><span class="p">]</span>
+
     <span class="c1"># Recalculations</span>
     <span class="c1"># u, v, w, Ts and P already in correct units</span>
     <span class="c1"># need to recalculate co2 and h2o from mmol/m3 in mg/m3 and g/m3</span>
     <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span>
     <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-    
+
     <span class="k">return</span> <span class="n">df</span></div>
-
-
-
-
-
 
 </pre></div>
 
