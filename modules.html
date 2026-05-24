@@ -1004,166 +1004,150 @@ it is different from gross primary productivity.</p>
 <dt class="sig sig-object py" id="partitioning.wrapper.CallPartitioning">
 <span class="sig-prename descclassname"><span class="pre">partitioning.wrapper.</span></span><span class="sig-name descname"><span class="pre">CallPartitioning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">siteDetails</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argsQC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argsOut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">methodsWue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'TurbStats':</span> <span class="pre">True}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argsQThres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadfnct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NormLoad'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadkwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">versatile_loadkwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/partitioning/wrapper.html#CallPartitioning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#partitioning.wrapper.CallPartitioning" title="Link to this definition">¶</a></dt>
 <dd><p>Calls different partitioning methods and returns the data and units.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="partitioning.wrapper.filei">
-<span class="sig-prename descclassname"><span class="pre">partitioning.wrapper.</span></span><span class="sig-name descname"><span class="pre">filei</span></span><a class="headerlink" href="#partitioning.wrapper.filei" title="Link to this definition">¶</a></dt>
-<dd><p>String with path to file being loaded and partitoned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="partitioning.wrapper.siteDetails">
-<span class="sig-prename descclassname"><span class="pre">partitioning.wrapper.</span></span><span class="sig-name descname"><span class="pre">siteDetails</span></span><a class="headerlink" href="#partitioning.wrapper.siteDetails" title="Link to this definition">¶</a></dt>
-<dd><p>Dictionary with details about the measurement site.</p>
-<section id="keys">
-<h2>Keys<a class="headerlink" href="#keys" title="Link to this heading">¶</a></h2>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filei</strong> (<em>str</em>) – String with path to file being loaded and partitoned.</p></li>
+<li><p><strong>siteDetails</strong> (<em>dict</em>) – <p>Dictionary with details about the measurement site.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“hi”: int/float,</dt><dd><p>Canopy mean height in meters</p>
+<dt>hi<span class="classifier">int/float,</span></dt><dd><p>Canopy mean height in meters</p>
 </dd>
-<dt>“zi”: int/float,</dt><dd><p>EC measurement height in meters</p>
+<dt>zi<span class="classifier">int/float,</span></dt><dd><p>EC measurement height in meters</p>
 </dd>
-<dt>“freq”: int/float,</dt><dd><p>EC measurement frequency in Hz</p>
+<dt>freq<span class="classifier">int/float,</span></dt><dd><p>EC measurement frequency in Hz</p>
 </dd>
-<dt>“length”: int/float,</dt><dd><p>length of data file in minutes</p>
+<dt>length<span class="classifier">int/float,</span></dt><dd><p>length of data file in minutes</p>
 </dd>
-<dt>“PreProcessing”: bool</dt><dd><p>If pre-processing takes place.</p>
+<dt>PreProcessing<span class="classifier">bool</span></dt><dd><p>If pre-processing takes place.</p>
 </dd>
-<dt>“ppath”: str</dt><dd><p>Type of photosynthesis (‘C3’ or ‘C4’), for WUE calculation.</p>
+<dt>ppath<span class="classifier">str</span></dt><dd><p>Type of photosynthesis (‘C3’ or ‘C4’), for WUE calculation.</p>
 </dd>
 </dl>
 </div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl>
-<dt>argsQC<span class="classifier">dict</span></dt><dd><p>Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are
+</p></li>
+<li><p><strong>argsQC</strong> (<em>dict</em>) – <p>Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are
 necessary. All options have default values, but can be modified if needed.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“density_correction” - bool</dt><dd><p>True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</p>
+<dt>density_correction<span class="classifier">bool</span></dt><dd><p>True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</p>
 </dd>
-<dt>“fluctuations” - str</dt><dd><p>Describes the type of operation used to extract fluctuations:
+<dt>fluctuations<span class="classifier">str</span></dt><dd><p>Describes the type of operation used to extract fluctuations:
 ‘BA’: block average
 ‘LD’: Linear detrending
 ‘FL’: Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.</p>
 </dd>
-<dt>“filtercut” - int</dt><dd><p>Cutoff time in minutes for the low-pass filter. Only used if method is ‘FL’.</p>
+<dt>filtercut<span class="classifier">int</span></dt><dd><p>Cutoff time in minutes for the low-pass filter. Only used if method is ‘FL’.</p>
 </dd>
-<dt>“maxGapsInterpolate” - int</dt><dd><p>Number of consecutive gaps that will be interpolated.</p>
+<dt>maxGapsInterpolate<span class="classifier">int</span></dt><dd><p>Number of consecutive gaps that will be interpolated.</p>
 </dd>
-<dt>“RemainingData” - int</dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
+<dt>RemainingData<span class="classifier">int</span></dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
 </dd>
-<dt>“saveprocessed” - bool</dt><dd><p>If True, the processed data is saved to a CSV file.</p>
+<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the processed data is saved to a CSV file.</p>
 </dd>
-<dt>“time_lag_correction” - bool</dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
+<dt>time_lag_correction<span class="classifier">bool</span></dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
 </dd>
-<dt>“max_lag_seconds” - int</dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
+<dt>max_lag_seconds<span class="classifier">int</span></dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
 </dd>
-<dt>“type_lag” - str</dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
+<dt>type_lag<span class="classifier">str</span></dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
 ‘Positive’ means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt>argsOut<span class="classifier">dict</span></dt><dd><p>Contains options in which units the results are given. Defaults are that the output is in mass based units.
+</p></li>
+<li><p><strong>argsOut</strong> (<em>dict</em>) – <p>Contains options in which units the results are given. Defaults are that the output is in mass based units.
 Possible to activate all simultanously.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“energetic_units” - bool</dt><dd><p>True if the H2O flux shall be provided in energetic units in W/m2</p>
+<dt>energetic_units<span class="classifier">bool</span></dt><dd><p>True if the H2O flux shall be provided in energetic units in W/m2</p>
 </dd>
-<dt>“mass_units” - bool</dt><dd><p>True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</p>
+<dt>mass_units<span class="classifier">bool</span></dt><dd><p>True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</p>
 </dd>
-<dt>“molar_units” - bool</dt><dd><p>True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</p>
+<dt>molar_units<span class="classifier">bool</span></dt><dd><p>True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</p>
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-<dt>methods<span class="classifier">bool or dict, default True</span></dt><dd><p>If True, all available partitioning methods are used.
+</p></li>
+<li><p><strong>methods</strong> (<em>bool</em><em> or </em><em>dict</em><em>, </em><em>default True</em>) – <p>If True, all available partitioning methods are used.
 If False, no method is used.
 If dict, the specified methods are used.</p>
 <p>If True, the corresponding method is calculated</p>
-<p>“MREA” : bool
-“CEC” : bool
-“CECw” : bool
-“CEA” : bool
-“FVS” : bool</p>
-</dd>
-<dt>methodsWue<span class="classifier">bool or dict, default True</span></dt><dd><p>If True, all available water use efficicency methods are used.
+<p>MREA : bool
+CEC : bool
+CECw : bool
+CEA : bool
+FVS : bool</p>
+</p></li>
+<li><p><strong>methodsWue</strong> (<em>bool</em><em> or </em><em>dict</em><em>, </em><em>default True</em>) – <p>If True, all available water use efficicency methods are used.
 If False, no method is used.
 If dict, the specified methods are used.</p>
 <p>If True, the corresponding method is calculated</p>
-<p>“const_ppm” : bool
-“const_ratio” : bool
-“linear” : bool
-“sqrt” : bool
-“opt” : bool</p>
-</dd>
-<dt>statistics<span class="classifier">bool or dict, default {“TurbStats”:True}</span></dt><dd><p>If True all possible statistics are calculated.
+<p>const_ppm : bool
+const_ratio : bool
+linear : bool
+sqrt : bool
+opt : bool</p>
+</p></li>
+<li><p><strong>statistics</strong> (<em>bool</em><em> or </em><em>dict</em><em>, </em><em>default {&quot;TurbStats&quot;:True}</em>) – <p>If True all possible statistics are calculated.
 If False no statistics are calculated.
-If dict, the specified statistics are calculated.</p>
-<p>If True, the corresponding method is calculated
+If dict, the specified statistics are calculated.
+If True, the corresponding method is calculated
 Keys not used, are set to False</p>
 <dl class="simple">
-<dt>“TurbStats”<span class="classifier">bool</span></dt><dd><p>If True basic general turbulence statistics are calculated.</p>
+<dt>TurbStats<span class="classifier">bool</span></dt><dd><p>If True basic general turbulence statistics are calculated.</p>
 </dd>
-<dt>“steadyness”<span class="classifier">bool</span></dt><dd><p>If True, Foken’s stationarity test is implemented to check if the data is stationary.
+<dt>steadyness<span class="classifier">bool</span></dt><dd><p>If True, Foken’s stationarity test is implemented to check if the data is stationary.
 If False, the test is not implemented.
 The test is only informative and does not remove data, which is left to the user’s discretion.</p>
 </dd>
-<dt>“sampledEvents”<span class="classifier">bool</span></dt><dd><p>If True the time fraction and time scale of sampled events within each quadrant are calculated.</p>
+<dt>sampledEvents<span class="classifier">bool</span></dt><dd><p>If True the time fraction and time scale of sampled events within each quadrant are calculated.</p>
 </dd>
 </dl>
-</dd>
-<dt>argsQThres<span class="classifier">dict</span></dt><dd><p>Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to
+</p></li>
+<li><p><strong>argsQThres</strong> (<em>dict</em>) – <p>Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to
 partition the fluxes.</p>
 <blockquote>
 <div><dl>
-<dt>“cec_per_points_Q1Q2” - int</dt><dd><p>For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
+<dt>cec_per_points_Q1Q2<span class="classifier">int</span></dt><dd><p>For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
 Otherwise no partitioning is performed.</p>
 </dd>
-<dt>“cec_per_points_each” - int</dt><dd><p>For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
+<dt>cec_per_points_each<span class="classifier">int</span></dt><dd><p>For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
 </dd>
-<dt>“mrea_per_points_Q1Q2” - int</dt><dd><p>For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
+<dt>mrea_per_points_Q1Q2<span class="classifier">int</span></dt><dd><p>For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
 Otherwise no partitioning is performed.</p>
 </dd>
-<dt>“mrea_per_points_each” - int</dt><dd><p>For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
+<dt>mrea_per_points_each<span class="classifier">int</span></dt><dd><p>For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
 </dd>
-<dt>“cea_per_points_each” - int</dt><dd><p>For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
+<dt>cea_per_points_each<span class="classifier">int</span></dt><dd><p>For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
 up- and downdrafts, no partitioning is performed.</p>
 </dd>
-<dt>“t_scale_gap_threshold” - int</dt><dd><p>For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</p>
+<dt>t_scale_gap_threshold<span class="classifier">int</span></dt><dd><p>For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</p>
 </dd>
-<dt>“H” - float or dict</dt><dd><p>Hyperbolic threshold criteria. If not specified 0 is used for all methods.
+<dt>H<span class="classifier">float or dict</span></dt><dd><p>Hyperbolic threshold criteria. If not specified 0 is used for all methods.
 If float: MREA, CEC, CEA, CECw get calculated using this threshold.
 If dict:</p>
 <blockquote>
 <div><p>Hyperbolic threshold per method used.
 If for a method no threshold is defined its set to 0.</p>
 <dl class="simple">
-<dt>“MREA” - float</dt><dd><p>Hyperbolic threshold for MREA</p>
+<dt>MREA<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for MREA</p>
 </dd>
-<dt>“CEC” - float</dt><dd><p>Hyperbolic threshold for CEC</p>
+<dt>CEC<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CEC</p>
 </dd>
-<dt>“CEA” - float</dt><dd><p>Hyperbolic threshold for CEA</p>
+<dt>CEA<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CEA</p>
 </dd>
-<dt>“CECw” - float</dt><dd><p>Hyperbolic threshold for CECw</p>
-</dd>
-</dl>
-</div></blockquote>
+<dt>CECw<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CECw</p>
 </dd>
 </dl>
 </div></blockquote>
 </dd>
+</dl>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
 <dt>loadfnct<span class="classifier">str</span></dt><dd><p>Function name as a string used for loading the data.
 Available options are:</p>
 <blockquote>
@@ -1194,17 +1178,17 @@ Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).
 <dt>versatile_loadkwargs<span class="classifier">dict</span></dt><dd><p>Arguments passed to the VersatileLoad function.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“timestamp_col”<span class="classifier">str or list of str, optional</span></dt><dd><ul class="simple">
+<dt>timestamp_col<span class="classifier">str or list of str, optional</span></dt><dd><ul class="simple">
 <li><p>If a list: Combines split columns (e.g., [‘Year’, ‘Month’, ‘Day’]) into a datetime index.</p></li>
 <li><p>If a string: Converts that specific column into the datetime index.</p></li>
 <li><p>If None: Converts the default DataFrame index to datetime.</p></li>
 </ul>
 </dd>
-<dt>“convert_gases”<span class="classifier">bool, default False</span></dt><dd><p>If True, converts ‘co2’ and ‘h2o’ from mmol/m³ to mg/m³ and g/m³ respectively.</p>
+<dt>convert_gases<span class="classifier">bool, default False</span></dt><dd><p>If True, converts ‘co2’ and ‘h2o’ from mmol/m³ to mg/m³ and g/m³ respectively.</p>
 </dd>
-<dt>“rename_cols”<span class="classifier">dict, optional</span></dt><dd><p>A dictionary mapping old column names to new ones (e.g., {“Pressure”: “P”}).</p>
+<dt>rename_cols<span class="classifier">dict, optional</span></dt><dd><p>A dictionary mapping old column names to new ones (e.g., {“Pressure”: “P”}).</p>
 </dd>
-<dt>“select_cols”<span class="classifier">list of str, optional</span></dt><dd><p>A list of specific columns to keep. All other columns will be dropped.</p>
+<dt>select_cols<span class="classifier">list of str, optional</span></dt><dd><p>A list of specific columns to keep. All other columns will be dropped.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1215,9 +1199,9 @@ Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>datun</strong> (<em>dict</em>) – Dictionary with partitioned data and units.</p></li>
 <li><p><em>Keys</em></p></li>
-<li><p><em>—–</em></p></li>
-<li><p><strong>“data”</strong> (<em>dict</em>) – Partitioned data, each key:value pair corresponds to one return value of the partioning functions.</p></li>
-<li><p><strong>”units”</strong> (<em>dict</em>) – The corresponding unit, as well as key:value pair.</p></li>
+<li><p><em>—-</em></p></li>
+<li><p><strong>data</strong> (<em>dict</em>) – Partitioned data, each key:value pair corresponds to one return value of the partioning functions.</p></li>
+<li><p><strong>units</strong> (<em>dict</em>) – The corresponding unit, as well as key:value pair.</p></li>
 </ul>
 </p>
 </dd>
@@ -1237,10 +1221,10 @@ Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The loaded data.</p>
+<dd class="field-even"><p><strong>df</strong> – The loaded data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>df - pandas.DataFrame</p>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1259,10 +1243,10 @@ Options include i.a. header, index_col, usecols, names, na_values, skiprows</p><
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The loaded data.</p>
+<dd class="field-even"><p><strong>df</strong> – The loaded data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>df - pandas.DataFrame</p>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1307,17 +1291,17 @@ multi-column high-frequency timestamps, gas unit conversions, and column filteri
 <li><p><strong>siteDetails</strong> (<em>dict</em>) – <p>Dictionary with details about the measurement site.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“hi”: int/float,</dt><dd><p>Canopy mean height in meters</p>
+<dt>hi<span class="classifier">int/float,</span></dt><dd><p>Canopy mean height in meters</p>
 </dd>
-<dt>”zi”: int/float,</dt><dd><p>EC measurement height in meters</p>
+<dt>zi<span class="classifier">int/float,</span></dt><dd><p>EC measurement height in meters</p>
 </dd>
-<dt>”freq”: int/float,</dt><dd><p>EC measurement frequency in Hz</p>
+<dt>freq<span class="classifier">int/float,</span></dt><dd><p>EC measurement frequency in Hz</p>
 </dd>
-<dt>”length”: int/float,</dt><dd><p>length of data file in minutes</p>
+<dt>length<span class="classifier">int/float,</span></dt><dd><p>length of data file in minutes</p>
 </dd>
-<dt>”PreProcessing”: bool</dt><dd><p>If pre-processing takes place.</p>
+<dt>PreProcessing<span class="classifier">bool</span></dt><dd><p>If pre-processing takes place.</p>
 </dd>
-<dt>”ppath”<span class="classifier">str</span></dt><dd><p>Type of photosynthesis (‘C3’ or ‘C4’), for WUE calculation.</p>
+<dt>ppath<span class="classifier">str</span></dt><dd><p>Type of photosynthesis (‘C3’ or ‘C4’), for WUE calculation.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1334,26 +1318,26 @@ multi-column high-frequency timestamps, gas unit conversions, and column filteri
 necessary. All options have default values, but can be modified if needed.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“density_correction” - bool</dt><dd><p>True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</p>
+<dt>density_correction<span class="classifier">bool</span></dt><dd><p>True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</p>
 </dd>
-<dt>”fluctuations” - str</dt><dd><p>Describes the type of operation used to extract fluctuations:
+<dt>fluctuations<span class="classifier">str</span></dt><dd><p>Describes the type of operation used to extract fluctuations:
 ‘BA’: block average
 ‘LD’: Linear detrending
 ‘FL’: Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.</p>
 </dd>
-<dt>”filtercut” - int</dt><dd><p>Cutoff time in minutes for the low-pass filter. Only used if method is ‘FL’.</p>
+<dt>filtercut<span class="classifier">int</span></dt><dd><p>Cutoff time in minutes for the low-pass filter. Only used if method is ‘FL’.</p>
 </dd>
-<dt>”maxGapsInterpolate” - int</dt><dd><p>Number of consecutive gaps that will be interpolated.</p>
+<dt>maxGapsInterpolate<span class="classifier">int</span></dt><dd><p>Number of consecutive gaps that will be interpolated.</p>
 </dd>
-<dt>”RemainingData” - int</dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
+<dt>RemainingData<span class="classifier">int</span></dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
 </dd>
-<dt>”saveprocessed” - bool</dt><dd><p>If True, the processed data is saved to a CSV file.</p>
+<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the processed data is saved to a CSV file.</p>
 </dd>
-<dt>”time_lag_correction” - bool</dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
+<dt>time_lag_correction<span class="classifier">bool</span></dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
 </dd>
-<dt>”max_lag_seconds” - int</dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
+<dt>max_lag_seconds<span class="classifier">int</span></dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
 </dd>
-<dt>”type_lag” - str</dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
+<dt>type_lag<span class="classifier">str</span></dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
 ‘Positive’ means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</p>
 </dd>
 </dl>
@@ -1363,11 +1347,11 @@ necessary. All options have default values, but can be modified if needed.</p>
 Possible to activate all simultanously.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“energetic_units” - bool</dt><dd><p>True if the H2O flux shall be provided in energetic units in W/m2</p>
+<dt>energetic_units<span class="classifier">bool</span></dt><dd><p>True if the H2O flux shall be provided in energetic units in W/m2</p>
 </dd>
-<dt>”mass_units” - bool</dt><dd><p>True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</p>
+<dt>mass_units<span class="classifier">bool</span></dt><dd><p>True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</p>
 </dd>
-<dt>”molar_units” - bool</dt><dd><p>True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</p>
+<dt>molar_units<span class="classifier">bool</span></dt><dd><p>True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1376,21 +1360,21 @@ Possible to activate all simultanously.</p>
 If False, no method is used.
 If dict, the specified methods are used.</p>
 <p>If True, the corresponding method is calculated</p>
-<p>”MREA” : bool
-“CEC” : bool
-“CECw” : bool
-“CEA” : bool
-“FVS” : bool</p>
+<p>MREA : bool
+CEC : bool
+CECw : bool
+CEA : bool
+FVS : bool</p>
 </dd>
 <dt>methodsWue<span class="classifier">bool or dict, default True</span></dt><dd><p>If True, all available water use efficicency methods are used.
 If False, no method is used.
 If dict, the specified methods are used.</p>
 <p>If True, the corresponding method is calculated</p>
-<p>”const_ppm” : bool
-“const_ratio” : bool
-“linear” : bool
-“sqrt” : bool
-“opt” : bool</p>
+<p>const_ppm : bool
+const_ratio : bool
+linear : bool
+sqrt : bool
+opt : bool</p>
 </dd>
 <dt>statistics<span class="classifier">bool or dict, default {“TurbStats”:True}</span></dt><dd><p>If True all possible statistics are calculated.
 If False no statistics are calculated.
@@ -1398,13 +1382,13 @@ If dict, the specified statistics are calculated.</p>
 <p>If True, the corresponding method is calculated
 Keys not used, are set to False</p>
 <dl class="simple">
-<dt>”TurbStats”<span class="classifier">bool</span></dt><dd><p>If True basic general turbulence statistics are calculated.</p>
+<dt>TurbStats<span class="classifier">bool</span></dt><dd><p>If True basic general turbulence statistics are calculated.</p>
 </dd>
-<dt>”steadyness”<span class="classifier">bool</span></dt><dd><p>If True, Foken’s stationarity test is implemented to check if the data is stationary.
+<dt>steadyness<span class="classifier">bool</span></dt><dd><p>If True, Foken’s stationarity test is implemented to check if the data is stationary.
 If False, the test is not implemented.
 The test is only informative and does not remove data, which is left to the user’s discretion.</p>
 </dd>
-<dt>”sampledEvents”<span class="classifier">bool</span></dt><dd><p>If True the time fraction and time scale of sampled events within each quadrant are calculated.</p>
+<dt>sampledEvents<span class="classifier">bool</span></dt><dd><p>If True the time fraction and time scale of sampled events within each quadrant are calculated.</p>
 </dd>
 </dl>
 </dd>
@@ -1413,35 +1397,35 @@ partition the fluxes. Also the settings regarding the hyperbolic threshold and
 about the time scale of sampled events can be given here.</p>
 <blockquote>
 <div><dl>
-<dt>“cec_per_points_Q1Q2” - int</dt><dd><p>For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
+<dt>cec_per_points_Q1Q2<span class="classifier">int</span></dt><dd><p>For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
 Otherwise no partitioning is performed.</p>
 </dd>
-<dt>”cec_per_points_each” - int</dt><dd><p>For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
+<dt>cec_per_points_each<span class="classifier">int</span></dt><dd><p>For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
 </dd>
-<dt>”mrea_per_points_Q1Q2” - int</dt><dd><p>For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
+<dt>mrea_per_points_Q1Q2<span class="classifier">int</span></dt><dd><p>For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
 Otherwise no partitioning is performed.</p>
 </dd>
-<dt>”mrea_per_points_each” - int</dt><dd><p>For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
+<dt>mrea_per_points_each<span class="classifier">int</span></dt><dd><p>For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</p>
 </dd>
-<dt>”cea_per_points_each” - int</dt><dd><p>For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
+<dt>cea_per_points_each<span class="classifier">int</span></dt><dd><p>For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
 up- and downdrafts, no partitioning is performed.</p>
 </dd>
-<dt>”t_scale_gap_threshold” - int</dt><dd><p>For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</p>
+<dt>t_scale_gap_threshold<span class="classifier">int</span></dt><dd><p>For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</p>
 </dd>
-<dt>”H” - float or dict</dt><dd><p>Hyperbolic threshold criteria. If not specified 0 is used for all methods.
+<dt>H<span class="classifier">float or dict</span></dt><dd><p>Hyperbolic threshold criteria. If not specified 0 is used for all methods.
 If float: MREA, CEC, CEA, CECw get calculated using this threshold.
 If dict:</p>
 <blockquote>
 <div><p>Hyperbolic threshold per method used.
 If for a method no threshold is defined its set to 0.</p>
 <dl class="simple">
-<dt>“MREA” - float</dt><dd><p>Hyperbolic threshold for MREA</p>
+<dt>MREA<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for MREA</p>
 </dd>
-<dt>”CEC” - float</dt><dd><p>Hyperbolic threshold for CEC</p>
+<dt>CEC<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CEC</p>
 </dd>
-<dt>”CEA” - float</dt><dd><p>Hyperbolic threshold for CEA</p>
+<dt>CEA<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CEA</p>
 </dd>
-<dt>”CECw” - float</dt><dd><p>Hyperbolic threshold for CECw</p>
+<dt>CECw<span class="classifier">float</span></dt><dd><p>Hyperbolic threshold for CECw</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1479,17 +1463,17 @@ Oregon. Journal of Geophysical Research: Biogeosciences, 114(G4).
 <dt>versatile_loadkwargs<span class="classifier">dict</span></dt><dd><p>Arguments passed to the VersatileLoad function.</p>
 <blockquote>
 <div><dl class="simple">
-<dt>“timestamp_col”<span class="classifier">str or list of str, optional</span></dt><dd><ul>
+<dt>timestamp_col<span class="classifier">str or list of str, optional</span></dt><dd><ul>
 <li><p>If a list: Combines split columns (e.g., [‘Year’, ‘Month’, ‘Day’]) into a datetime index.</p></li>
 <li><p>If a string: Converts that specific column into the datetime index.</p></li>
 <li><p>If None: Converts the default DataFrame index to datetime.</p></li>
 </ul>
 </dd>
-<dt>”convert_gases”<span class="classifier">bool, default False</span></dt><dd><p>If True, converts ‘co2’ and ‘h2o’ from mmol/m³ to mg/m³ and g/m³ respectively.</p>
+<dt>convert_gases<span class="classifier">bool, default False</span></dt><dd><p>If True, converts ‘co2’ and ‘h2o’ from mmol/m³ to mg/m³ and g/m³ respectively.</p>
 </dd>
-<dt>”rename_cols”<span class="classifier">dict, optional</span></dt><dd><p>A dictionary mapping old column names to new ones (e.g., {“Pressure”: “P”}).</p>
+<dt>rename_cols<span class="classifier">dict, optional</span></dt><dd><p>A dictionary mapping old column names to new ones (e.g., {“Pressure”: “P”}).</p>
 </dd>
-<dt>”select_cols”<span class="classifier">list of str, optional</span></dt><dd><p>A list of specific columns to keep. All other columns will be dropped.</p>
+<dt>select_cols<span class="classifier">list of str, optional</span></dt><dd><p>A list of specific columns to keep. All other columns will be dropped.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1506,16 +1490,16 @@ Common values are logging.DEBUG (10), logging.INFO (20), or logging.WARNING (30)
 <h2>Saves<a class="headerlink" href="#saves" title="Link to this heading">¶</a></h2>
 <blockquote>
 <div><dl class="simple">
-<dt>df_data - pandas.DataFrame</dt><dd><p>Processed and partioned data as csv-file with metadata header.</p>
+<dt>df_data<span class="classifier">pandas.DataFrame</span></dt><dd><p>Processed and partioned data as csv-file with metadata header.</p>
 </dd>
 </dl>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Processed and partioned data</p>
+<dd class="field-odd"><p><strong>df_data</strong> – Processed and partioned data</p>
 </dd>
 <dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>df_data - pandas.DataFrame</p>
+<dd class="field-even"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </section>
@@ -1563,11 +1547,7 @@ Common values are logging.DEBUG (10), logging.INFO (20), or logging.WARNING (30)
 </ul>
 </li>
 <li><a class="reference internal" href="#module-partitioning.wrapper">wrapper</a><ul>
-<li><a class="reference internal" href="#partitioning.wrapper.CallPartitioning"><code class="docutils literal notranslate"><span class="pre">CallPartitioning()</span></code></a><ul>
-<li><a class="reference internal" href="#partitioning.wrapper.filei"><code class="docutils literal notranslate"><span class="pre">filei</span></code></a></li>
-<li><a class="reference internal" href="#partitioning.wrapper.siteDetails"><code class="docutils literal notranslate"><span class="pre">siteDetails</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#partitioning.wrapper.CallPartitioning"><code class="docutils literal notranslate"><span class="pre">CallPartitioning()</span></code></a></li>
 <li><a class="reference internal" href="#partitioning.wrapper.LoadBmmflux"><code class="docutils literal notranslate"><span class="pre">LoadBmmflux()</span></code></a></li>
 <li><a class="reference internal" href="#partitioning.wrapper.NormLoad"><code class="docutils literal notranslate"><span class="pre">NormLoad()</span></code></a></li>
 <li><a class="reference internal" href="#partitioning.wrapper.VersatileLoad"><code class="docutils literal notranslate"><span class="pre">VersatileLoad()</span></code></a></li>

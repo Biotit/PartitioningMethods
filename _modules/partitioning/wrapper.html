@@ -70,158 +70,151 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calls different partitioning methods and returns the data and units.</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    filei : str</span>
 <span class="sd">        String with path to file being loaded and partitoned.</span>
-
 <span class="sd">    siteDetails : dict</span>
 <span class="sd">        Dictionary with details about the measurement site.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
-<span class="sd">        -----</span>
-<span class="sd">            &quot;hi&quot;: int/float,</span>
+<span class="sd">        ----</span>
+<span class="sd">            hi : int/float,</span>
 <span class="sd">                Canopy mean height in meters</span>
-<span class="sd">            &quot;zi&quot;: int/float,</span>
+<span class="sd">            zi : int/float,</span>
 <span class="sd">                EC measurement height in meters</span>
-<span class="sd">            &quot;freq&quot;: int/float,</span>
+<span class="sd">            freq : int/float,</span>
 <span class="sd">                EC measurement frequency in Hz</span>
-<span class="sd">            &quot;length&quot;: int/float,</span>
+<span class="sd">            length : int/float,</span>
 <span class="sd">                length of data file in minutes</span>
-<span class="sd">            &quot;PreProcessing&quot;: bool</span>
+<span class="sd">            PreProcessing : bool</span>
 <span class="sd">                If pre-processing takes place.</span>
-<span class="sd">            &quot;ppath&quot;: str</span>
+<span class="sd">            ppath : str</span>
 <span class="sd">                Type of photosynthesis (&#39;C3&#39; or &#39;C4&#39;), for WUE calculation.</span>
-
-
 <span class="sd">    argsQC : dict</span>
 <span class="sd">        Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are</span>
 <span class="sd">        necessary. All options have default values, but can be modified if needed.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
-<span class="sd">        -----</span>
-<span class="sd">            &quot;density_correction&quot; - bool</span>
+<span class="sd">        ----</span>
+<span class="sd">            density_correction : bool</span>
 <span class="sd">                True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</span>
-<span class="sd">            &quot;fluctuations&quot; - str</span>
+<span class="sd">            fluctuations : str</span>
 <span class="sd">                Describes the type of operation used to extract fluctuations:</span>
 <span class="sd">                &#39;BA&#39;: block average</span>
 <span class="sd">                &#39;LD&#39;: Linear detrending</span>
 <span class="sd">                &#39;FL&#39;: Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.</span>
-<span class="sd">            &quot;filtercut&quot; - int</span>
+<span class="sd">            filtercut : int</span>
 <span class="sd">                Cutoff time in minutes for the low-pass filter. Only used if method is &#39;FL&#39;.</span>
-<span class="sd">            &quot;maxGapsInterpolate&quot; - int</span>
+<span class="sd">            maxGapsInterpolate : int</span>
 <span class="sd">                Number of consecutive gaps that will be interpolated.</span>
-<span class="sd">            &quot;RemainingData&quot; - int</span>
+<span class="sd">            RemainingData : int</span>
 <span class="sd">                Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</span>
-<span class="sd">            &quot;saveprocessed&quot; - bool</span>
+<span class="sd">            saveprocessed : bool</span>
 <span class="sd">                If True, the processed data is saved to a CSV file.</span>
-<span class="sd">            &quot;time_lag_correction&quot; - bool</span>
+<span class="sd">            time_lag_correction : bool</span>
 <span class="sd">                If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</span>
-<span class="sd">            &quot;max_lag_seconds&quot; - int</span>
+<span class="sd">            max_lag_seconds : int</span>
 <span class="sd">                Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</span>
-<span class="sd">            &quot;type_lag&quot; - str</span>
+<span class="sd">            type_lag : str</span>
 <span class="sd">                Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
-
 <span class="sd">    argsOut : dict</span>
 <span class="sd">        Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">        Possible to activate all simultanously.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
-<span class="sd">        -----</span>
-<span class="sd">            &quot;energetic_units&quot; - bool</span>
+<span class="sd">        ----</span>
+<span class="sd">            energetic_units : bool</span>
 <span class="sd">                True if the H2O flux shall be provided in energetic units in W/m2</span>
-<span class="sd">            &quot;mass_units&quot; - bool</span>
+<span class="sd">            mass_units : bool</span>
 <span class="sd">                True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</span>
-<span class="sd">            &quot;molar_units&quot; - bool</span>
+<span class="sd">            molar_units : bool</span>
 <span class="sd">                True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</span>
-
 <span class="sd">    methods : bool or dict, default True</span>
 <span class="sd">        If True, all available partitioning methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
 
-<span class="sd">        &quot;MREA&quot; : bool</span>
-<span class="sd">        &quot;CEC&quot; : bool</span>
-<span class="sd">        &quot;CECw&quot; : bool</span>
-<span class="sd">        &quot;CEA&quot; : bool</span>
-<span class="sd">        &quot;FVS&quot; : bool</span>
-
+<span class="sd">        MREA : bool</span>
+<span class="sd">        CEC : bool</span>
+<span class="sd">        CECw : bool</span>
+<span class="sd">        CEA : bool</span>
+<span class="sd">        FVS : bool</span>
 <span class="sd">    methodsWue : bool or dict, default True</span>
 <span class="sd">        If True, all available water use efficicency methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
 
-<span class="sd">        &quot;const_ppm&quot; : bool</span>
-<span class="sd">        &quot;const_ratio&quot; : bool</span>
-<span class="sd">        &quot;linear&quot; : bool</span>
-<span class="sd">        &quot;sqrt&quot; : bool</span>
-<span class="sd">        &quot;opt&quot; : bool</span>
+<span class="sd">        const_ppm : bool</span>
+<span class="sd">        const_ratio : bool</span>
+<span class="sd">        linear : bool</span>
+<span class="sd">        sqrt : bool</span>
+<span class="sd">        opt : bool</span>
 
 <span class="sd">    statistics : bool or dict, default {&quot;TurbStats&quot;:True}</span>
 <span class="sd">        If True all possible statistics are calculated.</span>
 <span class="sd">        If False no statistics are calculated.</span>
-<span class="sd">        If dict, the specified statistics are calculated.</span>
-
-<span class="sd">        Keys</span>
-<span class="sd">        ----</span>
+<span class="sd">        If dict, the specified statistics are calculated. </span>
 <span class="sd">        If True, the corresponding method is calculated</span>
 <span class="sd">        Keys not used, are set to False</span>
-
-<span class="sd">        &quot;TurbStats&quot; : bool</span>
+<span class="sd">        </span>
+<span class="sd">        Keys</span>
+<span class="sd">        ----</span>
+<span class="sd">        TurbStats : bool</span>
 <span class="sd">            If True basic general turbulence statistics are calculated.</span>
-<span class="sd">        &quot;steadyness&quot; : bool</span>
+<span class="sd">        steadyness : bool</span>
 <span class="sd">            If True, Foken&#39;s stationarity test is implemented to check if the data is stationary.</span>
 <span class="sd">            If False, the test is not implemented.</span>
 <span class="sd">            The test is only informative and does not remove data, which is left to the user&#39;s discretion.</span>
-<span class="sd">        &quot;sampledEvents&quot; : bool</span>
+<span class="sd">        sampledEvents : bool</span>
 <span class="sd">            If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
 
 <span class="sd">    argsQThres : dict</span>
 <span class="sd">        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to</span>
 <span class="sd">        partition the fluxes.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
-<span class="sd">        -----</span>
-<span class="sd">            &quot;cec_per_points_Q1Q2&quot; - int</span>
+<span class="sd">        ----</span>
+<span class="sd">            cec_per_points_Q1Q2 : int</span>
 <span class="sd">                For CEC more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
-<span class="sd">            &quot;cec_per_points_each&quot; - int</span>
+<span class="sd">            cec_per_points_each : int</span>
 <span class="sd">                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
-<span class="sd">            &quot;mrea_per_points_Q1Q2&quot; - int</span>
+<span class="sd">            mrea_per_points_Q1Q2 : int</span>
 <span class="sd">                For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
-<span class="sd">            &quot;mrea_per_points_each&quot; - int</span>
+<span class="sd">            mrea_per_points_each : int</span>
 <span class="sd">                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
-<span class="sd">            &quot;cea_per_points_each&quot; - int</span>
+<span class="sd">            cea_per_points_each : int</span>
 <span class="sd">                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                up- and downdrafts, no partitioning is performed.</span>
-<span class="sd">            &quot;t_scale_gap_threshold&quot; - int</span>
+<span class="sd">            t_scale_gap_threshold : int</span>
 <span class="sd">                For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</span>
-<span class="sd">            &quot;H&quot; - float or dict</span>
+<span class="sd">            H : float or dict</span>
 <span class="sd">                Hyperbolic threshold criteria. If not specified 0 is used for all methods.</span>
 <span class="sd">                If float: MREA, CEC, CEA, CECw get calculated using this threshold.</span>
 <span class="sd">                If dict:</span>
 <span class="sd">                    Hyperbolic threshold per method used.</span>
 <span class="sd">                    If for a method no threshold is defined its set to 0.</span>
-
+<span class="sd">                    </span>
 <span class="sd">                    Keys</span>
-<span class="sd">                    -------</span>
-<span class="sd">                    &quot;MREA&quot; - float</span>
+<span class="sd">                    ----</span>
+<span class="sd">                    MREA : float</span>
 <span class="sd">                        Hyperbolic threshold for MREA</span>
-<span class="sd">                    &quot;CEC&quot; - float</span>
+<span class="sd">                    CEC : float</span>
 <span class="sd">                        Hyperbolic threshold for CEC</span>
-<span class="sd">                    &quot;CEA&quot; - float</span>
+<span class="sd">                    CEA : float</span>
 <span class="sd">                        Hyperbolic threshold for CEA</span>
-<span class="sd">                    &quot;CECw&quot; - float</span>
+<span class="sd">                    CECw : float</span>
 <span class="sd">                        Hyperbolic threshold for CECw</span>
 
 
@@ -253,30 +246,30 @@
 
 <span class="sd">    versatile_loadkwargs : dict</span>
 <span class="sd">        Arguments passed to the VersatileLoad function.</span>
-
+<span class="sd">        </span>
 <span class="sd">        Keys</span>
-<span class="sd">        ------</span>
-<span class="sd">            &quot;timestamp_col&quot; : str or list of str, optional</span>
+<span class="sd">        ----</span>
+<span class="sd">            timestamp_col : str or list of str, optional</span>
 <span class="sd">                - If a list: Combines split columns (e.g., [&#39;Year&#39;, &#39;Month&#39;, &#39;Day&#39;]) into a datetime index.</span>
 <span class="sd">                - If a string: Converts that specific column into the datetime index.</span>
 <span class="sd">                - If None: Converts the default DataFrame index to datetime.</span>
-<span class="sd">            &quot;convert_gases&quot; : bool, default False</span>
+<span class="sd">            convert_gases : bool, default False</span>
 <span class="sd">                If True, converts &#39;co2&#39; and &#39;h2o&#39; from mmol/m³ to mg/m³ and g/m³ respectively.</span>
-<span class="sd">            &quot;rename_cols&quot; : dict, optional</span>
+<span class="sd">            rename_cols : dict, optional</span>
 <span class="sd">                A dictionary mapping old column names to new ones (e.g., {&quot;Pressure&quot;: &quot;P&quot;}).</span>
-<span class="sd">            &quot;select_cols&quot; : list of str, optional</span>
+<span class="sd">            select_cols : list of str, optional</span>
 <span class="sd">                A list of specific columns to keep. All other columns will be dropped.</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    ----------</span>
+<span class="sd">    -------</span>
 <span class="sd">        datun : dict</span>
 <span class="sd">            Dictionary with partitioned data and units.</span>
-
+<span class="sd">            </span>
 <span class="sd">        Keys</span>
-<span class="sd">        -----</span>
-<span class="sd">        &quot;data&quot; : dict</span>
+<span class="sd">        ----</span>
+<span class="sd">        data : dict</span>
 <span class="sd">            Partitioned data, each key:value pair corresponds to one return value of the partioning functions.</span>
-<span class="sd">        &quot;units&quot; : dict</span>
+<span class="sd">        units : dict</span>
 <span class="sd">            The corresponding unit, as well as key:value pair.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">part_results</span> <span class="o">=</span> <span class="p">{}</span>
@@ -475,18 +468,18 @@
 <span class="sd">            Dictionary with details about the measurement site.</span>
 
 <span class="sd">            Keys</span>
-<span class="sd">            -----</span>
-<span class="sd">                &quot;hi&quot;: int/float,</span>
+<span class="sd">            ----</span>
+<span class="sd">                hi : int/float,</span>
 <span class="sd">                    Canopy mean height in meters</span>
-<span class="sd">                &quot;zi&quot;: int/float,</span>
+<span class="sd">                zi : int/float,</span>
 <span class="sd">                    EC measurement height in meters</span>
-<span class="sd">                &quot;freq&quot;: int/float,</span>
+<span class="sd">                freq : int/float,</span>
 <span class="sd">                    EC measurement frequency in Hz</span>
-<span class="sd">                &quot;length&quot;: int/float,</span>
+<span class="sd">                length : int/float,</span>
 <span class="sd">                    length of data file in minutes</span>
-<span class="sd">                &quot;PreProcessing&quot;: bool</span>
+<span class="sd">                PreProcessing : bool</span>
 <span class="sd">                    If pre-processing takes place.</span>
-<span class="sd">                &quot;ppath&quot; : str</span>
+<span class="sd">                ppath : str</span>
 <span class="sd">                    Type of photosynthesis (&#39;C3&#39; or &#39;C4&#39;), for WUE calculation.</span>
 
 <span class="sd">        infolder - str</span>
@@ -504,27 +497,27 @@
 <span class="sd">            necessary. All options have default values, but can be modified if needed.</span>
 
 <span class="sd">            Keys</span>
-<span class="sd">            -----</span>
-<span class="sd">                &quot;density_correction&quot; - bool</span>
+<span class="sd">            ----</span>
+<span class="sd">                density_correction : bool</span>
 <span class="sd">                    True if density corrections are necessary (open gas analyzer); False (closed or enclosed gas analyzer).</span>
-<span class="sd">                &quot;fluctuations&quot; - str</span>
+<span class="sd">                fluctuations : str</span>
 <span class="sd">                    Describes the type of operation used to extract fluctuations:</span>
 <span class="sd">                    &#39;BA&#39;: block average</span>
 <span class="sd">                    &#39;LD&#39;: Linear detrending</span>
 <span class="sd">                    &#39;FL&#39;: Filter low frequencies. Requires filtercut to indicate the cutoff time in minutes.</span>
-<span class="sd">                &quot;filtercut&quot; - int</span>
+<span class="sd">                filtercut : int</span>
 <span class="sd">                    Cutoff time in minutes for the low-pass filter. Only used if method is &#39;FL&#39;.</span>
-<span class="sd">                &quot;maxGapsInterpolate&quot; - int</span>
+<span class="sd">                maxGapsInterpolate : int</span>
 <span class="sd">                    Number of consecutive gaps that will be interpolated.</span>
-<span class="sd">                &quot;RemainingData&quot; - int</span>
+<span class="sd">                RemainingData : int</span>
 <span class="sd">                    Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</span>
-<span class="sd">                &quot;saveprocessed&quot; - bool</span>
+<span class="sd">                saveprocessed : bool</span>
 <span class="sd">                    If True, the processed data is saved to a CSV file.</span>
-<span class="sd">                &quot;time_lag_correction&quot; - bool</span>
+<span class="sd">                time_lag_correction : bool</span>
 <span class="sd">                    If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</span>
-<span class="sd">                &quot;max_lag_seconds&quot; - int</span>
+<span class="sd">                max_lag_seconds : int</span>
 <span class="sd">                    Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</span>
-<span class="sd">                &quot;type_lag&quot; - str</span>
+<span class="sd">                type_lag : str</span>
 <span class="sd">                    Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                    &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
 
@@ -533,12 +526,12 @@
 <span class="sd">            Possible to activate all simultanously.</span>
 
 <span class="sd">            Keys</span>
-<span class="sd">            -----</span>
-<span class="sd">                &quot;energetic_units&quot; - bool</span>
+<span class="sd">            ----</span>
+<span class="sd">                energetic_units : bool</span>
 <span class="sd">                    True if the H2O flux shall be provided in energetic units in W/m2</span>
-<span class="sd">                &quot;mass_units&quot; - bool</span>
+<span class="sd">                mass_units : bool</span>
 <span class="sd">                    True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.</span>
-<span class="sd">                &quot;molar_units&quot; - bool</span>
+<span class="sd">                molar_units : bool</span>
 <span class="sd">                    True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)</span>
 
 <span class="sd">        methods : bool or dict, default True</span>
@@ -550,11 +543,11 @@
 <span class="sd">            ----</span>
 <span class="sd">            If True, the corresponding method is calculated</span>
 
-<span class="sd">            &quot;MREA&quot; : bool</span>
-<span class="sd">            &quot;CEC&quot; : bool</span>
-<span class="sd">            &quot;CECw&quot; : bool</span>
-<span class="sd">            &quot;CEA&quot; : bool</span>
-<span class="sd">            &quot;FVS&quot; : bool</span>
+<span class="sd">            MREA : bool</span>
+<span class="sd">            CEC : bool</span>
+<span class="sd">            CECw : bool</span>
+<span class="sd">            CEA : bool</span>
+<span class="sd">            FVS : bool</span>
 
 <span class="sd">        methodsWue : bool or dict, default True</span>
 <span class="sd">            If True, all available water use efficicency methods are used.</span>
@@ -565,11 +558,11 @@
 <span class="sd">            ----</span>
 <span class="sd">            If True, the corresponding method is calculated</span>
 
-<span class="sd">            &quot;const_ppm&quot; : bool</span>
-<span class="sd">            &quot;const_ratio&quot; : bool</span>
-<span class="sd">            &quot;linear&quot; : bool</span>
-<span class="sd">            &quot;sqrt&quot; : bool</span>
-<span class="sd">            &quot;opt&quot; : bool</span>
+<span class="sd">            const_ppm : bool</span>
+<span class="sd">            const_ratio : bool</span>
+<span class="sd">            linear : bool</span>
+<span class="sd">            sqrt : bool</span>
+<span class="sd">            opt : bool</span>
 
 <span class="sd">        statistics : bool or dict, default {&quot;TurbStats&quot;:True}</span>
 <span class="sd">            If True all possible statistics are calculated.</span>
@@ -581,13 +574,13 @@
 <span class="sd">            If True, the corresponding method is calculated</span>
 <span class="sd">            Keys not used, are set to False</span>
 
-<span class="sd">            &quot;TurbStats&quot; : bool</span>
+<span class="sd">            TurbStats : bool</span>
 <span class="sd">                If True basic general turbulence statistics are calculated.</span>
-<span class="sd">            &quot;steadyness&quot; : bool</span>
+<span class="sd">            steadyness : bool</span>
 <span class="sd">                If True, Foken&#39;s stationarity test is implemented to check if the data is stationary.</span>
 <span class="sd">                If False, the test is not implemented.</span>
 <span class="sd">                The test is only informative and does not remove data, which is left to the user&#39;s discretion.</span>
-<span class="sd">            &quot;sampledEvents&quot; : bool</span>
+<span class="sd">            sampledEvents : bool</span>
 <span class="sd">                If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
 
 <span class="sd">        argsQThres : dict</span>
@@ -596,23 +589,23 @@
 <span class="sd">            about the time scale of sampled events can be given here.</span>
 
 <span class="sd">            Keys</span>
-<span class="sd">            -----</span>
-<span class="sd">                &quot;cec_per_points_Q1Q2&quot; - int</span>
+<span class="sd">            ----</span>
+<span class="sd">                cec_per_points_Q1Q2 : int</span>
 <span class="sd">                    For CEC more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                    Otherwise no partitioning is performed.</span>
-<span class="sd">                &quot;cec_per_points_each&quot; - int</span>
+<span class="sd">                cec_per_points_each : int</span>
 <span class="sd">                    For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
-<span class="sd">                &quot;mrea_per_points_Q1Q2&quot; - int</span>
+<span class="sd">                mrea_per_points_Q1Q2 : int</span>
 <span class="sd">                    For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                    Otherwise no partitioning is performed.</span>
-<span class="sd">                &quot;mrea_per_points_each&quot; - int</span>
+<span class="sd">                mrea_per_points_each : int</span>
 <span class="sd">                    For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
-<span class="sd">                &quot;cea_per_points_each&quot; - int</span>
+<span class="sd">                cea_per_points_each : int</span>
 <span class="sd">                    For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                    up- and downdrafts, no partitioning is performed.</span>
-<span class="sd">                &quot;t_scale_gap_threshold&quot; - int</span>
+<span class="sd">                t_scale_gap_threshold : int</span>
 <span class="sd">                    For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</span>
-<span class="sd">                &quot;H&quot; - float or dict</span>
+<span class="sd">                H : float or dict</span>
 <span class="sd">                    Hyperbolic threshold criteria. If not specified 0 is used for all methods.</span>
 <span class="sd">                    If float: MREA, CEC, CEA, CECw get calculated using this threshold.</span>
 <span class="sd">                    If dict:</span>
@@ -620,14 +613,14 @@
 <span class="sd">                        If for a method no threshold is defined its set to 0.</span>
 
 <span class="sd">                        Keys</span>
-<span class="sd">                        -------</span>
-<span class="sd">                        &quot;MREA&quot; - float</span>
+<span class="sd">                        ----</span>
+<span class="sd">                        MREA : float</span>
 <span class="sd">                            Hyperbolic threshold for MREA</span>
-<span class="sd">                        &quot;CEC&quot; - float</span>
+<span class="sd">                        CEC : float</span>
 <span class="sd">                            Hyperbolic threshold for CEC</span>
-<span class="sd">                        &quot;CEA&quot; - float</span>
+<span class="sd">                        CEA : float</span>
 <span class="sd">                            Hyperbolic threshold for CEA</span>
-<span class="sd">                        &quot;CECw&quot; - float</span>
+<span class="sd">                        CECw : float</span>
 <span class="sd">                            Hyperbolic threshold for CECw</span>
 
 
@@ -661,16 +654,16 @@
 <span class="sd">            Arguments passed to the VersatileLoad function.</span>
 
 <span class="sd">            Keys</span>
-<span class="sd">            ------</span>
-<span class="sd">                &quot;timestamp_col&quot; : str or list of str, optional</span>
+<span class="sd">            ----</span>
+<span class="sd">                timestamp_col : str or list of str, optional</span>
 <span class="sd">                    - If a list: Combines split columns (e.g., [&#39;Year&#39;, &#39;Month&#39;, &#39;Day&#39;]) into a datetime index.</span>
 <span class="sd">                    - If a string: Converts that specific column into the datetime index.</span>
 <span class="sd">                    - If None: Converts the default DataFrame index to datetime.</span>
-<span class="sd">                &quot;convert_gases&quot; : bool, default False</span>
+<span class="sd">                convert_gases : bool, default False</span>
 <span class="sd">                    If True, converts &#39;co2&#39; and &#39;h2o&#39; from mmol/m³ to mg/m³ and g/m³ respectively.</span>
-<span class="sd">                &quot;rename_cols&quot; : dict, optional</span>
+<span class="sd">                rename_cols : dict, optional</span>
 <span class="sd">                    A dictionary mapping old column names to new ones (e.g., {&quot;Pressure&quot;: &quot;P&quot;}).</span>
-<span class="sd">                &quot;select_cols&quot; : list of str, optional</span>
+<span class="sd">                select_cols : list of str, optional</span>
 <span class="sd">                    A list of specific columns to keep. All other columns will be dropped.</span>
 <span class="sd">        logginglevel : int, optional, default 20</span>
 <span class="sd">            The logging threshold for the root logger. Defaults to logging.INFO (20).</span>
@@ -678,11 +671,11 @@
 
 <span class="sd">    Saves</span>
 <span class="sd">    ----------</span>
-<span class="sd">       df_data - pandas.DataFrame</span>
+<span class="sd">       df_data : pandas.DataFrame</span>
 <span class="sd">           Processed and partioned data as csv-file with metadata header.</span>
 <span class="sd">    Return</span>
 <span class="sd">    ----------</span>
-<span class="sd">       df_data - pandas.DataFrame</span>
+<span class="sd">       df_data : pandas.DataFrame</span>
 <span class="sd">           Processed and partioned data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Start logger</span>
@@ -883,7 +876,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    df - pandas.DataFrame</span>
+<span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        The loaded data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with NormLoad.&quot;</span><span class="p">)</span>
@@ -911,7 +904,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    df - pandas.DataFrame</span>
+<span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        The loaded data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading the data with LoadBmmflux.&quot;</span><span class="p">)</span>
