@@ -137,8 +137,6 @@
 <span class="sd">                Number of consecutive gaps that will be interpolated.</span>
 <span class="sd">            RemainingData - int</span>
 <span class="sd">                Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</span>
-<span class="sd">            saveprocessed - bool</span>
-<span class="sd">                If True, the processed data is saved to a CSV file.</span>
 <span class="sd">            time_lag_correction - bool</span>
 <span class="sd">                If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</span>
 <span class="sd">            max_lag_seconds - int</span>
@@ -146,6 +144,10 @@
 <span class="sd">            type_lag - str</span>
 <span class="sd">                Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
+<span class="sd">            saveplotlag - bool</span>
+<span class="sd">                If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</span>
+<span class="sd">            outfolder - str</span>
+<span class="sd">                 If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.</span>
 
 <span class="sd">    sampledEventsStats : bool, optional</span>
 <span class="sd">        If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
@@ -249,7 +251,7 @@
             <span class="s2">&quot;density_correction&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)</span>
             <span class="s2">&quot;maxGapsInterpolate&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># Intervals of up to 5 missing values are filled by linear interpolation</span>
             <span class="s2">&quot;RemainingData&quot;</span><span class="p">:</span> <span class="mi">95</span><span class="p">,</span>  <span class="c1"># Only proceed with partioning if 95% of initial data is available after pre-processing</span>
-            <span class="s2">&quot;saveprocessed&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># If True, save the intermediate processed data including all corrections and fluctuations</span>
+            <span class="s2">&quot;outfolder&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">argsQC</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">,</span> <span class="o">**</span><span class="n">argsQC</span><span class="p">}</span>
@@ -577,6 +579,7 @@
             <span class="n">max_lag_seconds</span><span class="o">=</span><span class="n">max_lag_seconds</span><span class="p">,</span>
             <span class="n">type_lag</span><span class="o">=</span><span class="n">type_lag</span><span class="p">,</span>
             <span class="n">saveplotlag</span><span class="o">=</span><span class="n">saveplotlag</span><span class="p">,</span>
+            <span class="n">outfolder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">argsQC</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outfolder&quot;</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;co2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="n">lag_co2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;h2o&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="n">lag_h2o</span><span class="p">)</span>

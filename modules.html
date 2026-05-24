@@ -110,14 +110,16 @@ necessary. All options have default values, but can be modified if needed.</p>
 </dd>
 <dt>RemainingData - int</dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
 </dd>
-<dt>saveprocessed - bool</dt><dd><p>If True, the processed data is saved to a CSV file.</p>
-</dd>
 <dt>time_lag_correction - bool</dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
 </dd>
 <dt>max_lag_seconds - int</dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
 </dd>
 <dt>type_lag - str</dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
 ‘Positive’ means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</p>
+</dd>
+<dt>saveplotlag - bool</dt><dd><p>If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</p>
+</dd>
+<dt>outfolder - str</dt><dd><p>If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1043,7 +1045,7 @@ necessary. All options have default values, but can be modified if needed.</p>
 </dd>
 <dt>RemainingData<span class="classifier">int</span></dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
 </dd>
-<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the processed data is saved to a CSV file.</p>
+<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.</p>
 </dd>
 <dt>time_lag_correction<span class="classifier">bool</span></dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
 </dd>
@@ -1051,6 +1053,10 @@ necessary. All options have default values, but can be modified if needed.</p>
 </dd>
 <dt>type_lag<span class="classifier">str</span></dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
 ‘Positive’ means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</p>
+</dd>
+<dt>saveplotlag - bool</dt><dd><p>If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</p>
+</dd>
+<dt>outfolder<span class="classifier">str</span></dt><dd><p>If an outfolder is given the plots of the cross-correlation and the pre-processed files are saved there in the subfolders TimeLagCorrelationFigures or ProcessedData. If not, the current working directory.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -1331,11 +1337,13 @@ necessary. All options have default values, but can be modified if needed.</p>
 </dd>
 <dt>RemainingData<span class="classifier">int</span></dt><dd><p>Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</p>
 </dd>
-<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the processed data is saved to a CSV file.</p>
+<dt>saveprocessed<span class="classifier">bool</span></dt><dd><p>If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.</p>
 </dd>
 <dt>time_lag_correction<span class="classifier">bool</span></dt><dd><p>If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</p>
 </dd>
 <dt>max_lag_seconds<span class="classifier">int</span></dt><dd><p>Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</p>
+</dd>
+<dt>saveplotlag - bool</dt><dd><p>If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</p>
 </dd>
 <dt>type_lag<span class="classifier">str</span></dt><dd><p>Specifies the type of lag to consider. Options are ‘positive’, ‘negative’, or ‘both’. Defaults to ‘positive’.
 ‘Positive’ means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</p>

@@ -45,6 +45,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.Partitioning</span><span class="w"> </span><span class="kn">import</span> <span class="n">Partitioning</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.auxfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Constants</span><span class="p">,</span> <span class="n">setup_logging</span>
 
@@ -111,7 +112,7 @@
 <span class="sd">            RemainingData : int</span>
 <span class="sd">                Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</span>
 <span class="sd">            saveprocessed : bool</span>
-<span class="sd">                If True, the processed data is saved to a CSV file.</span>
+<span class="sd">                If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.</span>
 <span class="sd">            time_lag_correction : bool</span>
 <span class="sd">                If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</span>
 <span class="sd">            max_lag_seconds : int</span>
@@ -119,6 +120,10 @@
 <span class="sd">            type_lag : str</span>
 <span class="sd">                Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
+<span class="sd">            saveplotlag - bool</span>
+<span class="sd">                If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</span>
+<span class="sd">            outfolder : str</span>
+<span class="sd">                 If an outfolder is given the plots of the cross-correlation and the pre-processed files are saved there in the subfolders TimeLagCorrelationFigures or ProcessedData. If not, the current working directory.</span>
 <span class="sd">    argsOut : dict</span>
 <span class="sd">        Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">        Possible to activate all simultanously.</span>
@@ -321,6 +326,27 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in </span><span class="si">{</span><span class="n">filei</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
+    <span class="k">if</span> <span class="n">argsQC</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;saveprocessed&quot;</span><span class="p">):</span>
+        <span class="c1"># Saving pre-processed data</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Source&quot;</span><span class="p">:</span> <span class="s2">&quot;PartitioningMethods&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;RunDate&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;argsQC&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">argsQC</span><span class="p">),</span>
+            <span class="s2">&quot;siteDetails&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">siteDetails</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">outfolder_p</span> <span class="o">=</span> <span class="n">argsQC</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outfolder&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">path_folder</span> <span class="o">=</span> <span class="n">outfolder_p</span> <span class="o">+</span> <span class="s2">&quot;ProcessedData&quot;</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path_folder</span> <span class="o">+</span> <span class="s2">&quot;/processed-</span><span class="si">%s</span><span class="s2">.csv&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_folder</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_folder</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_setting</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">_setting</span><span class="si">}</span><span class="s2">:, </span><span class="si">{</span><span class="n">metadata</span><span class="p">[</span><span class="n">_setting</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">part</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
     <span class="n">part_results</span><span class="p">[</span><span class="s2">&quot;datetime_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Helper function to extract magnitude and unit</span>
@@ -512,11 +538,13 @@
 <span class="sd">                RemainingData : int</span>
 <span class="sd">                    Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.</span>
 <span class="sd">                saveprocessed : bool</span>
-<span class="sd">                    If True, the processed data is saved to a CSV file.</span>
+<span class="sd">                    If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.</span>
 <span class="sd">                time_lag_correction : bool</span>
 <span class="sd">                    If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.</span>
 <span class="sd">                max_lag_seconds : int</span>
 <span class="sd">                    Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.</span>
+<span class="sd">                saveplotlag - bool</span>
+<span class="sd">                    If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</span>
 <span class="sd">                type_lag : str</span>
 <span class="sd">                    Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                    &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
@@ -695,6 +723,9 @@
         <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;outfolder&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argsQC</span><span class="p">:</span>
+        <span class="n">argsQC</span><span class="p">[</span><span class="s2">&quot;outfolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outfolder</span>
 
     <span class="c1"># only the listfiles argument is different from run to run of the</span>
     <span class="c1"># CallPartitioning function, all others are held constant</span>
