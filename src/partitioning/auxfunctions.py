@@ -7,7 +7,7 @@ import pint
 import logging
 
 ureg = pint.UnitRegistry()
-ureg.define('percent = 0.01 * dimensionless = %')
+ureg.define("percent = 0.01 * dimensionless = %")
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -382,11 +382,11 @@ def max_time_lag_crosscorrel(
     return best_lag_co2, best_lag_h2o
 
 
-def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
+def check_continous_data(data, dt, fill_with_NA=True, max_gap=2 * 60 * 60):
     """
-    checks if the provided data timestamp is continous. 
+    checks if the provided data timestamp is continous.
     If not, it may be filled, or an error is raised for too large gaps.
-    
+
     Parameters
     ----------
         data - pandas.DataFrame
@@ -394,68 +394,71 @@ def check_continous_data(data, dt, fill_with_NA=True, max_gap=2*60*60):
         dt - float
             Data aquisition time stamp gap. Should be 1/aquisition_frequency.
         fill_with_NA - bool, default True
-            If the data is not continous, shall it be filled with NA, to make the timestamps continous. 
+            If the data is not continous, shall it be filled with NA, to make the timestamps continous.
         max_gap - int, default 2*60*60
             Allowed maximum gap in the data in seconds. If larger, an error is raised and the function returns None.
-    
+
     Returns
     ----------
         data - pandas.DataFrame
-            The continous dataframe in case of fill_with_NA=True. Otherwise the original dataframe. 
+            The continous dataframe in case of fill_with_NA=True. Otherwise the original dataframe.
             In case of a gap to large None is returned.
     """
-    logger.debug(f"Checking for continous data, and fill_with_NA {fill_with_NA}, max_gap {max_gap}.")
- 
+    logger.debug(
+        f"Checking for continous data, and fill_with_NA {fill_with_NA}, max_gap {max_gap}."
+    )
+
     data.index = pd.to_datetime(data.index)
     time_diffs = data.index.diff().dropna()
     expected_delta = pd.Timedelta(seconds=dt)
-    
+
     is_discontinuous = abs((time_diffs - expected_delta).total_seconds()) > 1e-5
     is_discontinuous = np.insert(is_discontinuous, 0, False)
-    
+
     gap_count = is_discontinuous.sum()
-    
-    
+
     if gap_count > 0:
         gap_pos = np.where(is_discontinuous)[0]
         for pos in gap_pos:
             gap_end = data.index[pos]
-            gap_start = data.index[pos-1] # The last good timestamp
-            logger.warning(f"Timestamp missing between {gap_start} and {gap_end}")            
+            gap_start = data.index[pos - 1]  # The last good timestamp
+            logger.warning(f"Timestamp missing between {gap_start} and {gap_end}")
             duration = (gap_end - gap_start).total_seconds()
             if duration > max_gap:
-                raise ValueError(f"CRITICAL GAP: {duration} seconds of data timestamp missing!")
+                raise ValueError(
+                    f"CRITICAL GAP: {duration} seconds of data timestamp missing!"
+                )
                 return None
-                
+
         if fill_with_NA:
             start = data.index.min()
             end = data.index.max()
             perfect_index = pd.date_range(start=start, end=end, freq=f"{dt}s")
             data_filled = data.reindex(perfect_index)
-            logger.info("Gaps in the timestamp filled with NaN.")        
+            logger.info("Gaps in the timestamp filled with NaN.")
             return data_filled
         else:
             return data
-        
+
     else:
         return data
-    
-    
+
+
 def setup_logging(filepath, level=logging.INFO):
     """
     Configures the root logger to output messages to both a file and the console.
 
-    This function sets the root logger level and attaches a FileHandler 
-    and a StreamHandler. It is idempotent; if the root logger already has 
+    This function sets the root logger level and attaches a FileHandler
+    and a StreamHandler. It is idempotent; if the root logger already has
     handlers configured, it will return immediately to prevent duplicate logging.
 
     Parameters
     ----------
     filepath : str
-        The absolute or relative path to the file where logs should be written. 
+        The absolute or relative path to the file where logs should be written.
         The parent directory will be created if it does not exist.
     level : int, optional
-        The logging threshold for the root logger. Defaults to logging.INFO. 
+        The logging threshold for the root logger. Defaults to logging.INFO.
         Common values are logging.DEBUG, logging.INFO, or logging.WARNING.
 
     Returns
@@ -463,16 +466,15 @@ def setup_logging(filepath, level=logging.INFO):
     None
     """
     logger = logging.getLogger()
-    
-    
+
     # Create log folder if it does not exist
     log_dir = os.path.dirname(filepath)
     if log_dir and not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    
+
     logger.setLevel(level)
-    
-    # ALWAYS clear handlers to ensure a clean state, 
+
+    # ALWAYS clear handlers to ensure a clean state,
     # especially in interactive environments.
     if logger.hasHandlers():
         for handler in logger.handlers[:]:
@@ -481,10 +483,14 @@ def setup_logging(filepath, level=logging.INFO):
 
     # 1. File Handler (for the file)
     file_handler = logging.FileHandler(filepath)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
     logger.addHandler(file_handler)
 
     # 2. Stream Handler (for the console/terminal)
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+    console_handler.setFormatter(
+        logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+    )
     logger.addHandler(console_handler)

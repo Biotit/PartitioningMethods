@@ -10,11 +10,7 @@ def test_partitioning(sample_data_read):
         "length": 30,
         "PreProcessing": True,
     }
-    argsOut = {
-        "energetic_units":True,
-        "mass_units":True,
-        "molar_units":False
-        }
+    argsOut = {"energetic_units": True, "mass_units": True, "molar_units": False}
     processing_args = {
         "density_correction": True,  # if True, density corrections are implemented during pre-processing
         "fluctuations": "LD",
@@ -32,7 +28,7 @@ def test_partitioning(sample_data_read):
         df=sample_data_read,
         PreProcessing=siteDetails["PreProcessing"],
         argsQC=processing_args,
-        argsOut=argsOut
+        argsOut=argsOut,
     )
     part.TurbulentStats()
     part.partCEC(H=0)  # E, T, P, R
@@ -69,18 +65,18 @@ def test_partitioning(sample_data_read):
             -1.19095094e-02,
             -9.26281175e-03,
             -1.95313827e-03,
-            2.78027367e+02,
+            2.78027367e02,
             -9.76881156e-01,
-            2.78019644e+02,
+            2.78019644e02,
             -9.76854020e-01,
-            2.78027367e+02,
+            2.78027367e02,
             -9.76881156e-01,
-            2.30251687e+02,
-            -1.21632099e+00,
-            2.27696304e+02,
+            2.30251687e02,
+            -1.21632099e00,
+            2.27696304e02,
             -9.79028233e-01,
-            2.67906705e+02,
-            -1.01164671e+00,
+            2.67906705e02,
+            -1.01164671e00,
         ]
     )
     # Old expected output with old density correction, using mixing ratio for T calculation

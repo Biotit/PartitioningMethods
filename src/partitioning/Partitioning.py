@@ -18,7 +18,7 @@ from .auxfunctions import (
     FilterLowFrequencies,
     max_time_lag_crosscorrel,
     Constants,
-    check_continous_data
+    check_continous_data,
 )
 
 # Create a unit registry
@@ -107,10 +107,10 @@ class Partitioning(object):
             type_lag - str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
-    
+
     sampledEventsStats : bool, optional
         If True the time fraction and time scale of sampled events within each quadrant are calculated.
-    
+
     argsOut : dict, optional
         Contains options in which units the results are given. Defaults are that the output is in mass based units.
         Possible to activate all simultanously.
@@ -123,26 +123,26 @@ class Partitioning(object):
                 True if the CO2 and H2O flux shall be provided as mass flux: g/(m2 s) for h2o and mg/(m2 s) for co2.
             molar_units - bool
                 True if the CO2 and H2O flux shall be provided as molar flux: mmol/(m2 s)
-    
+
     argsQThres : dict, optional
-        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to 
+        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to
         partition the fluxes. Also the settings regarding the hyperbolic threshold and
         about the time scale of sampled events can be given here.
-    
+
         Keys
         -----
             cec_per_points_Q1Q2 - int
                 For CEC more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
             cec_per_points_each - int
-                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant. 
+                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
             mrea_per_points_Q1Q2 - int
-                For MREA more % of data needs to be present within quadrant 1 and 2 to partition. 
+                For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
             mrea_per_points_each - int
-                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant. 
+                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
             cea_per_points_each - int
-                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both 
+                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                 up- and downdrafts, no partitioning is performed.
             t_scale_gap_threshold - int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
@@ -152,7 +152,7 @@ class Partitioning(object):
                 If dict:
                     Hyperbolic threshold per method used.
                     If for a method no threshold is defined its set to 0.
-                    
+
                     Keys
                     -------
                     "MREA" - float
@@ -163,8 +163,8 @@ class Partitioning(object):
                         Hyperbolic threshold for CEA
                     "CECw" - float
                         Hyperbolic threshold for CECw
-    
-    
+
+
     Notes: Available Partitioning Methods
         - Conditional Eddy Covariance (CEC)
         - Modified Relaxed Eddy Accumulation (MREA)
@@ -177,9 +177,19 @@ class Partitioning(object):
     will only need time series of w_p, h2o_p, co2_p.
     """
 
-    def __init__(self, hi, zi, freq, length, df, PreProcessing, argsQC={}, 
-                 sampledEventsStats=False, argsOut={},
-                 argsQThres={}):
+    def __init__(
+        self,
+        hi,
+        zi,
+        freq,
+        length,
+        df,
+        PreProcessing,
+        argsQC={},
+        sampledEventsStats=False,
+        argsOut={},
+        argsQThres={},
+    ):
         logger.debug("Setting up Partitioning object.")
         self.hi = hi * ureg.meter
         self.zi = zi * ureg.meter
@@ -188,9 +198,9 @@ class Partitioning(object):
         self.length = length * ureg.minute
         self.valid = True
         self.default_argsQC = {
-            "physical_bounds":True, # If True, data outside of specified physical bounds is set to NA.
-            "despike":True, # If True, outliers in the data are removed by despiking.
-            "coord_rotation":True, # If True, a double coordinate rotation is performed to deminish the mean vertical wind speed.
+            "physical_bounds": True,  # If True, data outside of specified physical bounds is set to NA.
+            "despike": True,  # If True, outliers in the data are removed by despiking.
+            "coord_rotation": True,  # If True, a double coordinate rotation is performed to deminish the mean vertical wind speed.
             "time_lag_correction": False,  # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
             "max_lag_seconds": 5,  # Maximum time lag in seconds to consider for correlation
             "saveplotlag": False,  # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series
@@ -200,26 +210,26 @@ class Partitioning(object):
             "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)
             "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
             "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
-            "saveprocessed": False  # If True, save the intermediate processed data including all corrections and fluctuations
+            "saveprocessed": False,  # If True, save the intermediate processed data including all corrections and fluctuations
         }
-        
+
         self.argsQC = {**self.default_argsQC, **argsQC}
-        
+
         self.default_argsOut = {
-            "energetic_units":False, # return latent heat flux in energetic units (W/m2)
-            "mass_units":True, # return water and carbon fluxes in mass units: g/(m2 s) for h2o and mg/(m2 s) for co2
-            "molar_units":False # return water and carbon fluxes in molar units: both in mmol/(m2 s)
-            }
+            "energetic_units": False,  # return latent heat flux in energetic units (W/m2)
+            "mass_units": True,  # return water and carbon fluxes in mass units: g/(m2 s) for h2o and mg/(m2 s) for co2
+            "molar_units": False,  # return water and carbon fluxes in molar units: both in mmol/(m2 s)
+        }
         self.argsOut = {**self.default_argsOut, **argsOut}
-        
+
         self.default_argsQThres = {
             "cec_per_points_Q1Q2": 15,  # smallest percentage of points that must be available in the first two quadrants
             "cec_per_points_each": 3,  # smallest percentage of points in each quadrant
             "mrea_per_points_Q1Q2": 15,
             "mrea_per_points_each": 3,
             "cea_per_points_each": 2,
-            "t_scale_gap_threshold":10
-            }
+            "t_scale_gap_threshold": 10,
+        }
         if argsQThres is False:
             self.argsQThres = {
                 "cec_per_points_Q1Q2": 0,  # smallest percentage of points that must be available in the first two quadrants
@@ -227,8 +237,8 @@ class Partitioning(object):
                 "mrea_per_points_Q1Q2": 0,
                 "mrea_per_points_each": 0,
                 "cea_per_points_each": 0,
-                "t_scale_gap_threshold":0
-                }
+                "t_scale_gap_threshold": 0,
+            }
         else:
             self.argsQThres = {**self.default_argsQThres, **argsQThres}
 
@@ -254,7 +264,7 @@ class Partitioning(object):
             "Tv_p": ureg.kelvin,
             "rho_moist_air": ureg.kilogram / ureg.meter**3,
         }
-        
+
         # make time stamp continous for "num_idx"
         # and remove period if too many missing data
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"))
@@ -281,13 +291,12 @@ class Partitioning(object):
                 self._densityCorrections(method=self.argsQC.get("fluctuations"))
             if self.argsQC.get("maxGapsInterpolate"):
                 self._fillGaps(self.argsQC.get("maxGapsInterpolate"))
-                
+
         # define continous index before dropping any NaN data
         self.data["num_idx"] = range(len(self.data))
         self._checkMissingdata(percData=self.argsQC.get("RemainingData"), dropna_=True)
-        
+
         self.sampledEventsStats = sampledEventsStats
-        
 
     def _checkUnits(self):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
@@ -339,18 +348,19 @@ class Partitioning(object):
         total_size = (
             self.freq.magnitude * self.length.magnitude * 60
         )  # total number of points in period
-        
+
         # check if data timestamp is continous
         # if not fill with NaN
         # it does only make the time stamps continous
         # if in the beginning or the end data is missing, its not filled.
-        max_gap_s = (1-(percData/100)) * total_size * (1/self.freq.magnitude)
-        self.data = check_continous_data(self.data, dt=1/self.freq.magnitude,
-                             fill_with_NA=True, max_gap=max_gap_s)
-        
+        max_gap_s = (1 - (percData / 100)) * total_size * (1 / self.freq.magnitude)
+        self.data = check_continous_data(
+            self.data, dt=1 / self.freq.magnitude, fill_with_NA=True, max_gap=max_gap_s
+        )
+
         # Count non-NaN data
         valid_count = self.data.count().min()
-        
+
         self.valid_data = (valid_count / total_size) * 100
         if (self.valid_data < percData) and self.valid:
             self.valid = False
@@ -703,7 +713,7 @@ class Partitioning(object):
         """
         logger.debug("Fill gaps.")
         if maxGaps > 20:
-            msg =  "Too many consecutive points to be interpolated. Consider a smaller gap (up to 20 points). \n"
+            msg = "Too many consecutive points to be interpolated. Consider a smaller gap (up to 20 points). \n"
             raise TypeError(msg)
 
         self.data.interpolate(
@@ -771,10 +781,10 @@ class Partitioning(object):
             for svar in ["wc", "wq", "wt", "ww", "cc", "qq", "tt"]
         }
         # print results as a table with wc wq wt ww cc qq tt on top and their respective values below
-        #print("------------------------")
-        #print(" Foken's Stationarity Test (%)")
-        #print(pd.DataFrame(self.FokenStatTest, index=[0]))
-        #print("\n")
+        # print("------------------------")
+        # print(" Foken's Stationarity Test (%)")
+        # print(pd.DataFrame(self.FokenStatTest, index=[0]))
+        # print("\n")
 
     def TurbulentStats(self):
         """
@@ -816,27 +826,27 @@ class Partitioning(object):
                     correlation between CO2 and temperature
                 'H': float
                     sensible heat flux [W/m2]
-                
+
                 In case of self.argsOut.get("energetic_units"):
                     'LE': float
                         latent heat flux [W/m2]
-                
+
                 In case of self.argsOut.get("mass_units"):
                     'ET_m': float
                         evapotranspiration, covariance between w and h2o [g/(m2 s)]
                     'Fc': float
                         carbon dioxide flux, covariance between w and CO2 [mg/m2/s]
-                
+
                 In case of self.argsOut.get("molar_units"):
                     'ET_a': float
                         evapotranspiration [mmol/(m2 s)]
                     'Fc_a': float
                         carbon dioxide flux [mmol/(m2 s)]
-                
-                
+
+
         """
         logger.debug("Turbulence statistics.")
-        
+
         aux = self.data[["u_p", "v_p", "w_p", "co2_p", "h2o_p", "Ts_p"]].copy()
         matrixCov = aux.cov()  # Covariance matrix
         matrixSTD = aux.std()  # Covariance matrix
@@ -898,73 +908,87 @@ class Partitioning(object):
             "H": H_wm2,
         }
         if self.argsOut.get("energetic_units"):
-            self.turbstats.update({
-                "LE": LE_wm2,
-                })
+            self.turbstats.update(
+                {
+                    "LE": LE_wm2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.turbstats.update({
-                "ET_m": matrixCov["w_p"]["h2o_p"] * self.units["w"] * self.units["h2o"],
-                "Fc": matrixCov["w_p"]["co2_p"] * self.units["co2"] * self.units["w"]
-                })
+            self.turbstats.update(
+                {
+                    "ET_m": matrixCov["w_p"]["h2o_p"]
+                    * self.units["w"]
+                    * self.units["h2o"],
+                    "Fc": matrixCov["w_p"]["co2_p"]
+                    * self.units["co2"]
+                    * self.units["w"],
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.turbstats.update({
-                "ET_a": matrixCov["w_p"]["h2o_p"] / Constants.MWvapor.magnitude 
-                * ureg.millimole / ureg.meter**2 /ureg.second,
-                "Fc_a": matrixCov["w_p"]["co2_p"] * (10**-3) / Constants.MWco2.magnitude 
-                * ureg.millimole / ureg.meter**2 /ureg.second
-                })
-            
-        
+            self.turbstats.update(
+                {
+                    "ET_a": matrixCov["w_p"]["h2o_p"]
+                    / Constants.MWvapor.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                    "Fc_a": matrixCov["w_p"]["co2_p"]
+                    * (10**-3)
+                    / Constants.MWco2.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                }
+            )
+
     def TScale(self, sdata):
         """
         Calculates the mean time scale in seconds of sampled events
-        
+
         Main reference:
-        - Thomas et al., 2008 (Agr For Met). 
+        - Thomas et al., 2008 (Agr For Met).
           Estimating daytime subcanopy respiration from conditional sampling methods applied to multi-scalar high frequency turbulence time series
           https://www.sciencedirect.com/science/article/pii/S0168192308000737
-        
+
         Parameters
         ----------
         sdata : pandas.DataFrame
             Data already subsetted to only contain data of a specific quadrant
             Needs to have the column "num_idx" which was a continous numeric index
                 of the continously increasing timestamp before exclusion of NaN and
-                before subsetting. 
-          
+                before subsetting.
+
         Returns
         ----------
         t_scale : float (in case sdata is empty np.nan)
             Mean time scale in seconds of an event within the sdata
-        
+
         """
         logger.debug("Calculating time frame of sampled events.")
-        
+
         if "num_idx" not in sdata.columns:
             msg = "Subsetted dataframe needs to contain the column 'num_idx' -- a continuous numeric index before subsetting."
             raise ValueError(msg)
-        
+
         if sdata.empty:
             return np.nan
-        
+
         else:
-            # check if there were gaps produced by subsetting the 
+            # check if there were gaps produced by subsetting the
             # original dataframe for this quadrant
             # If this is the case the num_idx  (continous index for the total dataset)
             # changes more than the
             # gap threshold+1 to its value before
             gaps = sdata["num_idx"].diff()
             new_event = gaps >= (self.argsQThres["t_scale_gap_threshold"] + 1)
-            # Using cumsum for each event (seperated by gaps) 
+            # Using cumsum for each event (seperated by gaps)
             # we assign a new index number
             sdata["event"] = new_event.cumsum()
             # And count how many datapoints there are for each event
             streak_counts = sdata.groupby("event").size()
             # And recalculate using the sampling frequency into the time domain
-            t_scale = streak_counts.mean() * (1/self.freq.magnitude) * ureg.second
+            t_scale = streak_counts.mean() * (1 / self.freq.magnitude) * ureg.second
             return t_scale
-
-        
 
     def WaterUseEfficiency(self, ppath="C3", methodsWue=True):
         """
@@ -985,16 +1009,16 @@ class Partitioning(object):
         ----------
         ppath : str
             Type of photosynthesis ('C3' or 'C4').
-            
+
         methodsWue : bool or dict, default True
             If True, all available methods are used.
             If False, no method is used.
             If dict, the specified methods are used.
-            
+
             Keys
             ----
             If True, the corresponding method is calculated
-            
+
             const_ppm : bool
             const_ratio : bool
             linear : bool
@@ -1062,15 +1086,17 @@ class Partitioning(object):
                 WUE from constant ratio [kg_co2/kg_h2o].
             - 'linear': float
                 WUE from linear model [kg_co2/kg_h2o].
-                
+
             In case of C3 plants additional available is:
             - 'sqrt': float
                 WUE from sqrt model [kg_co2/kg_h2o].
             - 'opt': float
                 WUE from optimization model [kg_co2/kg_h2o].
         """
-        logger.debug(f"Calculating water use efficiencies: {methodsWue} for {ppath} plants.")
-        
+        logger.debug(
+            f"Calculating water use efficiencies: {methodsWue} for {ppath} plants."
+        )
+
         # Create a copy of the dataframe with variables that will be needed
         aux = self.data.copy()
 
@@ -1168,12 +1194,20 @@ class Partitioning(object):
         vpd = vapor_press_deficit(ambient_h2o, leaf_T, Constants.Rvapor.magnitude)
 
         if vpd < 0:
-            msg = ("Negative vapor pressure deficit at leaf level using log-law profiles."
-                   " For this period, no water use efficiency calculation possible.") 
-                    # "Check the input data and try again or remove period."
+            msg = (
+                "Negative vapor pressure deficit at leaf level using log-law profiles."
+                " For this period, no water use efficiency calculation possible."
+            )
+            # "Check the input data and try again or remove period."
             raise ValueError(msg)
-        
-        defaults_methods = {"const_ppm":False, "const_ratio":False, "linear":False, "sqrt":False, "opt":False}
+
+        defaults_methods = {
+            "const_ppm": False,
+            "const_ratio": False,
+            "linear": False,
+            "sqrt": False,
+            "opt": False,
+        }
         if methodsWue == True:
             # activating all methods
             methodsWue = {k: True for k in defaults_methods}
@@ -1182,7 +1216,12 @@ class Partitioning(object):
             methodsWue = {**defaults_methods, **methodsWue}
 
         # Calculating inside stomata co2 concentration
-        ci_mod_const_ppm, ci_mod_const_ratio, ci_mod_linear, ci_mod_sqrt = None, None, None, None
+        ci_mod_const_ppm, ci_mod_const_ratio, ci_mod_linear, ci_mod_sqrt = (
+            None,
+            None,
+            None,
+            None,
+        )
         if methodsWue["const_ppm"]:
             ci_mod_const_ppm = ci_const_ppm(
                 P,
@@ -1214,15 +1253,19 @@ class Partitioning(object):
             methodsWue["sqrt"] = False
 
         # 3 - Compute water use efficiency ----------------------------------------------------------------------------
-        
+
         # find all available models
-        wue_calculate = [(ci, mod) for ci, mod in [
-                    (ci_mod_const_ppm, "const_ppm"),
-                    (ci_mod_const_ratio, "const_ratio"),
-                    (ci_mod_linear, "linear"),
-                    (ci_mod_sqrt, "sqrt"),
-                ] if methodsWue[mod] == True] 
-        
+        wue_calculate = [
+            (ci, mod)
+            for ci, mod in [
+                (ci_mod_const_ppm, "const_ppm"),
+                (ci_mod_const_ratio, "const_ratio"),
+                (ci_mod_linear, "linear"),
+                (ci_mod_sqrt, "sqrt"),
+            ]
+            if methodsWue[mod] == True
+        ]
+
         # calculate wue for each of them
         for ci, mod in wue_calculate:
             coef = 1.0 / Constants.diff_ratio
@@ -1268,7 +1311,7 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesCEC
             Contains all the flux components and status of the calculation.
-            
+
             in case of self.sampledEventsStats:
                 - Q1tfrac_cec - float
                     Time fraction of sampled events within Quadrant 1.
@@ -1278,13 +1321,13 @@ class Partitioning(object):
                     Mean time scale of sampled events within Quadrant 1.
                 - Q2tscale_cec - float
                     Mean time scale of sampled events within Quadrant 2.
-            
+
             in case of self.argsOut.get("energetic_units"):
                 - Tcec - float
                     Plant transpiration (W/m2).
                 - Ecec - float
                     Soil/surface evaporation (W/m2).
-            
+
             in case of self.argsOut.get("mass_units"):
                 - Ecec_m - float
                     Soil/surface evaporation (g/(m2 s)).
@@ -1294,7 +1337,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mg/m2/s).
                 - Rcec - float
                     Soil/surface respiration (mg/m2/s).
-            
+
             in case of self.argsOut.get("molar_units"):
                 - Ecec_a - float
                     Soil/surface evaporation (mmol/(m2 s)).
@@ -1304,8 +1347,8 @@ class Partitioning(object):
                     Plant net photosynthesis* (mmol/m2/s).
                 - Rcec_a - float
                     Soil/surface respiration (mmol/m2/s).
-                    
-                    
+
+
             - statuscec - str
                 Status of the calculation.
 
@@ -1315,8 +1358,10 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         logger.debug(f"CEC partitioning with H {H}.")
-        
-        per_points_Q1Q2 = self.argsQThres.get("cec_per_points_Q1Q2", 15)  # more percentage of points need to be available in the first two quadrants
+
+        per_points_Q1Q2 = self.argsQThres.get(
+            "cec_per_points_Q1Q2", 15
+        )  # more percentage of points need to be available in the first two quadrants
         per_poits_each = self.argsQThres.get("cec_per_points_each", 3)
 
         # Creates a dataframe with variables of interest and no constraints
@@ -1327,25 +1372,26 @@ class Partitioning(object):
         )  # flux [all quadrants] given in mg/(s m2)
         total_Fc_a = np.mean(
             (10**-3)
-            * auxET["co2_p"].values * auxET["w_p"].values
+            * auxET["co2_p"].values
+            * auxET["w_p"].values
             / Constants.MWco2.magnitude
         )  # flux [all quadrants] given in mmol/(s m2)
-        
+
         total_ET = (
             (10**-3)
             * Constants.Lv.magnitude
             * np.mean(auxET["h2o_p"].values * auxET["w_p"].values)
         )  # flux [all quadrants] given in  W/m2
-        total_ET_m = (
-            np.mean(auxET["h2o_p"].values * auxET["w_p"].values)
+        total_ET_m = np.mean(
+            auxET["h2o_p"].values * auxET["w_p"].values
         )  # flux [all quadrants] given in g/(m2 s)
         total_ET_a = (
             # (10**-3) * (10**3) *
             np.mean(auxET["h2o_p"].values * auxET["w_p"].values)
             / Constants.MWvapor.magnitude
-        ) # flux [all quadrants] given in mmol/(m2 s)
+        )  # flux [all quadrants] given in mmol/(m2 s)
 
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the first quadrant
         auxE = self.data[
             (self.data["w_p"] > 0)
@@ -1369,7 +1415,7 @@ class Partitioning(object):
             auxE["w_p"].index.size / N
         ) * 100  # Percentage of points in the first quadrant
 
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the second quadrant
         auxT = self.data[
             (self.data["w_p"] > 0)
@@ -1394,22 +1440,22 @@ class Partitioning(object):
         E, E_m, E_a, T, T_m, T_a = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
         P, P_a, R, R_a = np.nan, np.nan, np.nan, np.nan
         ratioET, ratioRP = np.nan, np.nan
-        
+
         # Calculating method statistics
         if self.sampledEventsStats:
             self.fluxesCEC = {
                 "Q1tfrac_cec": (sumQ1 / 100) * ureg.dimensionless,
                 "Q2tfrac_cec": (sumQ2 / 100) * ureg.dimensionless,
                 "Q1tscale_cec": self.TScale(auxE),
-                "Q2tscale_cec": self.TScale(auxT)
-                }
+                "Q2tscale_cec": self.TScale(auxT),
+            }
         else:
             self.fluxesCEC = {}
-        
+
         # First condition: do we have enough points in Q1 and Q2?
         if (sumQ1 + sumQ2) < per_points_Q1Q2:
-            pass # let all partitioned fluxes be defined NaN
-        elif ((sumQ1 > per_poits_each) and (sumQ2 > per_poits_each)):
+            pass  # let all partitioned fluxes be defined NaN
+        elif (sumQ1 > per_poits_each) and (sumQ2 > per_poits_each):
             # ET components
             ratioET = E_condition_ET / T_condition_ET
             T = total_ET / (1.0 + ratioET)
@@ -1425,7 +1471,7 @@ class Partitioning(object):
             R = total_Fc / (1.0 + 1.0 / ratioRP)
             P_a = total_Fc_a / (1.0 + ratioRP)
             R_a = total_Fc_a / (1.0 + 1.0 / ratioRP)
-            
+
         elif (sumQ1 <= per_poits_each) and (sumQ2 >= per_poits_each):
             # In this case, all water vapor flux is assumed to be transpiration
             ratioET = 0.0
@@ -1435,7 +1481,7 @@ class Partitioning(object):
             E_a = 0.0
             T_m = total_ET_m
             E_m = 0.0
-            
+
             # In this case, all co2 flux is assumed to be photosynthesis
             ratioRP = 0.0
             P = total_Fc
@@ -1451,7 +1497,7 @@ class Partitioning(object):
             E_a = total_ET_a
             T_m = 0.0
             E_m = total_ET_m
-            
+
             # All Fc flux is considered to be respiration
             ratioRP = np.inf
             P = 0.0
@@ -1469,42 +1515,49 @@ class Partitioning(object):
             finalstat = "Small ratioRP"
         else:
             finalstat = "OK"
-            
-        
-        # Additional constraints may be added based on the strength of the fluxes 
+
+        # Additional constraints may be added based on the strength of the fluxes
         # and other combinations
-        
+
         # Return in different units
         if self.argsOut.get("energetic_units"):
-            self.fluxesCEC.update({
-                # energetic units
-                #"ETcec": total_ET * ureg.watt / ureg.meter**2,
-                "Ecec": E * ureg.watt / ureg.meter**2,
-                "Tcec": T * ureg.watt / ureg.meter**2})
+            self.fluxesCEC.update(
+                {
+                    # energetic units
+                    # "ETcec": total_ET * ureg.watt / ureg.meter**2,
+                    "Ecec": E * ureg.watt / ureg.meter**2,
+                    "Tcec": T * ureg.watt / ureg.meter**2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.fluxesCEC.update({
-            # mass units
-            #"ETcec_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-            "Ecec_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
-            "Tcec_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
-            #"Fccec": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-            "Pcec": P * ureg.milligram / ureg.meter**2 / ureg.second,
-            "Rcec": R * ureg.milligram / ureg.meter**2 / ureg.second})
+            self.fluxesCEC.update(
+                {
+                    # mass units
+                    # "ETcec_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Ecec_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tcec_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    # "Fccec": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pcec": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rcec": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.fluxesCEC.update({
-            # molar units
-            #"ETcec_a": total_ET_a * ureg.millimole / ureg.meter**2 /ureg.second,
-            "Ecec_a": E_a * ureg.millimole / ureg.meter**2 /ureg.second,
-            "Tcec_a": T_a * ureg.millimole / ureg.meter**2 /ureg.second,
-            #"Fccec_a": total_Fc_a * ureg.millimole / ureg.meter**2 /ureg.second,
-            "Pcec_a": P_a * ureg.millimole / ureg.meter**2 /ureg.second,
-            "Rcec_a": R_a * ureg.millimole / ureg.meter**2 /ureg.second})
+            self.fluxesCEC.update(
+                {
+                    # molar units
+                    # "ETcec_a": total_ET_a * ureg.millimole / ureg.meter**2 /ureg.second,
+                    "Ecec_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Tcec_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    # "Fccec_a": total_Fc_a * ureg.millimole / ureg.meter**2 /ureg.second,
+                    "Pcec_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Rcec_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                }
+            )
         # Status
         self.fluxesCEC.update({"statuscec": finalstat})
         # Ratios
-        #self.fluxesCEC.update({"rRP": ratioRP,
+        # self.fluxesCEC.update({"rRP": ratioRP,
         #                       "rET": ratioET})
-
 
     def partREA(self, H=0):
         """
@@ -1523,7 +1576,7 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesREA
             Dictionary with the following flux components:
-                
+
             in case of self.sampledEventsStats:
                 - Q1tfrac_mrea - float
                     Time fraction of sampled events within Quadrant 1.
@@ -1533,13 +1586,13 @@ class Partitioning(object):
                     Mean time scale of sampled events within Quadrant 1.
                 - Q2tscale_mrea - float
                     Mean time scale of sampled events within Quadrant 2.
-            
+
             in case of self.argsOut.get("energetic_units"):
                 - Tmrea - float
                     Plant transpiration (W/m2).
                 - Emrea - float
                     Soil/surface evaporation (W/m2).
-            
+
             in case of self.argsOut.get("mass_units"):
                 - Emrea_m - float
                     Soil/surface evaporation (g/(m2 s)).
@@ -1549,7 +1602,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mg/m2/s).
                 - Rmrea - float
                     Soil/surface respiration (mg/m2/s).
-            
+
             in case of self.argsOut.get("molar_units"):
                 - Emrea_a - float
                     Soil/surface evaporation (mmol/(m2 s)).
@@ -1559,8 +1612,8 @@ class Partitioning(object):
                     Plant net photosynthesis* (mmol/m2/s).
                 - Rmrea_a - float
                     Soil/surface respiration (mmol/m2/s).
-                    
-                    
+
+
             - statusmrea - str
                 Status of the calculation.
 
@@ -1570,9 +1623,13 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         logger.debug(f"MREA partitioning with H {H}.")
-        
-        per_points_Q1Q2 = self.argsQThres.get("mrea_per_points_Q1Q2", 15) # smallest percentage of points that must be available in the first two quadrants
-        per_poits_each = self.argsQThres.get("mrea_per_points_each", 3) # smallest percentage of points in each quadrant
+
+        per_points_Q1Q2 = self.argsQThres.get(
+            "mrea_per_points_Q1Q2", 15
+        )  # smallest percentage of points that must be available in the first two quadrants
+        per_poits_each = self.argsQThres.get(
+            "mrea_per_points_each", 3
+        )  # smallest percentage of points in each quadrant
 
         # REA parameters ---------------------------------------------------
         wseries = np.array(self.data["w_p"].values)  #  m/s
@@ -1584,21 +1641,17 @@ class Partitioning(object):
         )  # similarity constant
         Fc = np.cov(wseries, cseries)[0][1]  # CO2 flux [mg/m2/s]
         Fc_a = (
-            (10**-3)
-            * np.cov(wseries, cseries)[0][1] 
-            / Constants.MWco2.magnitude  
-            ) # CO2 flux [mmol/m2/s]
+            (10**-3) * np.cov(wseries, cseries)[0][1] / Constants.MWco2.magnitude
+        )  # CO2 flux [mmol/m2/s]
         ET = (
             np.cov(wseries, qseries)[0][1] * (10**-3) * Constants.Lv.magnitude
         )  # latent heat flux [W/m2]
-        ET_m = (
-            np.cov(wseries, qseries)[0][1]
-        )  # latent heat flux g/(m2 s)
+        ET_m = np.cov(wseries, qseries)[0][1]  # latent heat flux g/(m2 s)
         ET_a = (
             np.cov(wseries, qseries)[0][1] / Constants.MWvapor.magnitude
         )  # latent heat flux mmol/(m2 s)
         NN = len(wseries)  # total number of points
-        
+
         # Updrafts conditioned on first quadrant
         # numerator of equation 11 in Thomas et al., 2008
         auxE = self.data[
@@ -1610,11 +1663,12 @@ class Partitioning(object):
                 > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
             )
         ][["co2_p", "h2o_p", "w_p", "num_idx"]]
-        
+
         # Updrafts from all quadrants respecting H
         # Denominator of equation 11 in Thomas et al., 2008
         auxAll = self.data[
-            self.data["w_p"] > 0
+            self.data["w_p"]
+            > 0
             & (
                 abs(self.data["h2o_p"] / self.data["h2o_p"].std())
                 > abs(H * self.data["co2_p"].std() / self.data["co2_p"])
@@ -1628,57 +1682,66 @@ class Partitioning(object):
         # Count number of points in the first and second quadrant (no H is used here)
         # Q1sum = (len(cseries[(qseries > 0) & (cseries > 0) & (wseries > 0)]) / NN) * 100
         # Q2sum = (len(cseries[(qseries > 0) & (cseries < 0) & (wseries > 0)]) / NN) * 100
-        
+
         # Count number of points in first and second quadrant (using H!)
-        Q1sum = (auxE["w_p"].index.size / NN) * 100 
-        Q2sum = (len(self.data[ # Percentage of points in the second quadrant
-            (self.data["w_p"] > 0)
-            & (self.data["co2_p"] < 0)
-            & (self.data["h2o_p"] > 0)
-            & (
-                abs(self.data["co2_p"] / self.data["co2_p"].std())
-                > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
-            )]) / NN) * 100
-        
+        Q1sum = (auxE["w_p"].index.size / NN) * 100
+        Q2sum = (
+            len(
+                self.data[  # Percentage of points in the second quadrant
+                    (self.data["w_p"] > 0)
+                    & (self.data["co2_p"] < 0)
+                    & (self.data["h2o_p"] > 0)
+                    & (
+                        abs(self.data["co2_p"] / self.data["co2_p"].std())
+                        > abs(H * self.data["h2o_p"].std() / self.data["h2o_p"])
+                    )
+                ]
+            )
+            / NN
+        ) * 100
+
         if self.sampledEventsStats:
             self.fluxesREA = {
                 "Q1tscale_mrea": self.TScale(auxE),
                 "Q1tfrac_mrea": (Q1sum / 100) * ureg.dimensionless,
                 # "Q2tfrac_mrea": (Q2sum / 100) * ureg.dimensionless
-                }
+            }
         else:
             self.fluxesREA = {}
-        
+
         # Initialize defaults
         E, T, P, R = np.nan, np.nan, np.nan, np.nan
         E_m, T_m = np.nan, np.nan
         E_a, T_a, P_a, R_a = np.nan, np.nan, np.nan, np.nan
         finalstatus = "Undefined"
-        
+
         # Check availability of points in each quadrant
-        if ((Q1sum + Q2sum) < per_points_Q1Q2):
+        if (Q1sum + Q2sum) < per_points_Q1Q2:
             finalstatus = "Q1+Q2<20"
-        elif ((Q1sum > per_poits_each) and (Q2sum > per_poits_each)):
+        elif (Q1sum > per_poits_each) and (Q2sum > per_poits_each):
             # Compute fluxes
-            
+
             # Mass units
-            R = beta * sigmaw * (sum(auxE["co2_p"]) / len(auxAll["co2_p"]))  # Respiration [mg / (s m2)]
-            E = beta * sigmaw * (sum(auxE["h2o_p"]) / len(auxAll["h2o_p"]))  # Evaporation [g / (s m2)]
-            E_m = E.copy() # Evaporation [g/(m2 s)]
+            R = (
+                beta * sigmaw * (sum(auxE["co2_p"]) / len(auxAll["co2_p"]))
+            )  # Respiration [mg / (s m2)]
+            E = (
+                beta * sigmaw * (sum(auxE["h2o_p"]) / len(auxAll["h2o_p"]))
+            )  # Evaporation [g / (s m2)]
+            E_m = E.copy()  # Evaporation [g/(m2 s)]
             P = Fc - R  # Photosynthesis  [mg/(s m2)]
-            T_m = ET_m - E_m # Transpiration [g/(m2 s)]
-            
+            T_m = ET_m - E_m  # Transpiration [g/(m2 s)]
+
             # Molar units
-            E_a = E.copy() / Constants.MWvapor.magnitude # Evaporation [mmol/(m2 s)]
-            T_a = ET_a - E_a # Transpiration [mmol/(m2 s)]
+            E_a = E.copy() / Constants.MWvapor.magnitude  # Evaporation [mmol/(m2 s)]
+            T_a = ET_a - E_a  # Transpiration [mmol/(m2 s)]
             R_a = 10**-3 * R.copy() / Constants.MWco2.magnitude
             P_a = Fc_a - R_a
-            
-            
+
             # Energetic units
             E = E * (10**-3) * Constants.Lv.magnitude  # Evaporation [W/m2]
             T = ET - E  # Transpiration   [W/m2]
-            
+
             # Status
             finalstatus = "OK"
 
@@ -1690,76 +1753,86 @@ class Partitioning(object):
                 E_a, T_a, R_a, P_a = np.nan, np.nan, np.nan, np.nan
         elif (Q1sum <= per_poits_each) and (Q2sum >= per_poits_each):
             # Assuming that all fluxes are from the canopy
-            
+
             # Energetic units
             E = 0
             T = ET
-            
+
             # Mass units
             P = Fc
             R = 0
             E_m = 0
             T_m = ET_m
-            
+
             # Molar units
             E_a = 0
             T_a = ET_a
             P_a = Fc_a
             R_a = 0
-            
-            
+
             finalstatus = "OK"
         elif (Q1sum > per_poits_each) and (Q2sum < per_poits_each):
             # Assuming that all fluxes are from the ground
-            
+
             # Energetic units
             E = ET
             T = 0
-            
+
             # Mass units
             P = 0
             R = Fc
             E_m = ET_m
             T_m = 0
-            
+
             # Molar units
             E_a = ET_a
             T_a = 0
             P_a = 0
             R_a = Fc_a
-            
+
             finalstatus = "OK"
         else:
             pass
-        
-        
+
         if self.argsOut.get("energetic_units"):
-            self.fluxesREA.update({
-                # Energetic units
-                #"ETmrea": ET * ureg.watt / ureg.meter**2,
-                "Emrea": E * ureg.watt / ureg.meter**2,
-                "Tmrea": T * ureg.watt / ureg.meter**2})
+            self.fluxesREA.update(
+                {
+                    # Energetic units
+                    # "ETmrea": ET * ureg.watt / ureg.meter**2,
+                    "Emrea": E * ureg.watt / ureg.meter**2,
+                    "Tmrea": T * ureg.watt / ureg.meter**2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.fluxesREA.update({
-                # Mass units
-                #"Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Pmrea": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rmrea": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                #"ETmrea_m": ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-                "Emrea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
-                "Tmrea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second})
+            self.fluxesREA.update(
+                {
+                    # Mass units
+                    # "Fcmrea": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pmrea": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rmrea": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                    # "ETmrea_m": ET_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Emrea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tmrea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.fluxesREA.update({
-                # Molar units
-                #"ETmrea_a": ET_a * ureg.millimole / ureg.meter**2 /ureg.second,
-                "Emrea_a": E_a * ureg.millimole / ureg.meter**2 /ureg.second,
-                "Tmrea_a": T_a * ureg.millimole / ureg.meter**2 /ureg.second,
-                #"Fcmrea_a": Fc_a * ureg.millimole / ureg.meter**2 /ureg.second,
-                "Pmrea_a": P_a * ureg.millimole / ureg.meter**2 /ureg.second,
-                "Rmrea_a": R_a * ureg.millimole / ureg.meter**2 /ureg.second})
-        self.fluxesREA.update({
-            # Status
-            "statusmrea": finalstatus})
+            self.fluxesREA.update(
+                {
+                    # Molar units
+                    # "ETmrea_a": ET_a * ureg.millimole / ureg.meter**2 /ureg.second,
+                    "Emrea_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Tmrea_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    # "Fcmrea_a": Fc_a * ureg.millimole / ureg.meter**2 /ureg.second,
+                    "Pmrea_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Rmrea_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                }
+            )
+        self.fluxesREA.update(
+            {
+                # Status
+                "statusmrea": finalstatus
+            }
+        )
 
     def partFVS(self, W):
         """
@@ -1776,13 +1849,13 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesFVS
             Contains all the flux components and status of the calculation.
-            
+
             in case of self.argsOut.get("energetic_units"):
                 - Tfvs - float
                     Plant transpiration (W/m2).
                 - Efvs - float
                     Soil/surface evaporation (W/m2).
-            
+
             in case of self.argsOut.get("mass_units"):
                 - Efvs_m - float
                     Soil/surface evaporation (g/(m2 s)).
@@ -1792,7 +1865,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mg/m2/s).
                 - Rfvs - float
                     Soil/surface respiration (mg/m2/s).
-            
+
             in case of self.argsOut.get("molar_units"):
                 - Efvs_a - float
                     Soil/surface evaporation (mmol/(m2 s)).
@@ -1802,7 +1875,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mmol/m2/s).
                 - Rfvs_a - float
                     Soil/surface respiration (mmol/m2/s).
-                    
+
             - statusfvs - str
                 Status of the calculation.
 
@@ -1812,7 +1885,7 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         logger.debug(f"FVS partitioning with W {W}.")
-        
+
         aux = self.data[
             ["co2_p", "h2o_p", "w_p"]
         ].copy()  # Create dataframe with q, c, and w only
@@ -1833,40 +1906,49 @@ class Partitioning(object):
         A = (sigmac / sigmaq) / rho
         B = Fc / Fq
         C = rho * (sigmac / sigmaq)
-        
+
         # Define default return matrix in case partitioning not possible
         self.fluxesFVS = {}
         if self.argsOut.get("energetic_units"):
-            self.fluxesFVS.update({
-                # Energetic units
-                #"ETfvs": Fq
-                #* (10**-3)
-                #* Constants.Lv.magnitude
-                #* ureg.watt
-                #/ ureg.meter**2,
-                "Efvs": np.nan * ureg.watt / ureg.meter**2,
-                "Tfvs": np.nan * ureg.watt / ureg.meter**2})
+            self.fluxesFVS.update(
+                {
+                    # Energetic units
+                    # "ETfvs": Fq
+                    # * (10**-3)
+                    # * Constants.Lv.magnitude
+                    # * ureg.watt
+                    # / ureg.meter**2,
+                    "Efvs": np.nan * ureg.watt / ureg.meter**2,
+                    "Tfvs": np.nan * ureg.watt / ureg.meter**2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.fluxesFVS.update({
-                # Mass units
-                #"Fcfvs": Fc * 10**3 * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Pfvs": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rfvs": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                #"ETfvs_m": Fq * ureg.gram / ureg.meter**2 / ureg.second,
-                "Efvs_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                "Tfvs_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second})
+            self.fluxesFVS.update(
+                {
+                    # Mass units
+                    # "Fcfvs": Fc * 10**3 * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pfvs": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rfvs": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                    # "ETfvs_m": Fq * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Efvs_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tfvs_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.fluxesFVS.update({
-                # Molar units
-                #"Fcfvs_a": Fc / Constants.MWco2.magnitude 
-                #*  ureg.millimole / ureg.meter**2 / ureg.second,
-                "Pfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Rfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                #"ETfvs_a": Fq / Constants.MWvapor.magnitude 
-                #* ureg.millimole / ureg.meter**2 / ureg.second,
-                "Efvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Tfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second})
-    
+            self.fluxesFVS.update(
+                {
+                    # Molar units
+                    # "Fcfvs_a": Fc / Constants.MWco2.magnitude
+                    # *  ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Pfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Rfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                    # "ETfvs_a": Fq / Constants.MWvapor.magnitude
+                    # * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Efvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Tfvs_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                }
+            )
+
         # Check mathematical constraints Eq (13) in Scanlon et al., 2019
         if rho < 0:
             if A <= B < C:
@@ -1929,42 +2011,41 @@ class Partitioning(object):
             return None  # Following imposed constraint that P<0 and R>0
 
         # Obtaining flux components ------------------------------------------
-        
+
         # Partitioned fluxes
         # Mass fluxes
         T = Fq / (1.0 + ratio_ET)
         E = Fq - T
-        T_m = T.copy() # g/(m2 s)
-        E_m = E.copy() # g/(m2 s)
-        
+        T_m = T.copy()  # g/(m2 s)
+        E_m = E.copy()  # g/(m2 s)
+
         P = Fc / (1.0 + ratio_RP)  #  g/m2/s
         R = Fc - P  #  g/m2/s
         P = P * 10**3  # mg/m2/s
         R = R * 10**3  # mg/m2/s
-        
+
         # Molar fluxes
-        T_a = T_m / Constants.MWvapor.magnitude # in mmol/(m2 s)
-        E_a = E_m / Constants.MWvapor.magnitude # in mmol/(m2 s)
-        
-        P_a = P * (10**-3) / Constants.MWco2.magnitude # in mmol/(m2 s)
-        R_a = R * (10**-3) / Constants.MWco2.magnitude # in mmol/(m2 s)
-        
+        T_a = T_m / Constants.MWvapor.magnitude  # in mmol/(m2 s)
+        E_a = E_m / Constants.MWvapor.magnitude  # in mmol/(m2 s)
+
+        P_a = P * (10**-3) / Constants.MWco2.magnitude  # in mmol/(m2 s)
+        R_a = R * (10**-3) / Constants.MWco2.magnitude  # in mmol/(m2 s)
+
         # Energetic Fluxes
         T = T * (10**-3) * Constants.Lv.magnitude  # in W/m2
         E = E * (10**-3) * Constants.Lv.magnitude  # in W/m2
-        
+
         # Convert total fluxes
         # Mass fluxes
         Fc = Fc * 10**3  # mg/m2/s
         # Fq_m = Fq.copy() # g/(m2 s)
-        
+
         # Molar fluxes
         # Fc_a = Fc * (10**-3) / Constants.MWco2.magnitude # in mmol/(m2 s)
         # Fq_a = Fq_m / Constants.MWvapor.magnitude # in mmol/(m2 s)
-        
+
         # Energetic fluxes
         Fq = Fq * (10**-3) * Constants.Lv.magnitude  # in W/m2
-
 
         # Check CO2 flux components ratio
         #   CO2 fluxes might be noisy in this range
@@ -1977,34 +2058,44 @@ class Partitioning(object):
 
         # Add final values to dictionary
         if self.argsOut.get("energetic_units"):
-            self.fluxesFVS.update({
-                # Energetic units
-                #"ETfvs": Fq * ureg.watt / ureg.meter**2,
-                "Efvs": E * ureg.watt / ureg.meter**2,
-                "Tfvs": T * ureg.watt / ureg.meter**2})
+            self.fluxesFVS.update(
+                {
+                    # Energetic units
+                    # "ETfvs": Fq * ureg.watt / ureg.meter**2,
+                    "Efvs": E * ureg.watt / ureg.meter**2,
+                    "Tfvs": T * ureg.watt / ureg.meter**2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.fluxesFVS.update({
-                # Mass units
-                #"Fcfvs": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Pfvs": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rfvs": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                
-                #"ETfvs_m": Fq_m * ureg.gram / ureg.meter**2 / ureg.second,
-                "Efvs_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
-                "Tfvs_m": T_m * ureg.gram / ureg.meter**2 / ureg.second})
+            self.fluxesFVS.update(
+                {
+                    # Mass units
+                    # "Fcfvs": Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pfvs": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rfvs": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                    # "ETfvs_m": Fq_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Efvs_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tfvs_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.fluxesFVS.update({
-                # Molar units
-                #"Fcfvs_a": Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Pfvs_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Rfvs_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                
-                #"ETfvs_a": Fq_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Efvs_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Tfvs_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second})
-        self.fluxesFVS.update({
-            # Status
-            "statusfvs": finalstat})
+            self.fluxesFVS.update(
+                {
+                    # Molar units
+                    # "Fcfvs_a": Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Pfvs_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Rfvs_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    # "ETfvs_a": Fq_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Efvs_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Tfvs_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                }
+            )
+        self.fluxesFVS.update(
+            {
+                # Status
+                "statusfvs": finalstat
+            }
+        )
 
     def partCEA(self, H=0.00):
         """
@@ -2021,7 +2112,7 @@ class Partitioning(object):
         ----------
         Attributes: self.fluxesCEA
             Contains all the flux components and status of the calculation.
-            
+
             in case of self.sampledEventsStats:
                 - Q1tfrac_cea - float
                     Time fraction of sampled events within Quadrant 1.
@@ -2031,13 +2122,13 @@ class Partitioning(object):
                     Mean time scale of sampled events within Quadrant 1.
                 - Q2tscale_cea - float
                     Mean time scale of sampled events within Quadrant 2.
-            
+
             in case of self.argsOut.get("energetic_units"):
                 - Tcea - float
                     Plant transpiration (W/m2).
                 - Ecea - float
                     Soil/surface evaporation (W/m2).
-            
+
             in case of self.argsOut.get("mass_units"):
                 - Ecea_m - float
                     Soil/surface evaporation (g/(m2 s)).
@@ -2047,7 +2138,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mg/m2/s).
                 - Rcea - float
                     Soil/surface respiration (mg/m2/s).
-            
+
             in case of self.argsOut.get("molar_units"):
                 - Ecea_a - float
                     Soil/surface evaporation (mmol/(m2 s)).
@@ -2057,7 +2148,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mmol/m2/s).
                 - Rcea_a - float
                     Soil/surface respiration (mmol/m2/s).
-                    
+
             - statuscea - str
                 Status of the calculation.
 
@@ -2067,9 +2158,9 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         logger.debug(f"CEA partitioning with H {H}.")
-        
+
         per_points_each = self.argsQThres.get("cea_per_points_each", 2)
-        
+
         # Creates a dataframe with variables of interest and no constraints
         unitLE = Constants.Lv.magnitude * 10**-3
         df = self.data.copy()
@@ -2078,23 +2169,18 @@ class Partitioning(object):
         N = auxET["w_p"].index.size  # Total number of points
         total_Fc = auxETcov["co2_p"]["w_p"]  # flux [all quadrants] given in mg/(s m2)
         total_Fc_a = (
-            (10**-3)
-            * auxETcov["co2_p"]["w_p"]
-            / Constants.MWco2.magnitude
-            )  # flux [all quadrants] given in mmol/(s m2)
-        
+            (10**-3) * auxETcov["co2_p"]["w_p"] / Constants.MWco2.magnitude
+        )  # flux [all quadrants] given in mmol/(s m2)
+
         total_ET = (
             auxETcov["h2o_p"]["w_p"] * unitLE
         )  # flux [all quadrants] given in  W/m2
-        total_ET_m = (
-            auxETcov["h2o_p"]["w_p"]
-        )  # flux [all quadrants] given in g/(m2 s)
+        total_ET_m = auxETcov["h2o_p"]["w_p"]  # flux [all quadrants] given in g/(m2 s)
         total_ET_a = (
-            auxETcov["h2o_p"]["w_p"]
-            / Constants.MWvapor.magnitude
+            auxETcov["h2o_p"]["w_p"] / Constants.MWvapor.magnitude
         )  # flux [all quadrants] given in mmol/(m2 s)
 
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the first quadrant
         auxE = df[
             (df["w_p"] > 0)
@@ -2105,8 +2191,8 @@ class Partitioning(object):
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
         ][["co2_p", "h2o_p", "w_p", "num_idx"]]
-        
-        # Creates a dataframe with variables of interest and conditioned 
+
+        # Creates a dataframe with variables of interest and conditioned
         # on downdrafts and on the first quadrant
         auxE_n = df[
             (df["w_p"] < 0)
@@ -2128,7 +2214,7 @@ class Partitioning(object):
             auxE_n["co2_p"].index.size / N
         ) * 100  # Number of points on the first quadrant
 
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the second quadrant
         auxT = df[
             (df["w_p"] > 0)
@@ -2139,8 +2225,8 @@ class Partitioning(object):
                 > abs(H * df["h2o_p"].std() / df["h2o_p"])
             )
         ][["co2_p", "h2o_p", "w_p", "num_idx"]]
-        
-        # Creates a dataframe with variables of interest and conditioned 
+
+        # Creates a dataframe with variables of interest and conditioned
         # on downdrafts and on the second quadrant
         auxT_n = df[
             (df["w_p"] < 0)
@@ -2161,48 +2247,48 @@ class Partitioning(object):
         sum4 = (
             auxT_n["co2_p"].index.size / N
         ) * 100  # Number of points on the first quadrant
-        
+
         if self.sampledEventsStats:
             self.fluxesCEA = {
-                "Q1UPtscale_cea" : self.TScale(auxE),
-                "Q1DOWNtscale_cea" : self.TScale(auxE_n),
-                "Q2UPtscale_cea" : self.TScale(auxT),
-                "Q2DOWNtscale_cea" : self.TScale(auxT_n),
+                "Q1UPtscale_cea": self.TScale(auxE),
+                "Q1DOWNtscale_cea": self.TScale(auxE_n),
+                "Q2UPtscale_cea": self.TScale(auxT),
+                "Q2DOWNtscale_cea": self.TScale(auxT_n),
                 "Q1UPtfrac_cea": (sum1 / 100) * ureg.dimensionless,
                 "Q1DOWNtfrac_cea": (sum2 / 100) * ureg.dimensionless,
-                "Q2UPtfrac_cea": (sum3 / 100) *  ureg.dimensionless,
-                "Q2DOWNtfrac_cea": (sum4 / 100) *  ureg.dimensionless
-                }
+                "Q2UPtfrac_cea": (sum3 / 100) * ureg.dimensionless,
+                "Q2DOWNtfrac_cea": (sum4 / 100) * ureg.dimensionless,
+            }
         else:
             self.fluxesCEA = {}
-        
 
         # Computing flux ratios and flux components of ET and Fc
-        if ((sum1 > per_points_each) 
-            and (sum2 > per_points_each) 
-            and (sum3 > per_points_each) 
-            and (sum4 > per_points_each)):
-            
+        if (
+            (sum1 > per_points_each)
+            and (sum2 > per_points_each)
+            and (sum3 > per_points_each)
+            and (sum4 > per_points_each)
+        ):
             # Ratios
             ratioET = (Q1 - Q2) / (Q3 - Q4)
             ratioRP = (C1 - C2) / (C3 - C4)
-            
+
             # Energetic units
             T = total_ET / (1.0 + ratioET)
             E = total_ET / (1.0 + 1.0 / ratioET)
-            
+
             # Mass units
             T_m = total_ET_m / (1.0 + ratioET)
             E_m = total_ET_m / (1.0 + 1.0 / ratioET)
             P = total_Fc / (1.0 + ratioRP)
             R = total_Fc / (1.0 + 1.0 / ratioRP)
-            
+
             # Molar units
             T_a = total_ET_a / (1.0 + ratioET)
             E_a = total_ET_a / (1.0 + 1.0 / ratioET)
             P_a = total_Fc_a / (1.0 + ratioRP)
             R_a = total_Fc_a / (1.0 + 1.0 / ratioRP)
-            
+
             # Status
             status_message = "OK"
 
@@ -2212,91 +2298,111 @@ class Partitioning(object):
                 R = np.nan
                 T = np.nan
                 E = np.nan
-                
+
                 T_m = np.nan
                 E_m = np.nan
-                
+
                 P_a = np.nan
                 R_a = np.nan
                 T_a = np.nan
                 E_a = np.nan
-                
+
                 status_message = "unrealistic fluxes (P>0)"
-            
-            
+
             if self.argsOut.get("energetic_units"):
-                self.fluxesCEA.update({
-                    # Energetic units
-                    #"ETcea": total_ET * ureg.watt / ureg.meter**2,
-                    "Ecea": E * ureg.watt / ureg.meter**2,
-                    "Tcea": T * ureg.watt / ureg.meter**2})
+                self.fluxesCEA.update(
+                    {
+                        # Energetic units
+                        # "ETcea": total_ET * ureg.watt / ureg.meter**2,
+                        "Ecea": E * ureg.watt / ureg.meter**2,
+                        "Tcea": T * ureg.watt / ureg.meter**2,
+                    }
+                )
             if self.argsOut.get("mass_units"):
-                self.fluxesCEA.update({
-                    # Mass units
-                    #"Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Pcea": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Rcea": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                    #"ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ecea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Tcea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second})
+                self.fluxesCEA.update(
+                    {
+                        # Mass units
+                        # "Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Pcea": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Rcea": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                        # "ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Ecea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Tcea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    }
+                )
             if self.argsOut.get("molar_units"):
-                self.fluxesCEA.update({
-                    # Molar units
-                    #"Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Pcea_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Rcea_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    #"ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Ecea_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Tcea_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second})
-            self.fluxesCEA.update({
-                # Ratios
-                # "ratioETcea": ratioET,
-                # "ratioRPcea": ratioRP,
-                #  "sumQ1cea": sum1 + sum2,
-                #  "sumQ2cea": sum3 + sum4,
-                # WUE
-                "wuecea": P * 10**-3 / (T / unitLE),
-                # Status
-                "statuscea": status_message})
-            
+                self.fluxesCEA.update(
+                    {
+                        # Molar units
+                        # "Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Pcea_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Rcea_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        # "ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Ecea_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Tcea_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    }
+                )
+            self.fluxesCEA.update(
+                {
+                    # Ratios
+                    # "ratioETcea": ratioET,
+                    # "ratioRPcea": ratioRP,
+                    #  "sumQ1cea": sum1 + sum2,
+                    #  "sumQ2cea": sum3 + sum4,
+                    # WUE
+                    "wuecea": P * 10**-3 / (T / unitLE),
+                    # Status
+                    "statuscea": status_message,
+                }
+            )
+
         else:
             if self.argsOut.get("energetic_units"):
-                self.fluxesCEA.update({
-                    # Energetic units
-                    #"ETcea": total_ET * ureg.watt / ureg.meter**2,
-                    "Ecea": np.nan * ureg.watt / ureg.meter**2,
-                    "Tcea": np.nan * ureg.watt / ureg.meter**2})
+                self.fluxesCEA.update(
+                    {
+                        # Energetic units
+                        # "ETcea": total_ET * ureg.watt / ureg.meter**2,
+                        "Ecea": np.nan * ureg.watt / ureg.meter**2,
+                        "Tcea": np.nan * ureg.watt / ureg.meter**2,
+                    }
+                )
             if self.argsOut.get("mass_units"):
-                self.fluxesCEA.update({
-                    # Mass units
-                    #"Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Pcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Rcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                    #"ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ecea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Tcea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second})
+                self.fluxesCEA.update(
+                    {
+                        # Mass units
+                        # "Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Pcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Rcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                        # "ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Ecea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Tcea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                    }
+                )
             if self.argsOut.get("molar_units"):
-                self.fluxesCEA.update({
-                    # Molar units
-                    #"Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Pcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Rcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    #"ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Ecea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Tcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second})
-            self.fluxesCEA.update({
-                # Ratios
-                # "ratioETcea": np.nan,
-                # "ratioRPcea": np.nan,
-                # "sumQ1cea": sum1 + sum2,
-                # "sumQ2cea": sum3 + sum4,
-                    
-                # WUE
-                "wuecea": np.nan,
-                
-                # Status
-                "statuscea": "Not enough points"})
-            
+                self.fluxesCEA.update(
+                    {
+                        # Molar units
+                        # "Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Pcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Rcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                        # "ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Ecea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Tcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
+                    }
+                )
+            self.fluxesCEA.update(
+                {
+                    # Ratios
+                    # "ratioETcea": np.nan,
+                    # "ratioRPcea": np.nan,
+                    # "sumQ1cea": sum1 + sum2,
+                    # "sumQ2cea": sum3 + sum4,
+                    # WUE
+                    "wuecea": np.nan,
+                    # Status
+                    "statuscea": "Not enough points",
+                }
+            )
 
     def partCECw(self, W, H=0.00):
         """
@@ -2314,7 +2420,7 @@ class Partitioning(object):
         Attributes: self.fluxesCECw
             Contains all the flux components and status of the calculation.
             Dictionary with the following flux components:
-            
+
             in case of self.sampledEventsStats:
                 - Q1tfrac_cecw - float
                     Time fraction of sampled events within Quadrant 1.
@@ -2324,13 +2430,13 @@ class Partitioning(object):
                     Mean time scale of sampled events within Quadrant 1.
                 - Q2tscale_cecw - float
                     Mean time scale of sampled events within Quadrant 2.
-            
+
             in case of self.argsOut.get("energetic_units"):
                 - Tcecw - float
                     Plant transpiration (W/m2).
                 - Ececw - float
                     Soil/surface evaporation (W/m2).
-            
+
             in case of self.argsOut.get("mass_units"):
                 - Ececw_m - float
                     Soil/surface evaporation (g/(m2 s)).
@@ -2340,7 +2446,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mg/m2/s).
                 - Rcecw - float
                     Soil/surface respiration (mg/m2/s).
-            
+
             in case of self.argsOut.get("molar_units"):
                 - Ececw_a - float
                     Soil/surface evaporation (mmol/(m2 s)).
@@ -2350,7 +2456,7 @@ class Partitioning(object):
                     Plant net photosynthesis* (mmol/m2/s).
                 - Rcecw_a - float
                     Soil/surface respiration (mmol/m2/s).
-                    
+
             - statuscecw - str
                 Status of the calculation.
 
@@ -2360,7 +2466,7 @@ class Partitioning(object):
         it is different from gross primary productivity.
         """
         logger.debug(f"CECw partitioning with H {H} and W {W}.")
-        
+
         # Creates a dataframe with variables of interest and no constraints
         df = self.data.copy()
         auxET = df[["co2_p", "h2o_p", "w_p"]].copy()
@@ -2374,49 +2480,69 @@ class Partitioning(object):
             # If W > (total_Fc / (10**3 * total_ET),
             # then eq. 19 from Zahn 2024 would result in negative R
             # and T. Hence, we need to check it here.
-            
+
             if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update({
-                    # Energetic units
-                    #"ETcecw": total_ET
-                    #* (10**-3)
-                    #* Constants.Lv.magnitude
-                    #* ureg.watt
-                    #/ ureg.meter**2,
-                    "Ececw": np.nan * ureg.watt / ureg.meter**2,
-                    "Tcecw": np.nan * ureg.watt / ureg.meter**2})
+                self.fluxesCECw.update(
+                    {
+                        # Energetic units
+                        # "ETcecw": total_ET
+                        # * (10**-3)
+                        # * Constants.Lv.magnitude
+                        # * ureg.watt
+                        # / ureg.meter**2,
+                        "Ececw": np.nan * ureg.watt / ureg.meter**2,
+                        "Tcecw": np.nan * ureg.watt / ureg.meter**2,
+                    }
+                )
             if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update({
-                    # Mass units
-                    #"Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Pcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Rcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                    #"ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ececw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Tcecw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second})
+                self.fluxesCECw.update(
+                    {
+                        # Mass units
+                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Pcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Rcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
+                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Ececw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Tcecw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
+                    }
+                )
             if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update({
-                    # Molar units
-                    #"Fccecw_a": (10**-3)
-                    #* total_Fc 
-                    #/ Constants.MWco2.magnitude
-                    #* ureg.millimole 
-                    #/ ureg.meter**2 
-                    #/ ureg.second,
-                    "Pcecw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Rcecw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    #"ETcecw_a": total_ET 
-                    #/ Constants.MWvapor.magnitude
-                    #* ureg.millimole 
-                    #/ ureg.meter**2 
-                    #/ ureg.second,
-                    "Ececw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Tcecw_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second})
-            self.fluxesCECw.update({
-                "statuscecw": "Invalid WUE ratio for Eq. 19"})
+                self.fluxesCECw.update(
+                    {
+                        # Molar units
+                        # "Fccecw_a": (10**-3)
+                        # * total_Fc
+                        # / Constants.MWco2.magnitude
+                        # * ureg.millimole
+                        # / ureg.meter**2
+                        # / ureg.second,
+                        "Pcecw_a": np.nan
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        "Rcecw_a": np.nan
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        # "ETcecw_a": total_ET
+                        # / Constants.MWvapor.magnitude
+                        # * ureg.millimole
+                        # / ureg.meter**2
+                        # / ureg.second,
+                        "Ececw_a": np.nan
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        "Tcecw_a": np.nan
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                    }
+                )
+            self.fluxesCECw.update({"statuscecw": "Invalid WUE ratio for Eq. 19"})
             return 0
 
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the first quadrant
         auxE = df[
             (df["w_p"] > 0)
@@ -2433,8 +2559,7 @@ class Partitioning(object):
             auxE["w_p"].index.size / N
         ) * 100  # Percentage of points in the first quadrant
 
-
-        # Creates a dataframe with variables of interest and conditioned 
+        # Creates a dataframe with variables of interest and conditioned
         # on updrafts and on the second quadrant
         auxT = df[
             (df["w_p"] > 0)
@@ -2454,15 +2579,15 @@ class Partitioning(object):
         sumQ2 = (
             auxT["w_p"].index.size / N
         ) * 100  # Percentage of points in the second quadrant
-        
+
         # Method statistics
         if self.sampledEventsStats:
             self.fluxesCECw = {
                 "Q1tfrac_cecw": (sumQ1 / 100) * ureg.dimensionless,
                 "Q2tfrac_cecw": (sumQ2 / 100) * ureg.dimensionless,
                 "Q1tscale_cecw": self.TScale(auxE),
-                "Q2tscale_cecw": self.TScale(auxT)
-                }
+                "Q2tscale_cecw": self.TScale(auxT),
+            }
 
         # Compute needed parameters (ratios first)
         if T_condition_ET > 0:
@@ -2470,48 +2595,64 @@ class Partitioning(object):
             ratioRP = R_condition_Fc / P_condition_Fc
         else:
             if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update({
-                    # Energetic units
-                    #"ETcecw": total_ET
-                    #* (10**-3)
-                    #* Constants.Lv.magnitude
-                    #* ureg.watt
-                    #/ ureg.meter**2,
-                    "Ececw": total_ET
-                    * (10**-3)
-                    * Constants.Lv.magnitude
-                    * ureg.watt
-                    / ureg.meter**2,
-                    "Tcecw": 0 * ureg.watt / ureg.meter**2})
-                
+                self.fluxesCECw.update(
+                    {
+                        # Energetic units
+                        # "ETcecw": total_ET
+                        # * (10**-3)
+                        # * Constants.Lv.magnitude
+                        # * ureg.watt
+                        # / ureg.meter**2,
+                        "Ececw": total_ET
+                        * (10**-3)
+                        * Constants.Lv.magnitude
+                        * ureg.watt
+                        / ureg.meter**2,
+                        "Tcecw": 0 * ureg.watt / ureg.meter**2,
+                    }
+                )
+
             if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update({
-                    # Mass units
-                    #"Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Pcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Rcecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    #"ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ececw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Tcecw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second})
+                self.fluxesCECw.update(
+                    {
+                        # Mass units
+                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Pcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Rcecw": total_Fc
+                        * ureg.milligram
+                        / ureg.meter**2
+                        / ureg.second,
+                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Ececw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Tcecw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second,
+                    }
+                )
             if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update({
-                    # Molar units
-                    #"Fccecw_a": (10**-3) * total_Fc 
-                    #/ Constants.MWco2.magnitude
-                    #* ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Pcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Rcecw_a": (10**-3) * total_Fc 
-                    / Constants.MWco2.magnitude
-                    * ureg.millimole / ureg.meter**2 / ureg.second,
-                    #"ETcecw_a": total_ET 
-                    #/ Constants.MWvapor.magnitude
-                    #* ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Ececw_a": total_ET 
-                    / Constants.MWvapor.magnitude
-                    * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Tcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second})
-            self.fluxesCECw.update({
-                "statuscecw": "T < 0, all E"})
+                self.fluxesCECw.update(
+                    {
+                        # Molar units
+                        # "Fccecw_a": (10**-3) * total_Fc
+                        # / Constants.MWco2.magnitude
+                        # * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Pcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Rcecw_a": (10**-3)
+                        * total_Fc
+                        / Constants.MWco2.magnitude
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        # "ETcecw_a": total_ET
+                        # / Constants.MWvapor.magnitude
+                        # * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Ececw_a": total_ET
+                        / Constants.MWvapor.magnitude
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        "Tcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
+                    }
+                )
+            self.fluxesCECw.update({"statuscecw": "T < 0, all E"})
             return 0
 
         # Compute Z -------------------------------
@@ -2519,48 +2660,64 @@ class Partitioning(object):
             Z = W * (ratioRP / ratioET)
         else:
             if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update({
-                    # Energetic units
-                    #"ETcecw": total_ET
-                    #* (10**-3)
-                    #* Constants.Lv.magnitude
-                    #* ureg.watt
-                    #/ ureg.meter**2,
-                    "Ececw": 0 * ureg.watt / ureg.meter**2,
-                    "Tcecw": total_ET
-                    * (10**-3)
-                    * Constants.Lv.magnitude
-                    * ureg.watt
-                    / ureg.meter**2})
-            
+                self.fluxesCECw.update(
+                    {
+                        # Energetic units
+                        # "ETcecw": total_ET
+                        # * (10**-3)
+                        # * Constants.Lv.magnitude
+                        # * ureg.watt
+                        # / ureg.meter**2,
+                        "Ececw": 0 * ureg.watt / ureg.meter**2,
+                        "Tcecw": total_ET
+                        * (10**-3)
+                        * Constants.Lv.magnitude
+                        * ureg.watt
+                        / ureg.meter**2,
+                    }
+                )
+
             if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update({
-                    #"Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Pcecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                    "Rcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                    #"ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ececw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Tcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second})
-            
+                self.fluxesCECw.update(
+                    {
+                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                        "Pcecw": total_Fc
+                        * ureg.milligram
+                        / ureg.meter**2
+                        / ureg.second,
+                        "Rcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
+                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Ececw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second,
+                        "Tcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                    }
+                )
+
             if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update({
-                    # Molar units
-                    #"Fccecw_a": (10**-3) * total_Fc 
-                    #/ Constants.MWco2.magnitude
-                    #* ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Pcecw_a": (10**-3) * total_Fc 
-                    / Constants.MWco2.magnitude
-                    * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Rcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                    #"ETcecw_a": total_ET 
-                    #/ Constants.MWvapor.magnitude
-                    #* ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Ececw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Tcecw_a": total_ET 
-                    / Constants.MWvapor.magnitude
-                    * ureg.millimole / ureg.meter**2 / ureg.second})
-            self.fluxesCECw.update({
-                    "statuscecw": "E < 0, all T"})
+                self.fluxesCECw.update(
+                    {
+                        # Molar units
+                        # "Fccecw_a": (10**-3) * total_Fc
+                        # / Constants.MWco2.magnitude
+                        # * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Pcecw_a": (10**-3)
+                        * total_Fc
+                        / Constants.MWco2.magnitude
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                        "Rcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
+                        # "ETcecw_a": total_ET
+                        # / Constants.MWvapor.magnitude
+                        # * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Ececw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
+                        "Tcecw_a": total_ET
+                        / Constants.MWvapor.magnitude
+                        * ureg.millimole
+                        / ureg.meter**2
+                        / ureg.second,
+                    }
+                )
+            self.fluxesCECw.update({"statuscecw": "E < 0, all T"})
             return 0
 
         # Compute flux components -----------------
@@ -2569,56 +2726,78 @@ class Partitioning(object):
         E = (R / Z) * (10**-6) * Constants.Lv.magnitude  # in W/m2
         T = total_ET * (10**-3) * Constants.Lv.magnitude - E  # in W/m2
         del ratioET, ratioRP
-        
+
         if self.argsOut.get("energetic_units"):
-            self.fluxesCECw.update({
-                # Energetic units
-                #"ETcecw": total_ET
-                #* (10**-3)
-                #* Constants.Lv.magnitude
-                #* ureg.watt
-                #/ ureg.meter**2,
-                "Ececw": E * ureg.watt / ureg.meter**2,
-                "Tcecw": T * ureg.watt / ureg.meter**2})
+            self.fluxesCECw.update(
+                {
+                    # Energetic units
+                    # "ETcecw": total_ET
+                    # * (10**-3)
+                    # * Constants.Lv.magnitude
+                    # * ureg.watt
+                    # / ureg.meter**2,
+                    "Ececw": E * ureg.watt / ureg.meter**2,
+                    "Tcecw": T * ureg.watt / ureg.meter**2,
+                }
+            )
         if self.argsOut.get("mass_units"):
-            self.fluxesCECw.update({
-                # Mass units
-                #"Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Pcecw": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                "Rcecw": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                #"ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                "Ececw_m": E 
-                * 10**3
-                / Constants.Lv.magnitude
-                * ureg.gram / ureg.meter**2 / ureg.second,
-                "Tcecw_m": T
-                * 10**3
-                / Constants.Lv.magnitude
-                * ureg.gram / ureg.meter**2 / ureg.second})
+            self.fluxesCECw.update(
+                {
+                    # Mass units
+                    # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pcecw": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rcecw": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                    # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Ececw_m": E
+                    * 10**3
+                    / Constants.Lv.magnitude
+                    * ureg.gram
+                    / ureg.meter**2
+                    / ureg.second,
+                    "Tcecw_m": T
+                    * 10**3
+                    / Constants.Lv.magnitude
+                    * ureg.gram
+                    / ureg.meter**2
+                    / ureg.second,
+                }
+            )
         if self.argsOut.get("molar_units"):
-            self.fluxesCECw.update({
-                # Molar units
-                #"Fccecw_a": (10**-3) * total_Fc 
-                #/ Constants.MWco2.magnitude
-                #* ureg.millimole / ureg.meter**2 / ureg.second,
-                "Pcecw_a": (10**-3) * P 
-                / Constants.MWco2.magnitude
-                * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Rcecw_a": (10**-3) * R
-                / Constants.MWco2.magnitude
-                * ureg.millimole / ureg.meter**2 / ureg.second,
-                #"ETcecw_a": total_ET 
-                #/ Constants.MWvapor.magnitude
-                #* ureg.millimole / ureg.meter**2 / ureg.second,
-                "Ececw_a": E 
-                * 10**3
-                / Constants.Lv.magnitude
-                / Constants.MWvapor.magnitude
-                * ureg.millimole / ureg.meter**2 / ureg.second,
-                "Tcecw_a": T 
-                * 10**3
-                / Constants.Lv.magnitude
-                / Constants.MWvapor.magnitude
-                * ureg.millimole / ureg.meter**2 / ureg.second})
-        self.fluxesCECw.update({
-                    "statuscecw": "fully OK"})
+            self.fluxesCECw.update(
+                {
+                    # Molar units
+                    # "Fccecw_a": (10**-3) * total_Fc
+                    # / Constants.MWco2.magnitude
+                    # * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Pcecw_a": (10**-3)
+                    * P
+                    / Constants.MWco2.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                    "Rcecw_a": (10**-3)
+                    * R
+                    / Constants.MWco2.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                    # "ETcecw_a": total_ET
+                    # / Constants.MWvapor.magnitude
+                    # * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Ececw_a": E
+                    * 10**3
+                    / Constants.Lv.magnitude
+                    / Constants.MWvapor.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                    "Tcecw_a": T
+                    * 10**3
+                    / Constants.Lv.magnitude
+                    / Constants.MWvapor.magnitude
+                    * ureg.millimole
+                    / ureg.meter**2
+                    / ureg.second,
+                }
+            )
+        self.fluxesCECw.update({"statuscecw": "fully OK"})
