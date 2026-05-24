@@ -150,7 +150,7 @@ data = partitioning.process(
     # A logger file is created in the log- folder in the outfolder path.
 )
 
-# Just running as skript -----------------------------------------------------
+# Just running as script -----------------------------------------------------
 
 # If we dont want to work with an IDE etc., we can just run the
 # script from the terminal using

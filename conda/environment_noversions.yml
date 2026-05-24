@@ -1,0 +1,13 @@
+name: PartMethods
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - pint
+  - scipy
+  - matplotlib
+  - numpy
+  - pytest
+  - pandas
+  - spyder-kernels
+  - pre-commit

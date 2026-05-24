@@ -640,6 +640,7 @@ def process(
     filename = f"log/run_{datetime.datetime.now().strftime('%y%m%d_%H%M%S')}.log"
     setup_logging(outfolder + filename, level=logginglevel)
     logger.info("PartitioningMethods: Starting processing and partitioning.")
+    logger.info(f"See log-file under {outfolder + filename}.")
 
     # Find files
     logger.info("Looking for files to process.")
