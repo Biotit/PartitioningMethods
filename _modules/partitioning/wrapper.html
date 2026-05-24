@@ -76,7 +76,7 @@
 <span class="sd">        String with path to file being loaded and partitoned.</span>
 <span class="sd">    siteDetails : dict</span>
 <span class="sd">        Dictionary with details about the measurement site.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">            hi : int/float,</span>
@@ -94,7 +94,7 @@
 <span class="sd">    argsQC : dict</span>
 <span class="sd">        Contains options to be used during pre-processing regarding fluctuation extraction and if density corrections are</span>
 <span class="sd">        necessary. All options have default values, but can be modified if needed.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">            density_correction : bool</span>
@@ -122,7 +122,7 @@
 <span class="sd">    argsOut : dict</span>
 <span class="sd">        Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">        Possible to activate all simultanously.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">            energetic_units : bool</span>
@@ -135,7 +135,7 @@
 <span class="sd">        If True, all available partitioning methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
@@ -149,7 +149,7 @@
 <span class="sd">        If True, all available water use efficicency methods are used.</span>
 <span class="sd">        If False, no method is used.</span>
 <span class="sd">        If dict, the specified methods are used.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
@@ -163,10 +163,10 @@
 <span class="sd">    statistics : bool or dict, default {&quot;TurbStats&quot;:True}</span>
 <span class="sd">        If True all possible statistics are calculated.</span>
 <span class="sd">        If False no statistics are calculated.</span>
-<span class="sd">        If dict, the specified statistics are calculated. </span>
+<span class="sd">        If dict, the specified statistics are calculated.</span>
 <span class="sd">        If True, the corresponding method is calculated</span>
 <span class="sd">        Keys not used, are set to False</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        TurbStats : bool</span>
@@ -181,7 +181,7 @@
 <span class="sd">    argsQThres : dict</span>
 <span class="sd">        Contains the quadrant thresholds stating which amount of data needs to be present within each quadrant to</span>
 <span class="sd">        partition the fluxes.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">            cec_per_points_Q1Q2 : int</span>
@@ -205,7 +205,7 @@
 <span class="sd">                If dict:</span>
 <span class="sd">                    Hyperbolic threshold per method used.</span>
 <span class="sd">                    If for a method no threshold is defined its set to 0.</span>
-<span class="sd">                    </span>
+
 <span class="sd">                    Keys</span>
 <span class="sd">                    ----</span>
 <span class="sd">                    MREA : float</span>
@@ -246,7 +246,7 @@
 
 <span class="sd">    versatile_loadkwargs : dict</span>
 <span class="sd">        Arguments passed to the VersatileLoad function.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">            timestamp_col : str or list of str, optional</span>
@@ -264,7 +264,7 @@
 <span class="sd">    -------</span>
 <span class="sd">        datun : dict</span>
 <span class="sd">            Dictionary with partitioned data and units.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Keys</span>
 <span class="sd">        ----</span>
 <span class="sd">        data : dict</span>
