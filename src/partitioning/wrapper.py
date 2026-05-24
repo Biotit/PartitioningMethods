@@ -8,6 +8,7 @@ import multiprocessing
 import datetime
 from functools import partial
 import logging
+import os
 from .Partitioning import Partitioning
 from .auxfunctions import Constants, setup_logging
 
@@ -72,7 +73,7 @@ def CallPartitioning(
             RemainingData : int
                 Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
             saveprocessed : bool
-                If True, the processed data is saved to a CSV file.
+                If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.
             time_lag_correction : bool
                 If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
             max_lag_seconds : int
@@ -80,6 +81,10 @@ def CallPartitioning(
             type_lag : str
                 Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                 'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
+            saveplotlag - bool 
+                If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.
+            outfolder : str
+                 If an outfolder is given the plots of the cross-correlation and the pre-processed files are saved there in the subfolders TimeLagCorrelationFigures or ProcessedData. If not, the current working directory.
     argsOut : dict
         Contains options in which units the results are given. Defaults are that the output is in mass based units.
         Possible to activate all simultanously.
@@ -281,7 +286,28 @@ def CallPartitioning(
     except (ValueError, TypeError) as e:
         logger.error(f"Error in {filei}: {e}")
         return None
-
+    
+    if argsQC.get("saveprocessed"):
+        # Saving pre-processed data
+        metadata = {
+            "Source": "PartitioningMethods",
+            "RunDate": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "argsQC": str(argsQC),
+            "siteDetails": str(siteDetails),
+        }
+        outfolder_p =  argsQC.get("outfolder", "")
+        path_folder = outfolder_p + "ProcessedData"
+        timestamp = df.index[0].strftime('%Y%m%d-%H%M')
+        path = path_folder + "/processed-%s.csv" % (timestamp)
+        if not os.path.exists(path_folder):
+            os.makedirs(path_folder)
+        logger.debug(f"Saving file {path}.")
+        with open(path, "w") as f:
+            for _setting in metadata:
+                f.write(f"# {_setting}:, {metadata[_setting]}\n")
+            f.write("\n")
+            part.data.to_csv(f, na_rep="NaN", index=False)
+    
     part_results["datetime_start"] = df.index[0]
 
     # Helper function to extract magnitude and unit
@@ -470,11 +496,13 @@ def process(
                 RemainingData : int
                     Percentage (0-100) of the time series that should remain after pre-processing. If less than this quantity, partitioning is not implemented.
                 saveprocessed : bool
-                    If True, the processed data is saved to a CSV file.
+                    If True, the pre-processed data is saved to a CSV file in the subfolder ProcessedData.
                 time_lag_correction : bool
                     If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series.
                 max_lag_seconds : int
                     Maximum time lag in seconds to consider for correlation. Defaults to 5 seconds.
+                saveplotlag - bool 
+                    If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.
                 type_lag : str
                     Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                     'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
@@ -653,6 +681,9 @@ def process(
         )
         logger.critical(error_msg)
         raise FileNotFoundError(error_msg)
+    
+    if not "outfolder" in argsQC:
+        argsQC["outfolder"] = outfolder
 
     # only the listfiles argument is different from run to run of the
     # CallPartitioning function, all others are held constant

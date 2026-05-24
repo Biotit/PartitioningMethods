@@ -311,7 +311,8 @@ def FilterLowFrequencies(x, fs, t_cut):
 
 
 def max_time_lag_crosscorrel(
-    df, sampling_freq, max_lag_seconds, type_lag, saveplotlag=False
+    df, sampling_freq, max_lag_seconds, type_lag, saveplotlag=False,
+    outfolder=None
 ):
     """
     Compute the lag with the highest correlation between CO2 or H2O concentration and vertical velocity (w).
@@ -322,6 +323,8 @@ def max_time_lag_crosscorrel(
     - sampling_freq (float): Sampling frequency of the data in Hz.
     - max_lag_seconds (float): Maximum lag to consider in seconds.
     - type_lag (str): Type of lag to consider ('negative', 'positive', or 'both').
+    - saveplotlag (bool): Figure with lag saved?
+    - outfolder (str): Folder where the figure is saved.
 
     Returns:
     - best_lag_co2 (int): Lag (in number of samples) with the highest correlation for CO2.
@@ -371,10 +374,13 @@ def max_time_lag_crosscorrel(
         plt.ylabel("Correlation")
         plt.xlabel("Lag (sec)")
         # check if directiory exists
-        if not os.path.exists("TimeLagCorrelationFigures"):
-            os.makedirs("TimeLagCorrelationFigures")
+        if not outfolder:
+            outfolder = ""
+        path = outfolder + "TimeLagCorrelationFigures"
+        if not os.path.exists(path):
+            os.makedirs(path)
         plt.savefig(
-            "TimeLagCorrelationFigures/CrossCorrelation%s.png"
+            path + "/CrossCorrelation%s.png"
             % df.index[0].strftime("%Y%m%d%H%M")
         )
         plt.close()

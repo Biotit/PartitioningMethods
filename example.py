@@ -33,10 +33,10 @@ data = partitioning.process(
         "ppath": "C3",  # Main plant photosynthesis type, for calculation of WUE.
         # Options: "C3" or "C4".
     },
-    # 2) path to data input folder
+    # 2) path to data input folder, needs to END WITH SLASH!
     infolder="RawData30min/",
-    # 3) path to the folder where the results are saved
-    outfolder="",
+    # 3) path to the folder where the results are saved, needs to END WITH SLASH!
+    outfolder="results/",
     # ----
     # Optional settings
     # ----
@@ -49,22 +49,25 @@ data = partitioning.process(
     # PLEASE MAKE SURE YOU HAVE THE PROPER SETTINGS HERE
     # ----
     # All options have default values assuming that raw data is provided and measured by an open-path gas analyzer and a 3D sonic anemometer
+    # For usual usecase better deactivate saveprocessed to save data and time.
+    # Also think about which corrections you need.
+    # For this example we activate everything to get every output.
     argsQC={
         "physical_bounds": True,  # If True, data outside of specified physical bounds is set to NA.
         "despike": True,  # If True, outliers in the data are removed by despiking.
         "coord_rotation": True,  # If True, a double coordinate rotation is performed to deminish the mean vertical wind speed.
-        "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used)
+        "density_correction": True,  # If True, density corrections are implemented during pre-processing (depends on type of gas analyzer used). For closed-path gas analyzers, set "density_correction" to False
         "fluctuations": "LD",  # If "LD", linear detrending is applied to the data. BA (block averaging) and FL (filter low freqencies) are also available
         "filtercut": 5,  # Cutoff timescale to filter low frequencies (in minutes). Needed when FL is selected as fluctuation method
         "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
         "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
-        "saveprocessed": False,  # If True, save the intermediate processed data including all corrections and fluctuations
-        # For closed-path gas analyzers, set "density_correction" to False and use the following to correct the time lag
-        # "time_lag_correction": False, # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
-        # "max_lag_seconds": 5,         # Maximum time lag in seconds to consider for cross correlation analyses
-        # "saveplotlag": False,         # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series
-        #'type_lag': 'positive',       # Specifies the type of lag to consider ('negative', 'positive', or 'both')
+        "saveprocessed": True,  # If True, save the intermediate processed data including all corrections and fluctuations in the outfolder
+        "time_lag_correction": True, # If True, a time lag correction is applied to the CO2 and H2O time series relative to the W time series
+        "max_lag_seconds": 5,         # Maximum time lag in seconds to consider for cross correlation analyses
+        "saveplotlag": True,         # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the outfolder
+        'type_lag': 'both',       # Specifies the type of lag to consider ('negative', 'positive', or 'both')
     },
+    
     # 7) Units in output. Defaults are that the output is in mass based units.
     argsOut={
         "energetic_units": True,  # return latent heat flux in energetic units (W/m2)

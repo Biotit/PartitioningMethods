@@ -1,0 +1,5 @@
+2026-05-25 00:05:24,383 - src.partitioning.wrapper - INFO - PartitioningMethods: Starting processing and partitioning.
+2026-05-25 00:05:24,383 - src.partitioning.wrapper - INFO - See log-file under results/log/run_260525_000524.log.
+2026-05-25 00:05:24,384 - src.partitioning.wrapper - INFO - Looking for files to process.
+2026-05-25 00:05:24,385 - src.partitioning.wrapper - INFO - Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.
+2026-05-25 00:05:32,973 - src.partitioning.wrapper - INFO - Results saved successfully to results/PartitioningResults_example.csv

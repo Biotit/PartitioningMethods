@@ -2,7 +2,7 @@
 <!-- hidden DOI: [![DOI](https://zenodo.org/badge/441544177.svg)](https://zenodo.org/badge/latestdoi/441544177) -->
 
 ---
-# Contact information 
+## Contact information 
 
 Original author: Einara Zahn\
 email: einaraz@princeton.edu, einara.zahn@gmail.com
@@ -24,7 +24,7 @@ The modified version includes
 - the sampling thresholds per quadrant can be set manually for each method.
 - the output can be set to mass based units, molar units or energetic units.
 - if timestamps are missing in the input data, they are filled with NaN to ensure a continous dataset.
-- wrapper functions now automatically perform the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable processing for almost any use case.
+- wrapper functions now automatically perform the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable processing for almost any use case. Additionally, time lag plots and pre-processed data can now be saved to a specified folder, not only the working directory.
 - further data loading functions are included.
 - logger files for each run are saved in the folder log.
 - minor bug fixes in density correction and C4 plant water use efficiency calculation.
@@ -32,7 +32,7 @@ The modified version includes
 <!--  See the [Documentation](https://einaraz.github.io/PartitioningMethods/) here. -->
 See the [Documentation](https://biotit.github.io/PartitioningMethods/) here.
 
-
+---
 # Installation Guide
 
 To install the package, follow these steps:
@@ -49,11 +49,11 @@ To install the package, follow these steps:
     cd PartitioningMethods/
     ```
 
-3. **Create virtual environments** (not required, but recommended to avoid conflicts with local python packages)
+3. **Create virtual environments** (not required, but recommended to avoid conflicts with local python packages. Either use option 3A) or, alternatively, option 3B) )
 
     **A) Create and activate a virtual environment using base python**:
 
-    > **Note**: A virtual environment is an isolated environment in which you can install packages without affecting your system-wide Python installation. This helps prevent conflicts between package versions and keeps your project dependencies organized. Alternatively, use conda for environment management. See step 3.B) below.
+    > **Note**: A virtual environment is an isolated environment in which you can install packages without affecting your system-wide Python installation. This helps prevent conflicts between package versions and keeps your project dependencies organized. Alternatively, use conda for environment management. See step 3B) below.
 
     - **Create the virtual environment:**
 
@@ -79,13 +79,13 @@ To install the package, follow these steps:
         Partitioning\Scripts\activate
         ```
 
-      After activation, your command prompt should change to show the name of the virtual environment, typically `(Partitioning)`.
+      After activation, your command prompt should change to show the name of the virtual environment, `(Partitioning)`.
 
       If you see `(Partitioning)` at the beginning of your command prompt, the virtual environment is active. If you don't see it, try running the activation command again. 
 
     **B) Create and activate a virtual environment using conda**:
 
-    >**Note**: Conda is a package manager with several advantages over pip. If you use conda already, it can be useful here.
+    >**Note**: Conda is a package manager with several advantages over pip. If you use conda already, it can be useful here. For the easiest way, follow the next steps. For developing purposes and managing all packages with conda, see below "Setting up environment for developers".
 
     - **Create the virtual environment:**
 
@@ -102,7 +102,7 @@ To install the package, follow these steps:
         ```sh
         conda activate Partitioning
         ```
-      After activation, your command prompt should change to show the name of the virtual environment, typically `(Partitioning)`.
+      After activation, your command prompt should change to show the name of the virtual environment, `(Partitioning)`.
 
       If you see `(Partitioning)` at the beginning of your command prompt, the virtual environment is active. If you don't see it, try running the activation command again. 
 
@@ -160,7 +160,9 @@ The following variables are required by the code when using raw high-frequency d
 - **h2o**: Water vapor density (g_H2O/m³).
 - **P**: Pressure (kPa).
 
-If your columns have different names or units or the datetime information is formatted differently, you probably can use the option `VersatileLoad` and `versatile_loadkwargs` in the process()- function to adjust to your data. See the code documentation for this.
+If your columns have different names or units or the datetime information is formatted differently, you probably can use the option `VersatileLoad` and `versatile_loadkwargs` in the `process()`-function to adjust to your data. See the code documentation for this.
+
+For using already pre-processed data, with the arguments `argsQC` its possible to only selectively enable or disable pre-processing steps. So if the data is already checked for physical bounds, despiked, coordinat rotated and just the density correction and the fluctuations/perturbations are missing, then just activate those to in `argsQC`. See example file.
   
 ## How to use it
 For a complete example of how to use the partitioning module, see ```example.py```.
@@ -232,10 +234,20 @@ The following files are available in the repository:
 - `src/partitioning/Partitioning.py`: Contains the `Partitioning` class with methods for quality control, data pre-processing, and five partitioning methods to separate ET and CO₂ fluxes into stomatal and non-stomatal components.
 - `src/partitioning/auxfunctions.py`: Includes auxiliary functions for pre-processing and computing water-use efficiency, some of them adapted from [FluxPart](https://github.com/usda-ars-ussl/fluxpart).
 - `src/wrapper.py`: Contains wrapper functions with a variety of settings to help loading, partition and save the data by one easy function call.
+- `example.py`:  Provides an example of how to use `PartitioningMethods` with wrapper functions and for development, with raw high-frequency data examples included in the `RawData30min` folder.
 
 Old example files can be found in `tests/old_scripts_for_loading_and_processing`:
 - `main.py`: Provides an example of how to use the script, with raw high-frequency data examples included in the `RawData30min` folder.
 - `main_parallel.py`: Demonstrates how to run the script in parallel to process multiple files simultaneously.
+
+## Results
+
+In the folder `results` the results of `example.py` are saved.
+The main partitioning result is `PartitioningResults_example.csv`.
+
+Optional outputs, which can be activated in `argsQC`, are:
+- The pre-processed high-frequency data is saved in `ProcessedData`. It is produced by the setting `saveprocessed`. This data is corrected as specified by `argsQC`.
+- If `time_lag_correction` and `saveplotlag` are activated plots of the cross-correlation function between the CO2 and H2O time series with respect to the W time series are saved.
 
 
 ---
@@ -249,7 +261,7 @@ python -m pip install -e .
 For developers it can be useful managing all the different environments with conda (this enables e.g. also using different python versions).
 Using conda in the pre-devined environment I used:
  ```
- conda create -f conda/environment.yml
+ conda env create -f conda/environment.yml
  conda activate PartMethods
  ```
 In there you can develop and run from script, without installation.

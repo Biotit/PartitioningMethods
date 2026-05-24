@@ -1,6 +1,6 @@
 # Source:, PartitioningMethods
-# RunDate:, 2026-05-23 19:27:01
-# argsQC:, {'physical_bounds': True, 'despike': True, 'coord_rotation': True, 'density_correction': True, 'fluctuations': 'LD', 'filtercut': 5, 'maxGapsInterpolate': 5, 'RemainingData': 95, 'saveprocessed': False}
+# RunDate:, 2026-05-25 00:05:32
+# argsQC:, {'physical_bounds': True, 'despike': True, 'coord_rotation': True, 'density_correction': True, 'fluctuations': 'LD', 'filtercut': 5, 'maxGapsInterpolate': 5, 'RemainingData': 95, 'saveprocessed': True, 'time_lag_correction': True, 'max_lag_seconds': 5, 'saveplotlag': True, 'type_lag': 'both', 'outfolder': 'results/'}
 # siteDetails:, {'hi': 2.5, 'zi': 4.0, 'freq': 20, 'length': 30, 'PreProcessing': True, 'ppath': 'C3'}
 # argsQThres:, {'cec_per_points_Q1Q2': 15, 'cec_per_points_each': 3, 'mrea_per_points_Q1Q2': 15, 'mrea_per_points_each': 3, 'cea_per_points_each': 2, 't_scale_gap_threshold': 10, 'H': {'MREA': 0.25}}
 # statistics:, {'TurbStats': True, 'steadyness': True, 'sampledEvents': True}
