@@ -725,7 +725,10 @@
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;outfolder&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argsQC</span><span class="p">:</span>
-        <span class="n">argsQC</span><span class="p">[</span><span class="s2">&quot;outfolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outfolder</span>
+        <span class="n">argsQC_i</span> <span class="o">=</span> <span class="n">argsQC</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">argsQC_i</span><span class="p">[</span><span class="s2">&quot;outfolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outfolder</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">argsQC_i</span> <span class="o">=</span> <span class="n">argsQC</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="c1"># only the listfiles argument is different from run to run of the</span>
     <span class="c1"># CallPartitioning function, all others are held constant</span>
@@ -733,7 +736,7 @@
     <span class="n">partial_CallPart</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">CallPartitioning</span><span class="p">,</span>
         <span class="n">siteDetails</span><span class="o">=</span><span class="n">siteDetails</span><span class="p">,</span>
-        <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC</span><span class="p">,</span>
+        <span class="n">argsQC</span><span class="o">=</span><span class="n">argsQC_i</span><span class="p">,</span>
         <span class="n">argsOut</span><span class="o">=</span><span class="n">argsOut</span><span class="p">,</span>
         <span class="n">methods</span><span class="o">=</span><span class="n">methods</span><span class="p">,</span>
         <span class="n">methodsWue</span><span class="o">=</span><span class="n">methodsWue</span><span class="p">,</span>
