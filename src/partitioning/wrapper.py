@@ -683,7 +683,10 @@ def process(
         raise FileNotFoundError(error_msg)
 
     if "outfolder" not in argsQC:
-        argsQC["outfolder"] = outfolder
+        argsQC_i = argsQC.copy()
+        argsQC_i["outfolder"] = outfolder
+    else:
+        argsQC_i = argsQC.copy()
 
     # only the listfiles argument is different from run to run of the
     # CallPartitioning function, all others are held constant
@@ -691,7 +694,7 @@ def process(
     partial_CallPart = partial(
         CallPartitioning,
         siteDetails=siteDetails,
-        argsQC=argsQC,
+        argsQC=argsQC_i,
         argsOut=argsOut,
         methods=methods,
         methodsWue=methodsWue,
