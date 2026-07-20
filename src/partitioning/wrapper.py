@@ -268,7 +268,11 @@ def CallPartitioning(
     else:
         logger.debug("Set only some statistic methods")
         statistics = {**default_stats, **statistics}
-
+    
+    # Set datetime_start for this data, BEFORE partitioning class gets
+    # initialized and NaNs gets dropped
+    part_results["Datetime_start"] = df.index[0]
+    
     # Setting up partitioning class, including PreProcessing during init
     try:
         part = Partitioning(
@@ -308,7 +312,6 @@ def CallPartitioning(
             f.write("\n")
             part.data.to_csv(f, na_rep="NaN", index=False)
 
-    part_results["datetime_start"] = df.index[0]
 
     # Helper function to extract magnitude and unit
     def extract_data(source_dict, target_dict, unit_dict, suffix=""):
@@ -722,7 +725,7 @@ def process(
 
         # Build the main data frame
         df_data = pd.DataFrame([r["data"] for r in valid_results])
-        df_data.set_index("datetime_start", inplace=True)
+        df_data.set_index("Datetime_start", inplace=True)
         df_data.sort_index(inplace=True)
 
         # Get units from the first valid result
@@ -745,7 +748,7 @@ def process(
         col_units = [units_row.get(col, "") for col in df_data.columns]
 
         df_data = df_data.reset_index()
-        column_tuples = [("", "date")] + list(zip(col_units, df_data.columns[1:]))
+        column_tuples = [("", "Datetime_start")] + list(zip(col_units, df_data.columns[1:]))
 
         # Create a MultiIndex: Columns -> Units
         df_data.columns = pd.MultiIndex.from_tuples(column_tuples)
