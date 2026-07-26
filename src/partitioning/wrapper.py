@@ -155,11 +155,19 @@ def CallPartitioning(
                 Otherwise no partitioning is performed.
             cec_per_points_each : int
                 For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
+            cecw_per_points_Q1Q2 : int
+                For CECw more % of data needs to be present within quadrant 1 and 2 to partition.
+                Otherwise no partitioning is performed.
+            cecw_per_points_each : int
+                For CECw if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
             mrea_per_points_Q1Q2 : int
                 For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
             mrea_per_points_each : int
                 For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
+            cea_per_points_Q1Q2 : int
+                For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both
+                up- and downdrafts, otherwise no partitioning is performed.
             cea_per_points_each : int
                 For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                 up- and downdrafts, no partitioning is performed.
@@ -268,11 +276,11 @@ def CallPartitioning(
     else:
         logger.debug("Set only some statistic methods")
         statistics = {**default_stats, **statistics}
-    
+
     # Set datetime_start for this data, BEFORE partitioning class gets
     # initialized and NaNs gets dropped
     part_results["Datetime_start"] = df.index[0]
-    
+
     # Setting up partitioning class, including PreProcessing during init
     try:
         part = Partitioning(
@@ -311,7 +319,6 @@ def CallPartitioning(
                 f.write(f"# {_setting}:, {metadata[_setting]}\n")
             f.write("\n")
             part.data.to_csv(f, na_rep="NaN", index=False)
-
 
     # Helper function to extract magnitude and unit
     def extract_data(source_dict, target_dict, unit_dict, suffix=""):
@@ -584,11 +591,19 @@ def process(
                     Otherwise no partitioning is performed.
                 cec_per_points_each : int
                     For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
+                cecw_per_points_Q1Q2 : int
+                    For CECw more % of data needs to be present within quadrant 1 and 2 to partition.
+                    Otherwise no partitioning is performed.
+                cecw_per_points_each : int
+                    For CECw if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
                 mrea_per_points_Q1Q2 : int
                     For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                     Otherwise no partitioning is performed.
                 mrea_per_points_each : int
                     For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
+                cea_per_points_Q1Q2 : int
+                    For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both
+                    up- and downdrafts, otherwise no partitioning is performed.
                 cea_per_points_each : int
                     For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                     up- and downdrafts, no partitioning is performed.
@@ -748,7 +763,9 @@ def process(
         col_units = [units_row.get(col, "") for col in df_data.columns]
 
         df_data = df_data.reset_index()
-        column_tuples = [("", "Datetime_start")] + list(zip(col_units, df_data.columns[1:]))
+        column_tuples = [("", "Datetime_start")] + list(
+            zip(col_units, df_data.columns[1:])
+        )
 
         # Create a MultiIndex: Columns -> Units
         df_data.columns = pd.MultiIndex.from_tuples(column_tuples)

@@ -138,33 +138,24 @@ class Partitioning(object):
                 Otherwise no partitioning is performed.
             cec_per_points_each - int
                 For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.
+            cecw_per_points_Q1Q2 - int
+                For CECw more % of data needs to be present within quadrant 1 and 2 to partition.
+                Otherwise no partitioning is performed.
+            cecw_per_points_each - int
+                For CECw if less or at least % of data is within one of Q1 or Q2, no partitioning is performed.
             mrea_per_points_Q1Q2 - int
                 For MREA more % of data needs to be present within quadrant 1 and 2 to partition.
                 Otherwise no partitioning is performed.
             mrea_per_points_each - int
                 For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.
+            cea_per_points_Q1Q2 - int
+                For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both
+                up- and downdrafts, otherwise no partitioning is performed.
             cea_per_points_each - int
                 For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                 up- and downdrafts, no partitioning is performed.
             t_scale_gap_threshold - int
                 For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
-            H - float or dict
-                Hyperbolic threshold criteria. If not specified 0 is used for all methods.
-                If float: MREA, CEC, CEA, CECw get calculated using this threshold.
-                If dict:
-                    Hyperbolic threshold per method used.
-                    If for a method no threshold is defined its set to 0.
-
-                    Keys
-                    -------
-                    "MREA" - float
-                        Hyperbolic threshold for MREA
-                    "CEC" - float
-                        Hyperbolic threshold for CEC
-                    "CEA" - float
-                        Hyperbolic threshold for CEA
-                    "CECw" - float
-                        Hyperbolic threshold for CECw
 
 
     Notes: Available Partitioning Methods
@@ -227,18 +218,24 @@ class Partitioning(object):
         self.default_argsQThres = {
             "cec_per_points_Q1Q2": 15,  # smallest percentage of points that must be available in the first two quadrants
             "cec_per_points_each": 3,  # smallest percentage of points in each quadrant
+            "cecw_per_points_Q1Q2": 0,
+            "cecw_per_points_each": 0,
             "mrea_per_points_Q1Q2": 15,
             "mrea_per_points_each": 3,
-            "cea_per_points_each": 2,
+            "cea_per_points_each": 0,
+            "cea_per_points_Q1Q2": 0,
             "t_scale_gap_threshold": 10,
         }
         if argsQThres is False:
             self.argsQThres = {
                 "cec_per_points_Q1Q2": 0,  # smallest percentage of points that must be available in the first two quadrants
                 "cec_per_points_each": 0,  # smallest percentage of points in each quadrant
+                "cecw_per_points_Q1Q2": 0,
+                "cecw_per_points_each": 0,
                 "mrea_per_points_Q1Q2": 0,
                 "mrea_per_points_each": 0,
                 "cea_per_points_each": 0,
+                "cea_per_points_Q1Q2": 0,
                 "t_scale_gap_threshold": 0,
             }
         else:
@@ -1455,10 +1452,16 @@ class Partitioning(object):
         else:
             self.fluxesCEC = {}
 
-        # First condition: do we have enough points in Q1 and Q2?
-        if (sumQ1 + sumQ2) < per_points_Q1Q2:
-            pass  # let all partitioned fluxes be defined NaN
+        # Check if ET is negative
+        if total_ET < 0:
+            finalstat = "ET < 0"
+            # let all partitioned fluxes be defined NaN
+        # Do we have enough points in Q1 and Q2?
+        elif (sumQ1 + sumQ2) <= per_points_Q1Q2:
+            finalstat = "Q1tfrac+Q2tfrac<=per_points_Q1Q2"
+            # let all partitioned fluxes be defined NaN
         elif (sumQ1 > per_poits_each) and (sumQ2 > per_poits_each):
+            finalstat = "OK"
             # ET components
             ratioET = E_condition_ET / T_condition_ET
             T = total_ET / (1.0 + ratioET)
@@ -1475,7 +1478,8 @@ class Partitioning(object):
             P_a = total_Fc_a / (1.0 + ratioRP)
             R_a = total_Fc_a / (1.0 + 1.0 / ratioRP)
 
-        elif (sumQ1 <= per_poits_each) and (sumQ2 >= per_poits_each):
+        elif (sumQ1 <= per_poits_each) and (sumQ2 > per_poits_each):
+            finalstat = "Q1tfrac<=per_points_each, ET = T"
             # In this case, all water vapor flux is assumed to be transpiration
             ratioET = 0.0
             T = total_ET
@@ -1491,7 +1495,8 @@ class Partitioning(object):
             R = 0.0
             P_a = total_Fc_a
             R_a = 0.0
-        elif (sumQ1 > per_poits_each) and (sumQ2 < per_poits_each):
+        elif (sumQ1 > per_poits_each) and (sumQ2 <= per_poits_each):
+            finalstat = "Q2tfrac<=per_points_each, ET = E"
             # All fluxes are assumed to be from the ground
             ratioET = np.inf
             T = 0.0
@@ -1508,16 +1513,13 @@ class Partitioning(object):
             P_a = 0.0
             R_a = total_Fc_a
         else:
-            pass
+            finalstat = "Q1tfrac, Q2tfrac <=per_points_each"
+            # if both quadrants have no points, than all NaN
 
         # Check CO2 flux components ratio
         #   CO2 fluxes might be noisy in this range
-        if (sumQ1 + sumQ2) < per_points_Q1Q2:
-            finalstat = "Q1+Q2<20"
-        elif -1.2 < ratioRP < -0.8:
-            finalstat = "Small ratioRP"
-        else:
-            finalstat = "OK"
+        if -1.2 < ratioRP < -0.8:
+            finalstat = finalstat + "Small ratioRP"
 
         # Additional constraints may be added based on the strength of the fluxes
         # and other combinations
@@ -1719,8 +1721,10 @@ class Partitioning(object):
         finalstatus = "Undefined"
 
         # Check availability of points in each quadrant
-        if (Q1sum + Q2sum) < per_points_Q1Q2:
-            finalstatus = "Q1+Q2<20"
+        if (Q1sum + Q2sum) <= per_points_Q1Q2:
+            finalstatus = "Q1tfrac+Q2tfrac<=per_points_Q1Q2"
+        elif ET < 0:
+            finalstatus = "ET < 0"
         elif (Q1sum > per_poits_each) and (Q2sum > per_poits_each):
             # Compute fluxes
 
@@ -1754,7 +1758,7 @@ class Partitioning(object):
                 E, T, R, P = np.nan, np.nan, np.nan, np.nan
                 E_m, T_m = np.nan, np.nan
                 E_a, T_a, R_a, P_a = np.nan, np.nan, np.nan, np.nan
-        elif (Q1sum <= per_poits_each) and (Q2sum >= per_poits_each):
+        elif (Q1sum <= per_poits_each) and (Q2sum > per_poits_each):
             # Assuming that all fluxes are from the canopy
 
             # Energetic units
@@ -1773,8 +1777,8 @@ class Partitioning(object):
             P_a = Fc_a
             R_a = 0
 
-            finalstatus = "OK"
-        elif (Q1sum > per_poits_each) and (Q2sum < per_poits_each):
+            finalstatus = "Q1tfrac<=per_points_each, ET = T"
+        elif (Q1sum > per_poits_each) and (Q2sum <= per_poits_each):
             # Assuming that all fluxes are from the ground
 
             # Energetic units
@@ -1793,9 +1797,9 @@ class Partitioning(object):
             P_a = 0
             R_a = Fc_a
 
-            finalstatus = "OK"
+            finalstatus = "Q2tfrac<=per_points_each, ET = E"
         else:
-            pass
+            finalstat = "Q1tfrac, Q2tfrac <=per_points_each"
 
         if self.argsOut.get("energetic_units"):
             self.fluxesREA.update(
@@ -1952,6 +1956,11 @@ class Partitioning(object):
                 }
             )
 
+        # Check if ET < 0 which would result in
+        # unrealistic signs of the fluxes E < 0, T < 0, R < 0, P > 0...
+        if Fq < 0:
+            self.fluxesFVS["statusfvs"] = "ET < 0"
+            return None
         # Check mathematical constraints Eq (13) in Scanlon et al., 2019
         if rho < 0:
             if A <= B < C:
@@ -2162,7 +2171,8 @@ class Partitioning(object):
         """
         logger.debug(f"CEA partitioning with H {H}.")
 
-        per_points_each = self.argsQThres.get("cea_per_points_each", 2)
+        per_points_each = self.argsQThres.get("cea_per_points_each", 0)
+        per_points_Q1Q2 = self.argsQThres.get("cea_per_points_Q1Q2", 0)
 
         # Creates a dataframe with variables of interest and no constraints
         unitLE = Constants.Lv.magnitude * 10**-3
@@ -2271,6 +2281,7 @@ class Partitioning(object):
             and (sum2 > per_points_each)
             and (sum3 > per_points_each)
             and (sum4 > per_points_each)
+            and (sum1 + sum2 + sum3 + sum4 > per_points_Q1Q2)
         ):
             # Ratios
             ratioET = (Q1 - Q2) / (Q3 - Q4)
@@ -2296,7 +2307,12 @@ class Partitioning(object):
             status_message = "OK"
 
             # Check sign of fluxes
-            if P > 0.0:
+            if P > 0.0 or total_ET < 0:
+                if total_ET < 0:
+                    status_message = "ET < 0"
+                elif P > 0:
+                    status_message = "unrealistic fluxes (P>0)"
+
                 P = np.nan
                 R = np.nan
                 T = np.nan
@@ -2309,8 +2325,6 @@ class Partitioning(object):
                 R_a = np.nan
                 T_a = np.nan
                 E_a = np.nan
-
-                status_message = "unrealistic fluxes (P>0)"
 
             if self.argsOut.get("energetic_units"):
                 self.fluxesCEA.update(
@@ -2403,7 +2417,7 @@ class Partitioning(object):
                     # WUE
                     "wuecea": np.nan,
                     # Status
-                    "statuscea": "Not enough points",
+                    "statuscea": "Quadrant tfrac<=per_points_each",
                 }
             )
 
@@ -2479,256 +2493,119 @@ class Partitioning(object):
         total_ET = auxETcov["h2o_p"]["w_p"]  # g/(s m2)
         self.fluxesCECw = {}
 
-        if W > (total_Fc / (10**3 * total_ET)):
+        per_points_Q1Q2 = self.argsQThres.get(
+            "cecw_per_points_Q1Q2", 0
+        )  # more percentage of points need to be available in the first two quadrants
+        per_poits_each = self.argsQThres.get("cecw_per_points_each", 0)
+
+        E, T = np.nan, np.nan
+        P, R = np.nan, np.nan
+
+        if (total_ET < 0) or (W > (total_Fc / (10**3 * total_ET))):
+            # If ET < 0 --> unrealistic E and T fluxes
+
             # If W > (total_Fc / (10**3 * total_ET),
             # then eq. 19 from Zahn 2024 would result in negative R
             # and T. Hence, we need to check it here.
+            # Only necessary if total_Fc is negative,
+            # but if total_Fc is positive the condition is always false
 
-            if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Energetic units
-                        # "ETcecw": total_ET
-                        # * (10**-3)
-                        # * Constants.Lv.magnitude
-                        # * ureg.watt
-                        # / ureg.meter**2,
-                        "Ececw": np.nan * ureg.watt / ureg.meter**2,
-                        "Tcecw": np.nan * ureg.watt / ureg.meter**2,
-                    }
-                )
-            if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Mass units
-                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Pcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Rcecw": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Ececw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Tcecw_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                    }
-                )
-            if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Molar units
-                        # "Fccecw_a": (10**-3)
-                        # * total_Fc
-                        # / Constants.MWco2.magnitude
-                        # * ureg.millimole
-                        # / ureg.meter**2
-                        # / ureg.second,
-                        "Pcecw_a": np.nan
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        "Rcecw_a": np.nan
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        # "ETcecw_a": total_ET
-                        # / Constants.MWvapor.magnitude
-                        # * ureg.millimole
-                        # / ureg.meter**2
-                        # / ureg.second,
-                        "Ececw_a": np.nan
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        "Tcecw_a": np.nan
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                    }
-                )
-            self.fluxesCECw.update({"statuscecw": "Invalid WUE ratio for Eq. 19"})
-            return 0
-
-        # Creates a dataframe with variables of interest and conditioned
-        # on updrafts and on the first quadrant
-        auxE = df[
-            (df["w_p"] > 0)
-            & (df["co2_p"] > 0)
-            & (df["h2o_p"] > 0)
-            & (
-                abs(df["co2_p"] / df["co2_p"].std())
-                > abs(H * df["h2o_p"].std() / df["h2o_p"])
-            )
-        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
-        R_condition_Fc = sum(auxE["co2_p"] * auxE["w_p"]) / N
-        E_condition_ET = sum(auxE["h2o_p"] * auxE["w_p"]) / N
-        sumQ1 = (
-            auxE["w_p"].index.size / N
-        ) * 100  # Percentage of points in the first quadrant
-
-        # Creates a dataframe with variables of interest and conditioned
-        # on updrafts and on the second quadrant
-        auxT = df[
-            (df["w_p"] > 0)
-            & (df["co2_p"] < 0)
-            & (df["h2o_p"] > 0)
-            & (
-                abs(df["co2_p"] / df["co2_p"].std())
-                > abs(H * df["h2o_p"].std() / df["h2o_p"])
-            )
-        ][["co2_p", "h2o_p", "w_p", "num_idx"]]
-        P_condition_Fc = (
-            sum(auxT["co2_p"] * auxT["w_p"]) / N
-        )  # conditional flux [2nd quadrant and w'>0] given in mg/(s m2)
-        T_condition_ET = (
-            sum(auxT["h2o_p"] * auxT["w_p"]) / N
-        )  # conditional flux [2nd quadrant and w'>0] flux given in  W/m2
-        sumQ2 = (
-            auxT["w_p"].index.size / N
-        ) * 100  # Percentage of points in the second quadrant
-
-        # Method statistics
-        if self.sampledEventsStats:
-            self.fluxesCECw = {
-                "Q1tfrac_cecw": (sumQ1 / 100) * ureg.dimensionless,
-                "Q2tfrac_cecw": (sumQ2 / 100) * ureg.dimensionless,
-                "Q1tscale_cecw": self.TScale(auxE),
-                "Q2tscale_cecw": self.TScale(auxT),
-            }
-
-        # Compute needed parameters (ratios first)
-        if T_condition_ET > 0:
-            ratioET = E_condition_ET / T_condition_ET
-            ratioRP = R_condition_Fc / P_condition_Fc
+            # in both cases: Let all fluxes be defined as NaN
+            if total_ET < 0:
+                status_msg = "ET < 0"
+            else:
+                status_msg = "Invalid WUE ratio for Eq. 19"
         else:
-            if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Energetic units
-                        # "ETcecw": total_ET
-                        # * (10**-3)
-                        # * Constants.Lv.magnitude
-                        # * ureg.watt
-                        # / ureg.meter**2,
-                        "Ececw": total_ET
-                        * (10**-3)
-                        * Constants.Lv.magnitude
-                        * ureg.watt
-                        / ureg.meter**2,
-                        "Tcecw": 0 * ureg.watt / ureg.meter**2,
-                    }
+            # Creates a dataframe with variables of interest and conditioned
+            # on updrafts and on the first quadrant
+            auxE = df[
+                (df["w_p"] > 0)
+                & (df["co2_p"] > 0)
+                & (df["h2o_p"] > 0)
+                & (
+                    abs(df["co2_p"] / df["co2_p"].std())
+                    > abs(H * df["h2o_p"].std() / df["h2o_p"])
                 )
+            ][["co2_p", "h2o_p", "w_p", "num_idx"]]
+            R_condition_Fc = sum(auxE["co2_p"] * auxE["w_p"]) / N
+            E_condition_ET = sum(auxE["h2o_p"] * auxE["w_p"]) / N
+            sumQ1 = (
+                auxE["w_p"].index.size / N
+            ) * 100  # Percentage of points in the first quadrant
 
-            if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Mass units
-                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Pcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Rcecw": total_Fc
-                        * ureg.milligram
-                        / ureg.meter**2
-                        / ureg.second,
-                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Ececw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Tcecw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second,
-                    }
+            # Creates a dataframe with variables of interest and conditioned
+            # on updrafts and on the second quadrant
+            auxT = df[
+                (df["w_p"] > 0)
+                & (df["co2_p"] < 0)
+                & (df["h2o_p"] > 0)
+                & (
+                    abs(df["co2_p"] / df["co2_p"].std())
+                    > abs(H * df["h2o_p"].std() / df["h2o_p"])
                 )
-            if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Molar units
-                        # "Fccecw_a": (10**-3) * total_Fc
-                        # / Constants.MWco2.magnitude
-                        # * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Pcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Rcecw_a": (10**-3)
-                        * total_Fc
-                        / Constants.MWco2.magnitude
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        # "ETcecw_a": total_ET
-                        # / Constants.MWvapor.magnitude
-                        # * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Ececw_a": total_ET
-                        / Constants.MWvapor.magnitude
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        "Tcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                    }
-                )
-            self.fluxesCECw.update({"statuscecw": "T < 0, all E"})
-            return 0
+            ][["co2_p", "h2o_p", "w_p", "num_idx"]]
+            P_condition_Fc = (
+                sum(auxT["co2_p"] * auxT["w_p"]) / N
+            )  # conditional flux [2nd quadrant and w'>0] given in mg/(s m2)
+            T_condition_ET = (
+                sum(auxT["h2o_p"] * auxT["w_p"]) / N
+            )  # conditional flux [2nd quadrant and w'>0] flux given in  W/m2
+            sumQ2 = (
+                auxT["w_p"].index.size / N
+            ) * 100  # Percentage of points in the second quadrant
 
-        # Compute Z -------------------------------
-        if ratioET > 0:
-            Z = W * (ratioRP / ratioET)
-        else:
-            if self.argsOut.get("energetic_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Energetic units
-                        # "ETcecw": total_ET
-                        # * (10**-3)
-                        # * Constants.Lv.magnitude
-                        # * ureg.watt
-                        # / ureg.meter**2,
-                        "Ececw": 0 * ureg.watt / ureg.meter**2,
-                        "Tcecw": total_ET
-                        * (10**-3)
-                        * Constants.Lv.magnitude
-                        * ureg.watt
-                        / ureg.meter**2,
-                    }
-                )
+            # Method statistics
+            if self.sampledEventsStats:
+                self.fluxesCECw = {
+                    "Q1tfrac_cecw": (sumQ1 / 100) * ureg.dimensionless,
+                    "Q2tfrac_cecw": (sumQ2 / 100) * ureg.dimensionless,
+                    "Q1tscale_cecw": self.TScale(auxE),
+                    "Q2tscale_cecw": self.TScale(auxT),
+                }
 
-            if self.argsOut.get("mass_units"):
-                self.fluxesCECw.update(
-                    {
-                        # "Fccecw": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Pcecw": total_Fc
-                        * ureg.milligram
-                        / ureg.meter**2
-                        / ureg.second,
-                        "Rcecw": 0 * ureg.milligram / ureg.meter**2 / ureg.second,
-                        # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Ececw_m": 0 * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Tcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    }
-                )
+            if (sumQ1 + sumQ2) <= per_points_Q1Q2:
+                # let all partitioned fluxes be defined NaN
+                status_msg = "Q1tfrac+Q2tfrac<=per_points_Q1Q2"
+            elif (sumQ1 <= per_poits_each) and (sumQ2 > per_poits_each):
+                # Because for CECw less points in a quadrant dont necessarily mean
+                # less flux, let all fluxes be NaN
+                # Alternatively take the same pattern than CEC
+                # but then there will be jumps in the time series
+                # where E is forces to 0.
+                # T = total_ET
+                # E = 0.0
+                # P = total_Fc
+                # R = 0.0
+                status_msg = "Q1tfrac<=per_points_each, ET = T"
+            elif (sumQ1 > per_poits_each) and (sumQ2 <= per_poits_each):
+                # See condition above
+                # T = 0.0
+                # E = total_ET
+                # P = 0.0
+                # R = total_Fc
 
-            if self.argsOut.get("molar_units"):
-                self.fluxesCECw.update(
-                    {
-                        # Molar units
-                        # "Fccecw_a": (10**-3) * total_Fc
-                        # / Constants.MWco2.magnitude
-                        # * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Pcecw_a": (10**-3)
-                        * total_Fc
-                        / Constants.MWco2.magnitude
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                        "Rcecw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                        # "ETcecw_a": total_ET
-                        # / Constants.MWvapor.magnitude
-                        # * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Ececw_a": 0 * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Tcecw_a": total_ET
-                        / Constants.MWvapor.magnitude
-                        * ureg.millimole
-                        / ureg.meter**2
-                        / ureg.second,
-                    }
-                )
-            self.fluxesCECw.update({"statuscecw": "E < 0, all T"})
-            return 0
+                status_msg = "Q2tfrac<=per_points_each, ET = E"
+            elif (sumQ1 > per_poits_each) and (sumQ2 > per_poits_each):
+                ratioET = E_condition_ET / T_condition_ET
+                ratioRP = R_condition_Fc / P_condition_Fc
+                Z = W * (ratioRP / ratioET)
 
-        # Compute flux components -----------------
-        R = (total_Fc - W * total_ET * 10**3) / (1 - W / Z)  # in (mg/kg)/m2/s
-        P = total_Fc - R  # in (mg/kg)/m2/s
-        E = (R / Z) * (10**-6) * Constants.Lv.magnitude  # in W/m2
-        T = total_ET * (10**-3) * Constants.Lv.magnitude - E  # in W/m2
-        del ratioET, ratioRP
+                # Compute flux components -----------------
+                R = (total_Fc - W * total_ET * 10**3) / (1 - W / Z)  # in (mg/kg)/m2/s
+                P = total_Fc - R  # in mg/m2/s
+                E = (R / Z) * (10**-3)  # in g/m2/s
+                T = total_ET - E  # in g/m2/s
+                del ratioET, ratioRP
+
+                # Prevent negative T (where E > ET) by forcing variables to NaN
+                if T < 0:
+                    status_msg = "T < 0, E > ET"
+                    R, P, E, T = np.nan, np.nan, np.nan, np.nan
+                else:
+                    status_msg = "fully OK"
+            else:
+                status_msg = "Q1tfrac, Q2tfrac<=per_points_each"
+                # if both quadrant thresholds not reached let it be NaN
 
         if self.argsOut.get("energetic_units"):
             self.fluxesCECw.update(
@@ -2739,10 +2616,19 @@ class Partitioning(object):
                     # * Constants.Lv.magnitude
                     # * ureg.watt
                     # / ureg.meter**2,
-                    "Ececw": E * ureg.watt / ureg.meter**2,
-                    "Tcecw": T * ureg.watt / ureg.meter**2,
+                    "Ececw": E
+                    * (10**-3)
+                    * Constants.Lv.magnitude
+                    * ureg.watt
+                    / ureg.meter**2,
+                    "Tcecw": T
+                    * (10**-3)
+                    * Constants.Lv.magnitude
+                    * ureg.watt
+                    / ureg.meter**2,
                 }
             )
+
         if self.argsOut.get("mass_units"):
             self.fluxesCECw.update(
                 {
@@ -2751,18 +2637,8 @@ class Partitioning(object):
                     "Pcecw": P * ureg.milligram / ureg.meter**2 / ureg.second,
                     "Rcecw": R * ureg.milligram / ureg.meter**2 / ureg.second,
                     # "ETcecw_m": total_ET * ureg.gram / ureg.meter**2 / ureg.second,
-                    "Ececw_m": E
-                    * 10**3
-                    / Constants.Lv.magnitude
-                    * ureg.gram
-                    / ureg.meter**2
-                    / ureg.second,
-                    "Tcecw_m": T
-                    * 10**3
-                    / Constants.Lv.magnitude
-                    * ureg.gram
-                    / ureg.meter**2
-                    / ureg.second,
+                    "Ececw_m": E * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tcecw_m": T * ureg.gram / ureg.meter**2 / ureg.second,
                 }
             )
         if self.argsOut.get("molar_units"):
@@ -2772,14 +2648,14 @@ class Partitioning(object):
                     # "Fccecw_a": (10**-3) * total_Fc
                     # / Constants.MWco2.magnitude
                     # * ureg.millimole / ureg.meter**2 / ureg.second,
-                    "Pcecw_a": (10**-3)
-                    * P
+                    "Pcecw_a": P
+                    * (10**-3)
                     / Constants.MWco2.magnitude
                     * ureg.millimole
                     / ureg.meter**2
                     / ureg.second,
-                    "Rcecw_a": (10**-3)
-                    * R
+                    "Rcecw_a": R
+                    * (10**-3)
                     / Constants.MWco2.magnitude
                     * ureg.millimole
                     / ureg.meter**2
@@ -2788,19 +2664,15 @@ class Partitioning(object):
                     # / Constants.MWvapor.magnitude
                     # * ureg.millimole / ureg.meter**2 / ureg.second,
                     "Ececw_a": E
-                    * 10**3
-                    / Constants.Lv.magnitude
                     / Constants.MWvapor.magnitude
                     * ureg.millimole
                     / ureg.meter**2
                     / ureg.second,
                     "Tcecw_a": T
-                    * 10**3
-                    / Constants.Lv.magnitude
                     / Constants.MWvapor.magnitude
                     * ureg.millimole
                     / ureg.meter**2
                     / ureg.second,
                 }
             )
-        self.fluxesCECw.update({"statuscecw": "fully OK"})
+        self.fluxesCECw.update({"statuscecw": status_msg})
