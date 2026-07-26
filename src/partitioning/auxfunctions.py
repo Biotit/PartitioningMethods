@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import pint
 import logging
+from logging.handlers import QueueHandler
 
 ureg = pint.UnitRegistry()
 ureg.define("percent = 0.01 * dimensionless = %")
@@ -498,3 +499,16 @@ def setup_logging(filepath, level=logging.INFO):
         logging.Formatter("%(name)s - %(levelname)s - %(message)s")
     )
     logger.addHandler(console_handler)
+
+def logging_worker_init(log_queue, level):
+    """Initializes logging for each child process in the pool."""
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    
+    # Clear any default handlers to avoid duplicate console prints
+    if logger.hasHandlers():
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+            
+    # Add a QueueHandler to route logs back to the main process
+    logger.addHandler(QueueHandler(log_queue))
