@@ -301,7 +301,7 @@ class Partitioning(object):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
         logger.debug("Check units.")
         temp_range = [0, 70]  # C
-        co2_range = [200, 1200]  # mg/m3
+        co2_range = [200, 1500]  # mg/m3
         h2o_range = [0, 50]  # g/m3
         press_range = [60, 150]  # kPa
 
@@ -2602,7 +2602,7 @@ class Partitioning(object):
                     status_msg = "T < 0, E > ET"
                     R, P, E, T = np.nan, np.nan, np.nan, np.nan
                 else:
-                    status_msg = "fully OK"
+                    status_msg = "OK"
             else:
                 status_msg = "Q1tfrac, Q2tfrac<=per_points_each"
                 # if both quadrant thresholds not reached let it be NaN

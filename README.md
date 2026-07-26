@@ -18,7 +18,7 @@ The package includes pre-processing steps such as coordinate rotation and densit
 
 ## New in modified version (3.0.0)
 
-The modified version includes
+The modified version has the new features
 - each pre-processing step can be activated seperately.
 - the time fraction and time scale of sampled events by each partitioning method can be calculated.
 - the sampling thresholds per quadrant can be set manually for each method.
@@ -27,7 +27,9 @@ The modified version includes
 - wrapper functions now automatically perform the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable processing for almost any use case. Additionally, time lag plots and pre-processed data can now be saved to a specified folder, not only the working directory.
 - further data loading functions are included.
 - logger files for each run are saved in the folder log.
-- minor bug fixes in density correction and C4 plant water use efficiency calculation.
+- the CECw method code structure was reworked and checked for cases where E > ET
+- minor bug fixes in density correction, C4 plant water use efficiency calculation and time stamp calculation
+- additional check that partitioning is only performed when ET > 0.
 
 <!--  See the [Documentation](https://einaraz.github.io/PartitioningMethods/) here. -->
 See the [Documentation](https://biotit.github.io/PartitioningMethods/) here.

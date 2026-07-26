@@ -728,19 +728,19 @@ def process(
     logger.info(
         "Starting multiprocessing the files. Logging message might be mixed because of multiprocessing."
     )
-    
+
     # Setup Queue and Listener for Logger
     log_queue = multiprocessing.Manager().Queue()
-    # The listener runs in the main process. 
+    # The listener runs in the main process.
     # Pass it the handlers already created in setup_logging (the FileHandler and StreamHandler).
     listener = QueueListener(log_queue, *logging.getLogger().handlers)
     listener.start()
-    
+
     # Start multiprocessing
     pool = multiprocessing.Pool(
         processes=4,
-        initializer=logging_worker_init, # Runs once per worker
-        initargs=(log_queue, logginglevel) # Arguments passed to worker_init
+        initializer=logging_worker_init,  # Runs once per worker
+        initargs=(log_queue, logginglevel),  # Arguments passed to worker_init
     )
     raw_output = pool.map(partial_CallPart, listfiles)
     pool.close()
