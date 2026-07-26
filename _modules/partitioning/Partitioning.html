@@ -148,6 +148,16 @@
 <span class="sd">                If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</span>
 <span class="sd">            outfolder - str</span>
 <span class="sd">                 If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.</span>
+<span class="sd">            UnitBorders - dict</span>
+<span class="sd">                Define data range in between the median of the data has to be, otherwise an error is raised.</span>
+<span class="sd">                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                Example: &quot;UnitBorders&quot;:{&quot;Ts&quot;: (0,70), &quot;co2&quot;: (200, 1500),&quot;h2o&quot;: (0, 50), &quot;P&quot;: (60, 150)}</span>
+<span class="sd">            PhysicalBounds - dict</span>
+<span class="sd">                Define data range in between the values have to be, otherwise the individual values are set to NaN.</span>
+<span class="sd">                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                Example: &quot;PhysicalBounds&quot;:{&quot;u&quot;: (-20, 20),&quot;v&quot;: (-20, 20),&quot;w&quot;: (-20, 20),&quot;Ts&quot;: (-10, 50), &quot;co2&quot;: (0, 1500), &quot;h2o&quot;: (0, 40), &quot;P&quot;: (60, 150)}</span>
 
 <span class="sd">    sampledEventsStats : bool, optional</span>
 <span class="sd">        If True the time fraction and time scale of sampled events within each quadrant are calculated.</span>
@@ -177,33 +187,24 @@
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            cec_per_points_each - int</span>
 <span class="sd">                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">            cecw_per_points_Q1Q2 - int</span>
+<span class="sd">                For CECw more % of data needs to be present within quadrant 1 and 2 to partition.</span>
+<span class="sd">                Otherwise no partitioning is performed.</span>
+<span class="sd">            cecw_per_points_each - int</span>
+<span class="sd">                For CECw if less or at least % of data is within one of Q1 or Q2, no partitioning is performed.</span>
 <span class="sd">            mrea_per_points_Q1Q2 - int</span>
 <span class="sd">                For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            mrea_per_points_each - int</span>
 <span class="sd">                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">            cea_per_points_Q1Q2 - int</span>
+<span class="sd">                For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both</span>
+<span class="sd">                up- and downdrafts, otherwise no partitioning is performed.</span>
 <span class="sd">            cea_per_points_each - int</span>
 <span class="sd">                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                up- and downdrafts, no partitioning is performed.</span>
 <span class="sd">            t_scale_gap_threshold - int</span>
 <span class="sd">                For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.</span>
-<span class="sd">            H - float or dict</span>
-<span class="sd">                Hyperbolic threshold criteria. If not specified 0 is used for all methods.</span>
-<span class="sd">                If float: MREA, CEC, CEA, CECw get calculated using this threshold.</span>
-<span class="sd">                If dict:</span>
-<span class="sd">                    Hyperbolic threshold per method used.</span>
-<span class="sd">                    If for a method no threshold is defined its set to 0.</span>
-
-<span class="sd">                    Keys</span>
-<span class="sd">                    -------</span>
-<span class="sd">                    &quot;MREA&quot; - float</span>
-<span class="sd">                        Hyperbolic threshold for MREA</span>
-<span class="sd">                    &quot;CEC&quot; - float</span>
-<span class="sd">                        Hyperbolic threshold for CEC</span>
-<span class="sd">                    &quot;CEA&quot; - float</span>
-<span class="sd">                        Hyperbolic threshold for CEA</span>
-<span class="sd">                    &quot;CECw&quot; - float</span>
-<span class="sd">                        Hyperbolic threshold for CECw</span>
 
 
 <span class="sd">    Notes: Available Partitioning Methods</span>
@@ -252,6 +253,21 @@
             <span class="s2">&quot;maxGapsInterpolate&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># Intervals of up to 5 missing values are filled by linear interpolation</span>
             <span class="s2">&quot;RemainingData&quot;</span><span class="p">:</span> <span class="mi">95</span><span class="p">,</span>  <span class="c1"># Only proceed with partioning if 95% of initial data is available after pre-processing</span>
             <span class="s2">&quot;outfolder&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.</span>
+            <span class="s2">&quot;UnitBorders&quot;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># define data range in between the median of the data has to be, otherwise an error is raised</span>
+                <span class="s2">&quot;Ts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span><span class="p">),</span>  <span class="c1"># C</span>
+                <span class="s2">&quot;co2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">1500</span><span class="p">),</span>  <span class="c1"># mg/m3</span>
+                <span class="s2">&quot;h2o&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>  <span class="c1"># g/m3</span>
+                <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>  <span class="c1"># kPa</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;PhysicalBounds&quot;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># define data range in between the values have to be, otherwise the individual values are set to NaN</span>
+                <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>  <span class="c1"># m/s</span>
+                <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>  <span class="c1"># m/s</span>
+                <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>  <span class="c1"># m/s</span>
+                <span class="s2">&quot;Ts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>  <span class="c1"># Celsius</span>
+                <span class="s2">&quot;co2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1500</span><span class="p">),</span>  <span class="c1"># mg/m3</span>
+                <span class="s2">&quot;h2o&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>  <span class="c1">#  g/m3</span>
+                <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>  <span class="c1"># kPa</span>
+            <span class="p">},</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">argsQC</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">,</span> <span class="o">**</span><span class="n">argsQC</span><span class="p">}</span>
@@ -266,18 +282,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQThres</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;cec_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>  <span class="c1"># smallest percentage of points that must be available in the first two quadrants</span>
             <span class="s2">&quot;cec_per_points_each&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># smallest percentage of points in each quadrant</span>
+            <span class="s2">&quot;cecw_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;cecw_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
             <span class="s2">&quot;mrea_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
             <span class="s2">&quot;mrea_per_points_each&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="s2">&quot;cea_per_points_each&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;cea_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;cea_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
             <span class="s2">&quot;t_scale_gap_threshold&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">argsQThres</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;cec_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># smallest percentage of points that must be available in the first two quadrants</span>
                 <span class="s2">&quot;cec_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># smallest percentage of points in each quadrant</span>
+                <span class="s2">&quot;cecw_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;cecw_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;mrea_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;mrea_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;cea_per_points_each&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;cea_per_points_Q1Q2&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;t_scale_gap_threshold&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
@@ -342,10 +364,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_checkUnits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if units of temperature, CO2, H2O and pressure are correct.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check units.&quot;</span><span class="p">)</span>
-        <span class="n">temp_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>  <span class="c1"># C</span>
-        <span class="n">co2_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">1200</span><span class="p">]</span>  <span class="c1"># mg/m3</span>
-        <span class="n">h2o_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>  <span class="c1"># g/m3</span>
-        <span class="n">press_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">60</span><span class="p">,</span> <span class="mi">150</span><span class="p">]</span>  <span class="c1"># kPa</span>
+        <span class="n">temp_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">[</span><span class="s2">&quot;UnitBorders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Ts&quot;</span><span class="p">)</span>  <span class="c1"># C</span>
+        <span class="n">co2_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">[</span><span class="s2">&quot;UnitBorders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;co2&quot;</span><span class="p">)</span>  <span class="c1"># mg/m3</span>
+        <span class="n">h2o_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">[</span><span class="s2">&quot;UnitBorders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;h2o&quot;</span><span class="p">)</span>  <span class="c1"># g/m3</span>
+        <span class="n">press_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="p">[</span><span class="s2">&quot;UnitBorders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>  <span class="c1"># kPa</span>
 
         <span class="c1"># Check that not all values are NaN</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
@@ -423,29 +445,11 @@
 <span class="sd">        self.data : pandas.DataFrame</span>
 <span class="sd">            DataFrame containing the input data with each variable in a column.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        The `_bounds` dictionary contains the physical bounds for the required variables:</span>
-<span class="sd">            - &quot;u&quot; : (-20, 20) m/s</span>
-<span class="sd">            - &quot;v&quot; : (-20, 20) m/s</span>
-<span class="sd">            - &quot;w&quot; : (-20, 20) m/s</span>
-<span class="sd">            - &quot;Ts&quot; : (-10, 50) Celsius</span>
-<span class="sd">            - &quot;co2&quot; : (0, 1500) mg/m3</span>
-<span class="sd">            - &quot;h2o&quot; : (0, 40) g/m3</span>
-<span class="sd">            - &quot;P&quot; : (60, 150) kPa</span>
 
 <span class="sd">        For each variable in `self.data`, if the variable is in `_bounds`, values outside the specified bounds are set to NaN.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Check physical bounds and replace with NaN if necessary.&quot;</span><span class="p">)</span>
-        <span class="n">_bounds</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
-            <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
-            <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>  <span class="c1"># m/s</span>
-            <span class="s2">&quot;Ts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>  <span class="c1"># Celsius</span>
-            <span class="s2">&quot;co2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1500</span><span class="p">),</span>  <span class="c1"># mg/m3</span>
-            <span class="s2">&quot;h2o&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>  <span class="c1">#  g/m3</span>
-            <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>  <span class="c1"># kPa</span>
-        <span class="p">}</span>
+        <span class="n">_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_argsQC</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PhysicalBounds&quot;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">_var</span> <span class="ow">in</span> <span class="n">_bounds</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -1505,10 +1509,16 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEC</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># First condition: do we have enough points in Q1 and Q2?</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">+</span> <span class="n">sumQ2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
-            <span class="k">pass</span>  <span class="c1"># let all partitioned fluxes be defined NaN</span>
+        <span class="c1"># Check if ET is negative</span>
+        <span class="k">if</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
+            <span class="c1"># let all partitioned fluxes be defined NaN</span>
+        <span class="c1"># Do we have enough points in Q1 and Q2?</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">+</span> <span class="n">sumQ2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac+Q2tfrac&lt;=per_points_Q1Q2&quot;</span>
+            <span class="c1"># let all partitioned fluxes be defined NaN</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
             <span class="c1"># ET components</span>
             <span class="n">ratioET</span> <span class="o">=</span> <span class="n">E_condition_ET</span> <span class="o">/</span> <span class="n">T_condition_ET</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">total_ET</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ratioET</span><span class="p">)</span>
@@ -1525,7 +1535,8 @@
             <span class="n">P_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ratioRP</span><span class="p">)</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">ratioRP</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&gt;=</span> <span class="n">per_poits_each</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac&lt;=per_points_each, ET = T&quot;</span>
             <span class="c1"># In this case, all water vapor flux is assumed to be transpiration</span>
             <span class="n">ratioET</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">T</span> <span class="o">=</span> <span class="n">total_ET</span>
@@ -1541,7 +1552,8 @@
             <span class="n">R</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">P_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&lt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">):</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q2tfrac&lt;=per_points_each, ET = E&quot;</span>
             <span class="c1"># All fluxes are assumed to be from the ground</span>
             <span class="n">ratioET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
             <span class="n">T</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -1558,16 +1570,13 @@
             <span class="n">P_a</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac, Q2tfrac &lt;=per_points_each&quot;</span>
+            <span class="c1"># if both quadrants have no points, than all NaN</span>
 
         <span class="c1"># Check CO2 flux components ratio</span>
         <span class="c1">#   CO2 fluxes might be noisy in this range</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">+</span> <span class="n">sumQ2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
-            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q1+Q2&lt;20&quot;</span>
-        <span class="k">elif</span> <span class="o">-</span><span class="mf">1.2</span> <span class="o">&lt;</span> <span class="n">ratioRP</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">:</span>
-            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Small ratioRP&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mf">1.2</span> <span class="o">&lt;</span> <span class="n">ratioRP</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">:</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="n">finalstat</span> <span class="o">+</span> <span class="s2">&quot;Small ratioRP&quot;</span>
 
         <span class="c1"># Additional constraints may be added based on the strength of the fluxes</span>
         <span class="c1"># and other combinations</span>
@@ -1772,8 +1781,10 @@
         <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;Undefined&quot;</span>
 
         <span class="c1"># Check availability of points in each quadrant</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">+</span> <span class="n">Q2sum</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
-            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;Q1+Q2&lt;20&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">+</span> <span class="n">Q2sum</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
+            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac+Q2tfrac&lt;=per_points_Q1Q2&quot;</span>
+        <span class="k">elif</span> <span class="n">ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Q2sum</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
             <span class="c1"># Compute fluxes</span>
 
@@ -1807,7 +1818,7 @@
                 <span class="n">E</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">E_m</span><span class="p">,</span> <span class="n">T_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">E_a</span><span class="p">,</span> <span class="n">T_a</span><span class="p">,</span> <span class="n">R_a</span><span class="p">,</span> <span class="n">P_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Q2sum</span> <span class="o">&gt;=</span> <span class="n">per_poits_each</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Q2sum</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
             <span class="c1"># Assuming that all fluxes are from the canopy</span>
 
             <span class="c1"># Energetic units</span>
@@ -1826,8 +1837,8 @@
             <span class="n">P_a</span> <span class="o">=</span> <span class="n">Fc_a</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="mi">0</span>
 
-            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Q2sum</span> <span class="o">&lt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac&lt;=per_points_each, ET = T&quot;</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">Q1sum</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Q2sum</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">):</span>
             <span class="c1"># Assuming that all fluxes are from the ground</span>
 
             <span class="c1"># Energetic units</span>
@@ -1846,9 +1857,9 @@
             <span class="n">P_a</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="n">Fc_a</span>
 
-            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+            <span class="n">finalstatus</span> <span class="o">=</span> <span class="s2">&quot;Q2tfrac&lt;=per_points_each, ET = E&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
+            <span class="n">finalstat</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac, Q2tfrac &lt;=per_points_each&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesREA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -2008,6 +2019,11 @@
                 <span class="p">}</span>
             <span class="p">)</span>
 
+        <span class="c1"># Check if ET &lt; 0 which would result in</span>
+        <span class="c1"># unrealistic signs of the fluxes E &lt; 0, T &lt; 0, R &lt; 0, P &gt; 0...</span>
+        <span class="k">if</span> <span class="n">Fq</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesFVS</span><span class="p">[</span><span class="s2">&quot;statusfvs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># Check mathematical constraints Eq (13) in Scanlon et al., 2019</span>
         <span class="k">if</span> <span class="n">rho</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">A</span> <span class="o">&lt;=</span> <span class="n">B</span> <span class="o">&lt;</span> <span class="n">C</span><span class="p">:</span>
@@ -2221,7 +2237,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CEA partitioning with H </span><span class="si">{</span><span class="n">H</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-        <span class="n">per_points_each</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cea_per_points_each&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">per_points_each</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cea_per_points_each&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">per_points_Q1Q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cea_per_points_Q1Q2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Creates a dataframe with variables of interest and no constraints</span>
         <span class="n">unitLE</span> <span class="o">=</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span>
@@ -2330,6 +2347,7 @@
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum2</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum3</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum4</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">sum1</span> <span class="o">+</span> <span class="n">sum2</span> <span class="o">+</span> <span class="n">sum3</span> <span class="o">+</span> <span class="n">sum4</span> <span class="o">&gt;</span> <span class="n">per_points_Q1Q2</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="c1"># Ratios</span>
             <span class="n">ratioET</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q1</span> <span class="o">-</span> <span class="n">Q2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Q3</span> <span class="o">-</span> <span class="n">Q4</span><span class="p">)</span>
@@ -2355,7 +2373,12 @@
             <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
 
             <span class="c1"># Check sign of fluxes</span>
-            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
+                <span class="k">elif</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;unrealistic fluxes (P&gt;0)&quot;</span>
+
                 <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -2368,8 +2391,6 @@
                 <span class="n">R_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">T_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">E_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-                <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;unrealistic fluxes (P&gt;0)&quot;</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -2462,7 +2483,7 @@
                     <span class="c1"># WUE</span>
                     <span class="s2">&quot;wuecea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
                     <span class="c1"># Status</span>
-                    <span class="s2">&quot;statuscea&quot;</span><span class="p">:</span> <span class="s2">&quot;Not enough points&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;statuscea&quot;</span><span class="p">:</span> <span class="s2">&quot;Quadrant tfrac&lt;=per_points_each&quot;</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span></div>
 
@@ -2541,256 +2562,119 @@
         <span class="n">total_ET</span> <span class="o">=</span> <span class="n">auxETcov</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">][</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span>  <span class="c1"># g/(s m2)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">if</span> <span class="n">W</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">total_Fc</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">total_ET</span><span class="p">)):</span>
+        <span class="n">per_points_Q1Q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;cecw_per_points_Q1Q2&quot;</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">)</span>  <span class="c1"># more percentage of points need to be available in the first two quadrants</span>
+        <span class="n">per_poits_each</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsQThres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cecw_per_points_each&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">E</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">P</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">W</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">total_Fc</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">total_ET</span><span class="p">))):</span>
+            <span class="c1"># If ET &lt; 0 --&gt; unrealistic E and T fluxes</span>
+
             <span class="c1"># If W &gt; (total_Fc / (10**3 * total_ET),</span>
             <span class="c1"># then eq. 19 from Zahn 2024 would result in negative R</span>
             <span class="c1"># and T. Hence, we need to check it here.</span>
+            <span class="c1"># Only necessary if total_Fc is negative,</span>
+            <span class="c1"># but if total_Fc is positive the condition is always false</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Energetic units</span>
-                        <span class="c1"># &quot;ETcecw&quot;: total_ET</span>
-                        <span class="c1"># * (10**-3)</span>
-                        <span class="c1"># * Constants.Lv.magnitude</span>
-                        <span class="c1"># * ureg.watt</span>
-                        <span class="c1"># / ureg.meter**2,</span>
-                        <span class="s2">&quot;Ececw&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Mass units</span>
-                        <span class="c1"># &quot;Fccecw&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_m&quot;: total_ET * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_m&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_m&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Molar units</span>
-                        <span class="c1"># &quot;Fccecw_a&quot;: (10**-3)</span>
-                        <span class="c1"># * total_Fc</span>
-                        <span class="c1"># / Constants.MWco2.magnitude</span>
-                        <span class="c1"># * ureg.millimole</span>
-                        <span class="c1"># / ureg.meter**2</span>
-                        <span class="c1"># / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_a&quot;: total_ET</span>
-                        <span class="c1"># / Constants.MWvapor.magnitude</span>
-                        <span class="c1"># * ureg.millimole</span>
-                        <span class="c1"># / ureg.meter**2</span>
-                        <span class="c1"># / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;statuscecw&quot;</span><span class="p">:</span> <span class="s2">&quot;Invalid WUE ratio for Eq. 19&quot;</span><span class="p">})</span>
-            <span class="k">return</span> <span class="mi">0</span>
-
-        <span class="c1"># Creates a dataframe with variables of interest and conditioned</span>
-        <span class="c1"># on updrafts and on the first quadrant</span>
-        <span class="n">auxE</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span>
-            <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span>
-                <span class="nb">abs</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
-                <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="p">][[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">,</span> <span class="s2">&quot;h2o_p&quot;</span><span class="p">,</span> <span class="s2">&quot;w_p&quot;</span><span class="p">,</span> <span class="s2">&quot;num_idx&quot;</span><span class="p">]]</span>
-        <span class="n">R_condition_Fc</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="n">E_condition_ET</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="n">sumQ1</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># Percentage of points in the first quadrant</span>
-
-        <span class="c1"># Creates a dataframe with variables of interest and conditioned</span>
-        <span class="c1"># on updrafts and on the second quadrant</span>
-        <span class="n">auxT</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span>
-            <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="o">&amp;</span> <span class="p">(</span>
-                <span class="nb">abs</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
-                <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">])</span>
-            <span class="p">)</span>
-        <span class="p">][[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">,</span> <span class="s2">&quot;h2o_p&quot;</span><span class="p">,</span> <span class="s2">&quot;w_p&quot;</span><span class="p">,</span> <span class="s2">&quot;num_idx&quot;</span><span class="p">]]</span>
-        <span class="n">P_condition_Fc</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">sum</span><span class="p">(</span><span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="p">)</span>  <span class="c1"># conditional flux [2nd quadrant and w&#39;&gt;0] given in mg/(s m2)</span>
-        <span class="n">T_condition_ET</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">sum</span><span class="p">(</span><span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="p">)</span>  <span class="c1"># conditional flux [2nd quadrant and w&#39;&gt;0] flux given in  W/m2</span>
-        <span class="n">sumQ2</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">N</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># Percentage of points in the second quadrant</span>
-
-        <span class="c1"># Method statistics</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampledEventsStats</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;Q1tfrac_cecw&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">,</span>
-                <span class="s2">&quot;Q2tfrac_cecw&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">,</span>
-                <span class="s2">&quot;Q1tscale_cecw&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">TScale</span><span class="p">(</span><span class="n">auxE</span><span class="p">),</span>
-                <span class="s2">&quot;Q2tscale_cecw&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">TScale</span><span class="p">(</span><span class="n">auxT</span><span class="p">),</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Compute needed parameters (ratios first)</span>
-        <span class="k">if</span> <span class="n">T_condition_ET</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">ratioET</span> <span class="o">=</span> <span class="n">E_condition_ET</span> <span class="o">/</span> <span class="n">T_condition_ET</span>
-            <span class="n">ratioRP</span> <span class="o">=</span> <span class="n">R_condition_Fc</span> <span class="o">/</span> <span class="n">P_condition_Fc</span>
+            <span class="c1"># in both cases: Let all fluxes be defined as NaN</span>
+            <span class="k">if</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;Invalid WUE ratio for Eq. 19&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Energetic units</span>
-                        <span class="c1"># &quot;ETcecw&quot;: total_ET</span>
-                        <span class="c1"># * (10**-3)</span>
-                        <span class="c1"># * Constants.Lv.magnitude</span>
-                        <span class="c1"># * ureg.watt</span>
-                        <span class="c1"># / ureg.meter**2,</span>
-                        <span class="s2">&quot;Ececw&quot;</span><span class="p">:</span> <span class="n">total_ET</span>
-                        <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                        <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="p">}</span>
+            <span class="c1"># Creates a dataframe with variables of interest and conditioned</span>
+            <span class="c1"># on updrafts and on the first quadrant</span>
+            <span class="n">auxE</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
+                    <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">])</span>
                 <span class="p">)</span>
+            <span class="p">][[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">,</span> <span class="s2">&quot;h2o_p&quot;</span><span class="p">,</span> <span class="s2">&quot;w_p&quot;</span><span class="p">,</span> <span class="s2">&quot;num_idx&quot;</span><span class="p">]]</span>
+            <span class="n">R_condition_Fc</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="n">E_condition_ET</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="n">sumQ1</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">auxE</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># Percentage of points in the first quadrant</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Mass units</span>
-                        <span class="c1"># &quot;Fccecw&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw&quot;</span><span class="p">:</span> <span class="n">total_Fc</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_m&quot;: total_ET * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_m&quot;</span><span class="p">:</span> <span class="n">total_ET</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_m&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
+            <span class="c1"># Creates a dataframe with variables of interest and conditioned</span>
+            <span class="c1"># on updrafts and on the second quadrant</span>
+            <span class="n">auxT</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="o">&amp;</span> <span class="p">(</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span>
+                    <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">])</span>
                 <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Molar units</span>
-                        <span class="c1"># &quot;Fccecw_a&quot;: (10**-3) * total_Fc</span>
-                        <span class="c1"># / Constants.MWco2.magnitude</span>
-                        <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw_a&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw_a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                        <span class="o">*</span> <span class="n">total_Fc</span>
-                        <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_a&quot;: total_ET</span>
-                        <span class="c1"># / Constants.MWvapor.magnitude</span>
-                        <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_a&quot;</span><span class="p">:</span> <span class="n">total_ET</span>
-                        <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_a&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;statuscecw&quot;</span><span class="p">:</span> <span class="s2">&quot;T &lt; 0, all E&quot;</span><span class="p">})</span>
-            <span class="k">return</span> <span class="mi">0</span>
+            <span class="p">][[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">,</span> <span class="s2">&quot;h2o_p&quot;</span><span class="p">,</span> <span class="s2">&quot;w_p&quot;</span><span class="p">,</span> <span class="s2">&quot;num_idx&quot;</span><span class="p">]]</span>
+            <span class="n">P_condition_Fc</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;co2_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="p">)</span>  <span class="c1"># conditional flux [2nd quadrant and w&#39;&gt;0] given in mg/(s m2)</span>
+            <span class="n">T_condition_ET</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;h2o_p&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="p">)</span>  <span class="c1"># conditional flux [2nd quadrant and w&#39;&gt;0] flux given in  W/m2</span>
+            <span class="n">sumQ2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">auxT</span><span class="p">[</span><span class="s2">&quot;w_p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">N</span>
+            <span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># Percentage of points in the second quadrant</span>
 
-        <span class="c1"># Compute Z -------------------------------</span>
-        <span class="k">if</span> <span class="n">ratioET</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">Z</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="n">ratioRP</span> <span class="o">/</span> <span class="n">ratioET</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Energetic units</span>
-                        <span class="c1"># &quot;ETcecw&quot;: total_ET</span>
-                        <span class="c1"># * (10**-3)</span>
-                        <span class="c1"># * Constants.Lv.magnitude</span>
-                        <span class="c1"># * ureg.watt</span>
-                        <span class="c1"># / ureg.meter**2,</span>
-                        <span class="s2">&quot;Ececw&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw&quot;</span><span class="p">:</span> <span class="n">total_ET</span>
-                        <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                        <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
+            <span class="c1"># Method statistics</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampledEventsStats</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;Q1tfrac_cecw&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">,</span>
+                    <span class="s2">&quot;Q2tfrac_cecw&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">dimensionless</span><span class="p">,</span>
+                    <span class="s2">&quot;Q1tscale_cecw&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">TScale</span><span class="p">(</span><span class="n">auxE</span><span class="p">),</span>
+                    <span class="s2">&quot;Q2tscale_cecw&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">TScale</span><span class="p">(</span><span class="n">auxT</span><span class="p">),</span>
+                <span class="p">}</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># &quot;Fccecw&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw&quot;</span><span class="p">:</span> <span class="n">total_Fc</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_m&quot;: total_ET * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_m&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_m&quot;</span><span class="p">:</span> <span class="n">total_ET</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">+</span> <span class="n">sumQ2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">per_points_Q1Q2</span><span class="p">:</span>
+                <span class="c1"># let all partitioned fluxes be defined NaN</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac+Q2tfrac&lt;=per_points_Q1Q2&quot;</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+                <span class="c1"># Because for CECw less points in a quadrant dont necessarily mean</span>
+                <span class="c1"># less flux, let all fluxes be NaN</span>
+                <span class="c1"># Alternatively take the same pattern than CEC</span>
+                <span class="c1"># but then there will be jumps in the time series</span>
+                <span class="c1"># where E is forces to 0.</span>
+                <span class="c1"># T = total_ET</span>
+                <span class="c1"># E = 0.0</span>
+                <span class="c1"># P = total_Fc</span>
+                <span class="c1"># R = 0.0</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac&lt;=per_points_each, ET = T&quot;</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&lt;=</span> <span class="n">per_poits_each</span><span class="p">):</span>
+                <span class="c1"># See condition above</span>
+                <span class="c1"># T = 0.0</span>
+                <span class="c1"># E = total_ET</span>
+                <span class="c1"># P = 0.0</span>
+                <span class="c1"># R = total_Fc</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Molar units</span>
-                        <span class="c1"># &quot;Fccecw_a&quot;: (10**-3) * total_Fc</span>
-                        <span class="c1"># / Constants.MWco2.magnitude</span>
-                        <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcecw_a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                        <span class="o">*</span> <span class="n">total_Fc</span>
-                        <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcecw_a&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcecw_a&quot;: total_ET</span>
-                        <span class="c1"># / Constants.MWvapor.magnitude</span>
-                        <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ececw_a&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcecw_a&quot;</span><span class="p">:</span> <span class="n">total_ET</span>
-                        <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span>
-                        <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;statuscecw&quot;</span><span class="p">:</span> <span class="s2">&quot;E &lt; 0, all T&quot;</span><span class="p">})</span>
-            <span class="k">return</span> <span class="mi">0</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;Q2tfrac&lt;=per_points_each, ET = E&quot;</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">sumQ1</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sumQ2</span> <span class="o">&gt;</span> <span class="n">per_poits_each</span><span class="p">):</span>
+                <span class="n">ratioET</span> <span class="o">=</span> <span class="n">E_condition_ET</span> <span class="o">/</span> <span class="n">T_condition_ET</span>
+                <span class="n">ratioRP</span> <span class="o">=</span> <span class="n">R_condition_Fc</span> <span class="o">/</span> <span class="n">P_condition_Fc</span>
+                <span class="n">Z</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="n">ratioRP</span> <span class="o">/</span> <span class="n">ratioET</span><span class="p">)</span>
 
-        <span class="c1"># Compute flux components -----------------</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_Fc</span> <span class="o">-</span> <span class="n">W</span> <span class="o">*</span> <span class="n">total_ET</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">W</span> <span class="o">/</span> <span class="n">Z</span><span class="p">)</span>  <span class="c1"># in (mg/kg)/m2/s</span>
-        <span class="n">P</span> <span class="o">=</span> <span class="n">total_Fc</span> <span class="o">-</span> <span class="n">R</span>  <span class="c1"># in (mg/kg)/m2/s</span>
-        <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="o">/</span> <span class="n">Z</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">6</span><span class="p">)</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>  <span class="c1"># in W/m2</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">total_ET</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">-</span> <span class="n">E</span>  <span class="c1"># in W/m2</span>
-        <span class="k">del</span> <span class="n">ratioET</span><span class="p">,</span> <span class="n">ratioRP</span>
+                <span class="c1"># Compute flux components -----------------</span>
+                <span class="n">R</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_Fc</span> <span class="o">-</span> <span class="n">W</span> <span class="o">*</span> <span class="n">total_ET</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">W</span> <span class="o">/</span> <span class="n">Z</span><span class="p">)</span>  <span class="c1"># in (mg/kg)/m2/s</span>
+                <span class="n">P</span> <span class="o">=</span> <span class="n">total_Fc</span> <span class="o">-</span> <span class="n">R</span>  <span class="c1"># in mg/m2/s</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="o">/</span> <span class="n">Z</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># in g/m2/s</span>
+                <span class="n">T</span> <span class="o">=</span> <span class="n">total_ET</span> <span class="o">-</span> <span class="n">E</span>  <span class="c1"># in g/m2/s</span>
+                <span class="k">del</span> <span class="n">ratioET</span><span class="p">,</span> <span class="n">ratioRP</span>
+
+                <span class="c1"># Prevent negative T (where E &gt; ET) by forcing variables to NaN</span>
+                <span class="k">if</span> <span class="n">T</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;T &lt; 0, E &gt; ET&quot;</span>
+                    <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">status_msg</span> <span class="o">=</span> <span class="s2">&quot;Q1tfrac, Q2tfrac&lt;=per_points_each&quot;</span>
+                <span class="c1"># if both quadrant thresholds not reached let it be NaN</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -2801,10 +2685,19 @@
                     <span class="c1"># * Constants.Lv.magnitude</span>
                     <span class="c1"># * ureg.watt</span>
                     <span class="c1"># / ureg.meter**2,</span>
-                    <span class="s2">&quot;Ececw&quot;</span><span class="p">:</span> <span class="n">E</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="s2">&quot;Tcecw&quot;</span><span class="p">:</span> <span class="n">T</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;Ececw&quot;</span><span class="p">:</span> <span class="n">E</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span>
+                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;Tcecw&quot;</span><span class="p">:</span> <span class="n">T</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
+                    <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span>
+                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="p">{</span>
@@ -2813,18 +2706,8 @@
                     <span class="s2">&quot;Pcecw&quot;</span><span class="p">:</span> <span class="n">P</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                     <span class="s2">&quot;Rcecw&quot;</span><span class="p">:</span> <span class="n">R</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                     <span class="c1"># &quot;ETcecw_m&quot;: total_ET * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                    <span class="s2">&quot;Ececw_m&quot;</span><span class="p">:</span> <span class="n">E</span>
-                    <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-                    <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
-                    <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span>
-                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="s2">&quot;Tcecw_m&quot;</span><span class="p">:</span> <span class="n">T</span>
-                    <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-                    <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
-                    <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span>
-                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
-                    <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Ececw_m&quot;</span><span class="p">:</span> <span class="n">E</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Tcecw_m&quot;</span><span class="p">:</span> <span class="n">T</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
@@ -2834,14 +2717,14 @@
                     <span class="c1"># &quot;Fccecw_a&quot;: (10**-3) * total_Fc</span>
                     <span class="c1"># / Constants.MWco2.magnitude</span>
                     <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                    <span class="s2">&quot;Pcecw_a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                    <span class="o">*</span> <span class="n">P</span>
+                    <span class="s2">&quot;Pcecw_a&quot;</span><span class="p">:</span> <span class="n">P</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
                     <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="s2">&quot;Rcecw_a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
-                    <span class="o">*</span> <span class="n">R</span>
+                    <span class="s2">&quot;Rcecw_a&quot;</span><span class="p">:</span> <span class="n">R</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mi">10</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span>
                     <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWco2</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
@@ -2850,22 +2733,18 @@
                     <span class="c1"># / Constants.MWvapor.magnitude</span>
                     <span class="c1"># * ureg.millimole / ureg.meter**2 / ureg.second,</span>
                     <span class="s2">&quot;Ececw_a&quot;</span><span class="p">:</span> <span class="n">E</span>
-                    <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-                    <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                     <span class="s2">&quot;Tcecw_a&quot;</span><span class="p">:</span> <span class="n">T</span>
-                    <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span>
-                    <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">Lv</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">/</span> <span class="n">Constants</span><span class="o">.</span><span class="n">MWvapor</span><span class="o">.</span><span class="n">magnitude</span>
                     <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span>
                     <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;statuscecw&quot;</span><span class="p">:</span> <span class="s2">&quot;fully OK&quot;</span><span class="p">})</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCECw</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;statuscecw&quot;</span><span class="p">:</span> <span class="n">status_msg</span><span class="p">})</span></div>
 </div>
 
 </pre></div>

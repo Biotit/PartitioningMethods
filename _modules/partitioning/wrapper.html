@@ -45,9 +45,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">logging.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueueListener</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.Partitioning</span><span class="w"> </span><span class="kn">import</span> <span class="n">Partitioning</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.auxfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Constants</span><span class="p">,</span> <span class="n">setup_logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.auxfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Constants</span><span class="p">,</span> <span class="n">setup_logging</span><span class="p">,</span> <span class="n">logging_worker_init</span>
 
 <span class="c1"># Set up logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -124,6 +125,16 @@
 <span class="sd">                If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.</span>
 <span class="sd">            outfolder : str</span>
 <span class="sd">                 If an outfolder is given the plots of the cross-correlation and the pre-processed files are saved there in the subfolders TimeLagCorrelationFigures or ProcessedData. If not, the current working directory.</span>
+<span class="sd">            UnitBorders - dict</span>
+<span class="sd">                Define data range in between the median of the data has to be, otherwise an error is raised.</span>
+<span class="sd">                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                Example: &quot;UnitBorders&quot;:{&quot;Ts&quot;: (0,70), &quot;co2&quot;: (200, 1500),&quot;h2o&quot;: (0, 50), &quot;P&quot;: (60, 150)}</span>
+<span class="sd">            PhysicalBounds - dict</span>
+<span class="sd">                Define data range in between the values have to be, otherwise the individual values are set to NaN.</span>
+<span class="sd">                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                Example: &quot;PhysicalBounds&quot;:{&quot;u&quot;: (-20, 20),&quot;v&quot;: (-20, 20),&quot;w&quot;: (-20, 20),&quot;Ts&quot;: (-10, 50), &quot;co2&quot;: (0, 1500), &quot;h2o&quot;: (0, 40), &quot;P&quot;: (60, 150)}</span>
 <span class="sd">    argsOut : dict</span>
 <span class="sd">        Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
 <span class="sd">        Possible to activate all simultanously.</span>
@@ -194,11 +205,19 @@
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            cec_per_points_each : int</span>
 <span class="sd">                For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">            cecw_per_points_Q1Q2 : int</span>
+<span class="sd">                For CECw more % of data needs to be present within quadrant 1 and 2 to partition.</span>
+<span class="sd">                Otherwise no partitioning is performed.</span>
+<span class="sd">            cecw_per_points_each : int</span>
+<span class="sd">                For CECw if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">            mrea_per_points_Q1Q2 : int</span>
 <span class="sd">                For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                Otherwise no partitioning is performed.</span>
 <span class="sd">            mrea_per_points_each : int</span>
 <span class="sd">                For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">            cea_per_points_Q1Q2 : int</span>
+<span class="sd">                For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both</span>
+<span class="sd">                up- and downdrafts, otherwise no partitioning is performed.</span>
 <span class="sd">            cea_per_points_each : int</span>
 <span class="sd">                For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                up- and downdrafts, no partitioning is performed.</span>
@@ -307,11 +326,11 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set only some statistic methods&quot;</span><span class="p">)</span>
         <span class="n">statistics</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">default_stats</span><span class="p">,</span> <span class="o">**</span><span class="n">statistics</span><span class="p">}</span>
-    
+
     <span class="c1"># Set datetime_start for this data, BEFORE partitioning class gets</span>
     <span class="c1"># initialized and NaNs gets dropped</span>
     <span class="n">part_results</span><span class="p">[</span><span class="s2">&quot;Datetime_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    
+
     <span class="c1"># Setting up partitioning class, including PreProcessing during init</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">part</span> <span class="o">=</span> <span class="n">Partitioning</span><span class="p">(</span>
@@ -350,7 +369,6 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">_setting</span><span class="si">}</span><span class="s2">:, </span><span class="si">{</span><span class="n">metadata</span><span class="p">[</span><span class="n">_setting</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">part</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
 
     <span class="c1"># Helper function to extract magnitude and unit</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_data</span><span class="p">(</span><span class="n">source_dict</span><span class="p">,</span> <span class="n">target_dict</span><span class="p">,</span> <span class="n">unit_dict</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -551,6 +569,16 @@
 <span class="sd">                type_lag : str</span>
 <span class="sd">                    Specifies the type of lag to consider. Options are &#39;positive&#39;, &#39;negative&#39;, or &#39;both&#39;. Defaults to &#39;positive&#39;.</span>
 <span class="sd">                    &#39;Positive&#39; means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.</span>
+<span class="sd">                UnitBorders - dict</span>
+<span class="sd">                    Define data range in between the median of the data has to be, otherwise an error is raised.</span>
+<span class="sd">                    For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                    Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                    Example: &quot;UnitBorders&quot;:{&quot;Ts&quot;: (0,70), &quot;co2&quot;: (200, 1500),&quot;h2o&quot;: (0, 50), &quot;P&quot;: (60, 150)}</span>
+<span class="sd">                PhysicalBounds - dict</span>
+<span class="sd">                    Define data range in between the values have to be, otherwise the individual values are set to NaN.</span>
+<span class="sd">                    For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.</span>
+<span class="sd">                    Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.</span>
+<span class="sd">                    Example: &quot;PhysicalBounds&quot;:{&quot;u&quot;: (-20, 20),&quot;v&quot;: (-20, 20),&quot;w&quot;: (-20, 20),&quot;Ts&quot;: (-10, 50), &quot;co2&quot;: (0, 1500), &quot;h2o&quot;: (0, 40), &quot;P&quot;: (60, 150)}</span>
 
 <span class="sd">        argsOut : dict</span>
 <span class="sd">            Contains options in which units the results are given. Defaults are that the output is in mass based units.</span>
@@ -626,11 +654,19 @@
 <span class="sd">                    Otherwise no partitioning is performed.</span>
 <span class="sd">                cec_per_points_each : int</span>
 <span class="sd">                    For CEC if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">                cecw_per_points_Q1Q2 : int</span>
+<span class="sd">                    For CECw more % of data needs to be present within quadrant 1 and 2 to partition.</span>
+<span class="sd">                    Otherwise no partitioning is performed.</span>
+<span class="sd">                cecw_per_points_each : int</span>
+<span class="sd">                    For CECw if less or at least % of data is within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
 <span class="sd">                mrea_per_points_Q1Q2 : int</span>
 <span class="sd">                    For MREA more % of data needs to be present within quadrant 1 and 2 to partition.</span>
 <span class="sd">                    Otherwise no partitioning is performed.</span>
 <span class="sd">                mrea_per_points_each : int</span>
 <span class="sd">                    For MREA if less or at least % of data are within one of Q1 or Q2 the flux is contributed to the other quadrant.</span>
+<span class="sd">                cea_per_points_Q1Q2 : int</span>
+<span class="sd">                    For CEA more % of data needs to be present within the four quadrants Q1 and Q2 for both</span>
+<span class="sd">                    up- and downdrafts, otherwise no partitioning is performed.</span>
 <span class="sd">                cea_per_points_each : int</span>
 <span class="sd">                    For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both</span>
 <span class="sd">                    up- and downdrafts, no partitioning is performed.</span>
@@ -754,7 +790,20 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
         <span class="s2">&quot;Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.&quot;</span>
     <span class="p">)</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># Setup Queue and Listener for Logger</span>
+    <span class="n">log_queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="c1"># The listener runs in the main process.</span>
+    <span class="c1"># Pass it the handlers already created in setup_logging (the FileHandler and StreamHandler).</span>
+    <span class="n">listener</span> <span class="o">=</span> <span class="n">QueueListener</span><span class="p">(</span><span class="n">log_queue</span><span class="p">,</span> <span class="o">*</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span>
+    <span class="n">listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Start multiprocessing</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span>
+        <span class="n">processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">initializer</span><span class="o">=</span><span class="n">logging_worker_init</span><span class="p">,</span>  <span class="c1"># Runs once per worker</span>
+        <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="n">log_queue</span><span class="p">,</span> <span class="n">logginglevel</span><span class="p">),</span>  <span class="c1"># Arguments passed to worker_init</span>
+    <span class="p">)</span>
     <span class="n">raw_output</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">partial_CallPart</span><span class="p">,</span> <span class="n">listfiles</span><span class="p">)</span>
     <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
@@ -790,7 +839,9 @@
         <span class="n">col_units</span> <span class="o">=</span> <span class="p">[</span><span class="n">units_row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 
         <span class="n">df_data</span> <span class="o">=</span> <span class="n">df_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-        <span class="n">column_tuples</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;Datetime_start&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">col_units</span><span class="p">,</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="n">column_tuples</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;Datetime_start&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">col_units</span><span class="p">,</span> <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="p">)</span>
 
         <span class="c1"># Create a MultiIndex: Columns -&gt; Units</span>
         <span class="n">df_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span><span class="n">column_tuples</span><span class="p">)</span>
