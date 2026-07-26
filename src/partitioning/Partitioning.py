@@ -109,6 +109,16 @@ class Partitioning(object):
                 If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.
             outfolder - str
                  If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.
+            UnitBorders - dict
+                Define data range in between the median of the data has to be, otherwise an error is raised.
+                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                Example: "UnitBorders":{"Ts": (0,70), "co2": (200, 1500),"h2o": (0, 50), "P": (60, 150)}
+            PhysicalBounds - dict
+                Define data range in between the values have to be, otherwise the individual values are set to NaN.
+                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                Example: "PhysicalBounds":{"u": (-20, 20),"v": (-20, 20),"w": (-20, 20),"Ts": (-10, 50), "co2": (0, 1500), "h2o": (0, 40), "P": (60, 150)}
 
     sampledEventsStats : bool, optional
         If True the time fraction and time scale of sampled events within each quadrant are calculated.
@@ -204,6 +214,21 @@ class Partitioning(object):
             "maxGapsInterpolate": 5,  # Intervals of up to 5 missing values are filled by linear interpolation
             "RemainingData": 95,  # Only proceed with partioning if 95% of initial data is available after pre-processing
             "outfolder": None,  # If an outfolder is given the plots of the cross-correlation are saved there. If not, the current working directory.
+            "UnitBorders": {  # define data range in between the median of the data has to be, otherwise an error is raised
+                "Ts": (0, 70),  # C
+                "co2": (200, 1500),  # mg/m3
+                "h2o": (0, 50),  # g/m3
+                "P": (60, 150),  # kPa
+            },
+            "PhysicalBounds": {  # define data range in between the values have to be, otherwise the individual values are set to NaN
+                "u": (-20, 20),  # m/s
+                "v": (-20, 20),  # m/s
+                "w": (-20, 20),  # m/s
+                "Ts": (-10, 50),  # Celsius
+                "co2": (0, 1500),  # mg/m3
+                "h2o": (0, 40),  #  g/m3
+                "P": (60, 150),  # kPa
+            },
         }
 
         self.argsQC = {**self.default_argsQC, **argsQC}
@@ -300,10 +325,10 @@ class Partitioning(object):
     def _checkUnits(self):
         """Check if units of temperature, CO2, H2O and pressure are correct."""
         logger.debug("Check units.")
-        temp_range = [0, 70]  # C
-        co2_range = [200, 1500]  # mg/m3
-        h2o_range = [0, 50]  # g/m3
-        press_range = [60, 150]  # kPa
+        temp_range = self.default_argsQC["UnitBorders"].get("Ts")  # C
+        co2_range = self.default_argsQC["UnitBorders"].get("co2")  # mg/m3
+        h2o_range = self.default_argsQC["UnitBorders"].get("h2o")  # g/m3
+        press_range = self.default_argsQC["UnitBorders"].get("P")  # kPa
 
         # Check that not all values are NaN
         if self.data.isnull().all().all():
@@ -381,29 +406,11 @@ class Partitioning(object):
         self.data : pandas.DataFrame
             DataFrame containing the input data with each variable in a column.
 
-        Notes
-        -----
-        The `_bounds` dictionary contains the physical bounds for the required variables:
-            - "u" : (-20, 20) m/s
-            - "v" : (-20, 20) m/s
-            - "w" : (-20, 20) m/s
-            - "Ts" : (-10, 50) Celsius
-            - "co2" : (0, 1500) mg/m3
-            - "h2o" : (0, 40) g/m3
-            - "P" : (60, 150) kPa
 
         For each variable in `self.data`, if the variable is in `_bounds`, values outside the specified bounds are set to NaN.
         """
         logger.debug("Check physical bounds and replace with NaN if necessary.")
-        _bounds = {
-            "u": (-20, 20),
-            "v": (-20, 20),
-            "w": (-20, 20),  # m/s
-            "Ts": (-10, 50),  # Celsius
-            "co2": (0, 1500),  # mg/m3
-            "h2o": (0, 40),  #  g/m3
-            "P": (60, 150),  # kPa
-        }
+        _bounds = self.default_argsQC.get("PhysicalBounds")
 
         for _var in self.data.columns:
             if _var in _bounds.keys():

@@ -1,0 +1,7 @@
+2026-07-26 23:36:47,314 - partitioning.wrapper - INFO - PartitioningMethods: Starting processing and partitioning.
+2026-07-26 23:36:47,316 - partitioning.wrapper - INFO - See log-file under ../results/log/run_260726_233647.log.
+2026-07-26 23:36:47,317 - partitioning.wrapper - INFO - Looking for files to process.
+2026-07-26 23:36:47,318 - partitioning.wrapper - INFO - Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.
+2026-07-26 23:36:58,393 - partitioning.wrapper - INFO - Results saved successfully to ../results/PartitioningResults_example.csv
+2026-07-26 23:39:53,252 - asyncio - ERROR - Task was destroyed but it is pending!
+task: <Task pending name='Task-11' coro=<Kernel.dispatch_control() running at /home/daniel/anaconda3/envs/PartMethods_installed/lib/python3.14/site-packages/ipykernel/kernelbase.py:302> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[ZMQStream._run_callback.<locals>._log_error() at /home/daniel/anaconda3/envs/PartMethods_installed/lib/python3.14/site-packages/zmq/eventloop/zmqstream.py:563]>

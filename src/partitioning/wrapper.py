@@ -86,6 +86,16 @@ def CallPartitioning(
                 If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the subfolder TimeLagCorrelationFigures.
             outfolder : str
                  If an outfolder is given the plots of the cross-correlation and the pre-processed files are saved there in the subfolders TimeLagCorrelationFigures or ProcessedData. If not, the current working directory.
+            UnitBorders - dict
+                Define data range in between the median of the data has to be, otherwise an error is raised.
+                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                Example: "UnitBorders":{"Ts": (0,70), "co2": (200, 1500),"h2o": (0, 50), "P": (60, 150)}
+            PhysicalBounds - dict
+                Define data range in between the values have to be, otherwise the individual values are set to NaN.
+                For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                Example: "PhysicalBounds":{"u": (-20, 20),"v": (-20, 20),"w": (-20, 20),"Ts": (-10, 50), "co2": (0, 1500), "h2o": (0, 40), "P": (60, 150)}
     argsOut : dict
         Contains options in which units the results are given. Defaults are that the output is in mass based units.
         Possible to activate all simultanously.
@@ -517,6 +527,16 @@ def process(
                 type_lag : str
                     Specifies the type of lag to consider. Options are 'positive', 'negative', or 'both'. Defaults to 'positive'.
                     'Positive' means that CO2 and H2O lag behind W as expected in closed-path systems when the tube delays the signal.
+                UnitBorders - dict
+                    Define data range in between the median of the data has to be, otherwise an error is raised.
+                    For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                    Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                    Example: "UnitBorders":{"Ts": (0,70), "co2": (200, 1500),"h2o": (0, 50), "P": (60, 150)}
+                PhysicalBounds - dict
+                    Define data range in between the values have to be, otherwise the individual values are set to NaN.
+                    For each column in the input data, one key in the dictionary containing a tuple (min, max) is necessary.
+                    Units are: m/s for u, v, w, Celsius for Ts, mg/m3 for co2, g/m3 for h2o, and kPa for P.
+                    Example: "PhysicalBounds":{"u": (-20, 20),"v": (-20, 20),"w": (-20, 20),"Ts": (-10, 50), "co2": (0, 1500), "h2o": (0, 40), "P": (60, 150)}
 
         argsOut : dict
             Contains options in which units the results are given. Defaults are that the output is in mass based units.

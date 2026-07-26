@@ -1,0 +1,4 @@
+2026-07-26 23:31:34,276 - partitioning.wrapper - INFO - PartitioningMethods: Starting processing and partitioning.
+2026-07-26 23:31:34,277 - partitioning.wrapper - INFO - See log-file under results/log/run_260726_233134.log.
+2026-07-26 23:31:34,277 - partitioning.wrapper - INFO - Looking for files to process.
+2026-07-26 23:31:34,278 - partitioning.wrapper - CRITICAL - No files matching pattern '*.csv' were found in 'RawData30min/'. Please check your path or pattern.

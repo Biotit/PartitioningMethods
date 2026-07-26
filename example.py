@@ -66,6 +66,21 @@ data = partitioning.process(
         "max_lag_seconds": 5,  # Maximum time lag in seconds to consider for cross correlation analyses
         "saveplotlag": True,  # If True, saves a plot of the cross-correlation function between the CO2 and H2O time series with respect to the W time series in the outfolder
         "type_lag": "both",  # Specifies the type of lag to consider ('negative', 'positive', or 'both')
+        "UnitBorders": {  # define data range in between the median of the data has to be, otherwise an error is raised
+            "Ts": (0, 70),  # C
+            "co2": (200, 1500),  # mg/m3
+            "h2o": (0, 50),  # g/m3
+            "P": (60, 150),  # kPa
+        },
+        "PhysicalBounds": {  # define data range in between the values have to be, otherwise the individual values are set to NaN
+            "u": (-20, 20),  # m/s
+            "v": (-20, 20),  # m/s
+            "w": (-20, 20),  # m/s
+            "Ts": (-10, 50),  # Celsius
+            "co2": (0, 1500),  # mg/m3
+            "h2o": (0, 40),  #  g/m3
+            "P": (60, 150),  # kPa
+        },
     },
     # 7) Units in output. Defaults are that the output is in mass based units.
     argsOut={
@@ -100,12 +115,15 @@ data = partitioning.process(
     argsQThres={
         "cec_per_points_Q1Q2": 15,  # CEC: smallest percentage of points that must be available in the first two quadrants
         "cec_per_points_each": 3,  # CEC: smallest percentage of points in each quadrant
+        "cecw_per_points_Q1Q2": 0,  # CECw: smallest percentage of points that must be available in the first two quadrants
+        "cecw_per_points_each": 0,  # CECw: smallest percentage of points in each quadrant
         "mrea_per_points_Q1Q2": 15,  # MREA: smallest percentage of points that must be available in the first two quadrants
         "mrea_per_points_each": 3,  # MREA: smallest percentage of points in each quadrant
-        "cea_per_points_each": 2,  # CEA: smallest percentage of points in each quadrant
+        "cea_per_points_Q1Q2": 0,  # CEA: smallest percentage of points that must be available in the first two quadrants in both up and downdrafts
+        "cea_per_points_each": 0,  # CEA: smallest percentage of points in each quadrant in both up and downdrafts
         "t_scale_gap_threshold": 10,  # For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event (Thomas et al. 2008)
         "H": {  # Hyperbolic threshold criteria. If not specified 0 is used for all methods.
-            "MREA": 0.25,  # only threshold for MREA, and its 0.25
+            "MREA": 0.25,  # only threshold for MREA, and its 0.25, can define also for other methods
         },  # Otherwise if no dict but float: MREA, CEC, CEA, CECw get calculated using this threshold.
     },
     # ----

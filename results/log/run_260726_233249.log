@@ -1,0 +1,5 @@
+2026-07-26 23:32:49,670 - partitioning.wrapper - INFO - PartitioningMethods: Starting processing and partitioning.
+2026-07-26 23:32:49,671 - partitioning.wrapper - INFO - See log-file under ../results/log/run_260726_233249.log.
+2026-07-26 23:32:49,672 - partitioning.wrapper - INFO - Looking for files to process.
+2026-07-26 23:32:49,673 - partitioning.wrapper - INFO - Starting multiprocessing the files. Logging message might be mixed because of multiprocessing.
+2026-07-26 23:33:00,625 - partitioning.wrapper - INFO - Results saved successfully to ../results/PartitioningResults_example.csv
