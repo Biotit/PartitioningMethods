@@ -2341,14 +2341,36 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># Computing flux ratios and flux components of ET and Fc</span>
-        <span class="k">if</span> <span class="p">(</span>
+        <span class="c1"># Define all as NaN for start</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">T_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">E_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">P_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">R_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">T_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">E_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">wuecea</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="k">if</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
+            <span class="c1"># let all defined NaN</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">sum1</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum2</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum3</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum4</span> <span class="o">&gt;</span> <span class="n">per_points_each</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">sum1</span> <span class="o">+</span> <span class="n">sum2</span> <span class="o">+</span> <span class="n">sum3</span> <span class="o">+</span> <span class="n">sum4</span> <span class="o">&gt;</span> <span class="n">per_points_Q1Q2</span><span class="p">)</span>
         <span class="p">):</span>
+            <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;Quadrant tfrac&lt;=per_points_each&quot;</span>
+            <span class="c1"># not enough points per quadrant, let all defined NaN</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Computing flux ratios and flux components of ET and Fc</span>
             <span class="c1"># Ratios</span>
             <span class="n">ratioET</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q1</span> <span class="o">-</span> <span class="n">Q2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Q3</span> <span class="o">-</span> <span class="n">Q4</span><span class="p">)</span>
             <span class="n">ratioRP</span> <span class="o">=</span> <span class="p">(</span><span class="n">C1</span> <span class="o">-</span> <span class="n">C2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">C3</span> <span class="o">-</span> <span class="n">C4</span><span class="p">)</span>
@@ -2369,16 +2391,10 @@
             <span class="n">P_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">ratioRP</span><span class="p">)</span>
             <span class="n">R_a</span> <span class="o">=</span> <span class="n">total_Fc_a</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">ratioRP</span><span class="p">)</span>
 
-            <span class="c1"># Status</span>
-            <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
-
             <span class="c1"># Check sign of fluxes</span>
-            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">total_ET</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;ET &lt; 0&quot;</span>
-                <span class="k">elif</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;unrealistic fluxes (P&gt;0)&quot;</span>
-
+            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;unrealistic fluxes (P&gt;0)&quot;</span>
+                <span class="c1"># reset to NaN</span>
                 <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -2392,100 +2408,58 @@
                 <span class="n">T_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                 <span class="n">E_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Energetic units</span>
-                        <span class="c1"># &quot;ETcea&quot;: total_ET * ureg.watt / ureg.meter**2,</span>
-                        <span class="s2">&quot;Ecea&quot;</span><span class="p">:</span> <span class="n">E</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea&quot;</span><span class="p">:</span> <span class="n">T</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Mass units</span>
-                        <span class="c1"># &quot;Fccea&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcea&quot;</span><span class="p">:</span> <span class="n">P</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcea&quot;</span><span class="p">:</span> <span class="n">R</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcea_m&quot;: total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ecea_m&quot;</span><span class="p">:</span> <span class="n">E_m</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea_m&quot;</span><span class="p">:</span> <span class="n">T_m</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Molar units</span>
-                        <span class="c1"># &quot;Fccea_a&quot;: total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcea_a&quot;</span><span class="p">:</span> <span class="n">P_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcea_a&quot;</span><span class="p">:</span> <span class="n">R_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcea_a&quot;: total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ecea_a&quot;</span><span class="p">:</span> <span class="n">E_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea_a&quot;</span><span class="p">:</span> <span class="n">T_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
+                <span class="n">wuecea</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wuecea</span> <span class="o">=</span> <span class="n">P</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">unitLE</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">T</span> <span class="ow">and</span> <span class="n">T</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="c1"># Status</span>
+                <span class="n">status_message</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="c1"># Ratios</span>
-                    <span class="c1"># &quot;ratioETcea&quot;: ratioET,</span>
-                    <span class="c1"># &quot;ratioRPcea&quot;: ratioRP,</span>
-                    <span class="c1">#  &quot;sumQ1cea&quot;: sum1 + sum2,</span>
-                    <span class="c1">#  &quot;sumQ2cea&quot;: sum3 + sum4,</span>
-                    <span class="c1"># WUE</span>
-                    <span class="s2">&quot;wuecea&quot;</span><span class="p">:</span> <span class="n">P</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">3</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">unitLE</span><span class="p">),</span>
-                    <span class="c1"># Status</span>
-                    <span class="s2">&quot;statuscea&quot;</span><span class="p">:</span> <span class="n">status_message</span><span class="p">,</span>
+                    <span class="c1"># Energetic units</span>
+                    <span class="c1"># &quot;ETcea&quot;: total_ET * ureg.watt / ureg.meter**2,</span>
+                    <span class="s2">&quot;Ecea&quot;</span><span class="p">:</span> <span class="n">E</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;Tcea&quot;</span><span class="p">:</span> <span class="n">T</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energetic_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Energetic units</span>
-                        <span class="c1"># &quot;ETcea&quot;: total_ET * ureg.watt / ureg.meter**2,</span>
-                        <span class="s2">&quot;Ecea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">watt</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Mass units</span>
-                        <span class="c1"># &quot;Fccea&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcea_m&quot;: total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ecea_m&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea_m&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="c1"># Molar units</span>
-                        <span class="c1"># &quot;Fccea_a&quot;: total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Pcea_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Rcea_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="c1"># &quot;ETcea_a&quot;: total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
-                        <span class="s2">&quot;Ecea_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                        <span class="s2">&quot;Tcea_a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mass_units&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="c1"># Ratios</span>
-                    <span class="c1"># &quot;ratioETcea&quot;: np.nan,</span>
-                    <span class="c1"># &quot;ratioRPcea&quot;: np.nan,</span>
-                    <span class="c1"># &quot;sumQ1cea&quot;: sum1 + sum2,</span>
-                    <span class="c1"># &quot;sumQ2cea&quot;: sum3 + sum4,</span>
-                    <span class="c1"># WUE</span>
-                    <span class="s2">&quot;wuecea&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
-                    <span class="c1"># Status</span>
-                    <span class="s2">&quot;statuscea&quot;</span><span class="p">:</span> <span class="s2">&quot;Quadrant tfrac&lt;=per_points_each&quot;</span><span class="p">,</span>
+                    <span class="c1"># Mass units</span>
+                    <span class="c1"># &quot;Fccea&quot;: total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,</span>
+                    <span class="s2">&quot;Pcea&quot;</span><span class="p">:</span> <span class="n">P</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Rcea&quot;</span><span class="p">:</span> <span class="n">R</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">milligram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="c1"># &quot;ETcea_m&quot;: total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,</span>
+                    <span class="s2">&quot;Ecea_m&quot;</span><span class="p">:</span> <span class="n">E_m</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Tcea_m&quot;</span><span class="p">:</span> <span class="n">T_m</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">gram</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
                 <span class="p">}</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">argsOut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;molar_units&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="c1"># Molar units</span>
+                    <span class="c1"># &quot;Fccea_a&quot;: total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
+                    <span class="s2">&quot;Pcea_a&quot;</span><span class="p">:</span> <span class="n">P_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Rcea_a&quot;</span><span class="p">:</span> <span class="n">R_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="c1"># &quot;ETcea_a&quot;: total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,</span>
+                    <span class="s2">&quot;Ecea_a&quot;</span><span class="p">:</span> <span class="n">E_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                    <span class="s2">&quot;Tcea_a&quot;</span><span class="p">:</span> <span class="n">T_a</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">millimole</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">meter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">ureg</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fluxesCEA</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="c1"># Ratios</span>
+                <span class="c1"># &quot;ratioETcea&quot;: ratioET,</span>
+                <span class="c1"># &quot;ratioRPcea&quot;: ratioRP,</span>
+                <span class="c1">#  &quot;sumQ1cea&quot;: sum1 + sum2,</span>
+                <span class="c1">#  &quot;sumQ2cea&quot;: sum3 + sum4,</span>
+                <span class="c1"># WUE</span>
+                <span class="s2">&quot;wuecea&quot;</span><span class="p">:</span> <span class="n">wuecea</span><span class="p">,</span>
+                <span class="c1"># Status</span>
+                <span class="s2">&quot;statuscea&quot;</span><span class="p">:</span> <span class="n">status_message</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Partitioning.partCECw">
