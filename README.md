@@ -27,7 +27,7 @@ The modified version has the new features
 - wrapper functions now automatically perform the partitioning and save the results in a csv-file with metadata header and unit information for each quantity. Detailed settings enable processing for almost any use case. Additionally, time lag plots and pre-processed data can now be saved to a specified folder, not only the working directory. Thresholds for checking the data units and the Physical bounds can be set.
 - further data loading functions are included.
 - logger files for each run are saved in the folder log.
-- the CECw method code structure was reworked and checked for cases where E > ET
+- the CECw and CEA method code structure was reworked and checked for cases where E > ET
 - minor bug fixes in density correction, C4 plant water use efficiency calculation and time stamp calculation
 - additional check that partitioning is only performed when ET > 0.
 
