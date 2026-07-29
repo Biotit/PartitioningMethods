@@ -2282,14 +2282,36 @@ class Partitioning(object):
         else:
             self.fluxesCEA = {}
 
-        # Computing flux ratios and flux components of ET and Fc
-        if (
+        # Define all as NaN for start
+        P = np.nan
+        R = np.nan
+        T = np.nan
+        E = np.nan
+
+        T_m = np.nan
+        E_m = np.nan
+
+        P_a = np.nan
+        R_a = np.nan
+        T_a = np.nan
+        E_a = np.nan
+
+        wuecea = np.nan
+
+        if total_ET < 0:
+            status_message = "ET < 0"
+            # let all defined NaN
+        elif not (
             (sum1 > per_points_each)
             and (sum2 > per_points_each)
             and (sum3 > per_points_each)
             and (sum4 > per_points_each)
             and (sum1 + sum2 + sum3 + sum4 > per_points_Q1Q2)
         ):
+            status_message = "Quadrant tfrac<=per_points_each"
+            # not enough points per quadrant, let all defined NaN
+        else:
+            # Computing flux ratios and flux components of ET and Fc
             # Ratios
             ratioET = (Q1 - Q2) / (Q3 - Q4)
             ratioRP = (C1 - C2) / (C3 - C4)
@@ -2310,16 +2332,10 @@ class Partitioning(object):
             P_a = total_Fc_a / (1.0 + ratioRP)
             R_a = total_Fc_a / (1.0 + 1.0 / ratioRP)
 
-            # Status
-            status_message = "OK"
-
             # Check sign of fluxes
-            if P > 0.0 or total_ET < 0:
-                if total_ET < 0:
-                    status_message = "ET < 0"
-                elif P > 0:
-                    status_message = "unrealistic fluxes (P>0)"
-
+            if P > 0.0:
+                status_message = "unrealistic fluxes (P>0)"
+                # reset to NaN
                 P = np.nan
                 R = np.nan
                 T = np.nan
@@ -2333,100 +2349,58 @@ class Partitioning(object):
                 T_a = np.nan
                 E_a = np.nan
 
-            if self.argsOut.get("energetic_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Energetic units
-                        # "ETcea": total_ET * ureg.watt / ureg.meter**2,
-                        "Ecea": E * ureg.watt / ureg.meter**2,
-                        "Tcea": T * ureg.watt / ureg.meter**2,
-                    }
-                )
-            if self.argsOut.get("mass_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Mass units
-                        # "Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Pcea": P * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Rcea": R * ureg.milligram / ureg.meter**2 / ureg.second,
-                        # "ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Ecea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Tcea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
-                    }
-                )
-            if self.argsOut.get("molar_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Molar units
-                        # "Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Pcea_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Rcea_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        # "ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Ecea_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Tcea_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                    }
-                )
-            self.fluxesCEA.update(
-                {
-                    # Ratios
-                    # "ratioETcea": ratioET,
-                    # "ratioRPcea": ratioRP,
-                    #  "sumQ1cea": sum1 + sum2,
-                    #  "sumQ2cea": sum3 + sum4,
-                    # WUE
-                    "wuecea": P * 10**-3 / (T / unitLE),
-                    # Status
-                    "statuscea": status_message,
-                }
-            )
+                wuecea = np.nan
+            else:
+                wuecea = P * 10**-3 / (T / unitLE) if (T and T != 0) else np.nan
+                # Status
+                status_message = "OK"
 
-        else:
-            if self.argsOut.get("energetic_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Energetic units
-                        # "ETcea": total_ET * ureg.watt / ureg.meter**2,
-                        "Ecea": np.nan * ureg.watt / ureg.meter**2,
-                        "Tcea": np.nan * ureg.watt / ureg.meter**2,
-                    }
-                )
-            if self.argsOut.get("mass_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Mass units
-                        # "Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Pcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                        "Rcea": np.nan * ureg.milligram / ureg.meter**2 / ureg.second,
-                        # "ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Ecea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                        "Tcea_m": np.nan * ureg.gram / ureg.meter**2 / ureg.second,
-                    }
-                )
-            if self.argsOut.get("molar_units"):
-                self.fluxesCEA.update(
-                    {
-                        # Molar units
-                        # "Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Pcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Rcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                        # "ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Ecea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                        "Tcea_a": np.nan * ureg.millimole / ureg.meter**2 / ureg.second,
-                    }
-                )
+        if self.argsOut.get("energetic_units"):
             self.fluxesCEA.update(
                 {
-                    # Ratios
-                    # "ratioETcea": np.nan,
-                    # "ratioRPcea": np.nan,
-                    # "sumQ1cea": sum1 + sum2,
-                    # "sumQ2cea": sum3 + sum4,
-                    # WUE
-                    "wuecea": np.nan,
-                    # Status
-                    "statuscea": "Quadrant tfrac<=per_points_each",
+                    # Energetic units
+                    # "ETcea": total_ET * ureg.watt / ureg.meter**2,
+                    "Ecea": E * ureg.watt / ureg.meter**2,
+                    "Tcea": T * ureg.watt / ureg.meter**2,
                 }
             )
+        if self.argsOut.get("mass_units"):
+            self.fluxesCEA.update(
+                {
+                    # Mass units
+                    # "Fccea": total_Fc * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Pcea": P * ureg.milligram / ureg.meter**2 / ureg.second,
+                    "Rcea": R * ureg.milligram / ureg.meter**2 / ureg.second,
+                    # "ETcea_m": total_ET_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Ecea_m": E_m * ureg.gram / ureg.meter**2 / ureg.second,
+                    "Tcea_m": T_m * ureg.gram / ureg.meter**2 / ureg.second,
+                }
+            )
+        if self.argsOut.get("molar_units"):
+            self.fluxesCEA.update(
+                {
+                    # Molar units
+                    # "Fccea_a": total_Fc_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Pcea_a": P_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Rcea_a": R_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    # "ETcea_a": total_ET_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Ecea_a": E_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                    "Tcea_a": T_a * ureg.millimole / ureg.meter**2 / ureg.second,
+                }
+            )
+        self.fluxesCEA.update(
+            {
+                # Ratios
+                # "ratioETcea": ratioET,
+                # "ratioRPcea": ratioRP,
+                #  "sumQ1cea": sum1 + sum2,
+                #  "sumQ2cea": sum3 + sum4,
+                # WUE
+                "wuecea": wuecea,
+                # Status
+                "statuscea": status_message,
+            }
+        )
 
     def partCECw(self, W, H=0.00):
         """
