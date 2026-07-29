@@ -1526,7 +1526,7 @@ class Partitioning(object):
         # Check CO2 flux components ratio
         #   CO2 fluxes might be noisy in this range
         if -1.2 < ratioRP < -0.8:
-            finalstat = finalstat + "Small ratioRP"
+            finalstat = finalstat + "; Small ratioRP"
 
         # Additional constraints may be added based on the strength of the fluxes
         # and other combinations
