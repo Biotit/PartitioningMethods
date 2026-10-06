@@ -165,7 +165,7 @@ class Partitioning(object):
                 For CEA more % of data needs to be in each of the necessary four quadrants Q1 and Q2 for both
                 up- and downdrafts, no partitioning is performed.
             t_scale_gap_threshold - int
-                For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event.
+                For the time scale of sampled events, threshold for which a new event is considered. If e.g. set to 10, then consecutive individual events separated by less than 10 (1/freq) are combined (to allow for some stochastic noise and relax the number of very short events).
 
 
     Notes: Available Partitioning Methods
@@ -1368,7 +1368,7 @@ class Partitioning(object):
 
         per_points_Q1Q2 = self.argsQThres.get(
             "cec_per_points_Q1Q2", 15
-        )  # more percentage of points need to be available in the first two quadrants
+        )  # higher percentage of points need to be available in the first two quadrants
         per_poits_each = self.argsQThres.get("cec_per_points_each", 3)
 
         # Creates a dataframe with variables of interest and no constraints
@@ -2476,7 +2476,7 @@ class Partitioning(object):
 
         per_points_Q1Q2 = self.argsQThres.get(
             "cecw_per_points_Q1Q2", 0
-        )  # more percentage of points need to be available in the first two quadrants
+        )  # higher percentage of points need to be available in the first two quadrants
         per_poits_each = self.argsQThres.get("cecw_per_points_each", 0)
 
         E, T = np.nan, np.nan

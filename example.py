@@ -121,7 +121,7 @@ data = partitioning.process(
         "mrea_per_points_each": 3,  # MREA: smallest percentage of points in each quadrant
         "cea_per_points_Q1Q2": 0,  # CEA: smallest percentage of points that must be available in the first two quadrants in both up and downdrafts
         "cea_per_points_each": 0,  # CEA: smallest percentage of points in each quadrant in both up and downdrafts
-        "t_scale_gap_threshold": 10,  # For the time scale of sampled events, the minimum amount of datapoints to define a new conditionally sampled event (Thomas et al. 2008)
+        "t_scale_gap_threshold": 10,  # For the time scale of sampled events, threshold for which a new event is considered. If e.g. set to 10, then consecutive individual events separated by less than 10 (1/freq) are combined (to allow for some stochastic noise and relax the number of very short events) (Thomas et al. 2008)
         "H": {  # Hyperbolic threshold criteria. If not specified 0 is used for all methods.
             "MREA": 0.25,  # only threshold for MREA, and its 0.25, can define also for other methods
         },  # Otherwise if no dict but float: MREA, CEC, CEA, CECw get calculated using this threshold.
