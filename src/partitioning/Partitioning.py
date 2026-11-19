@@ -1760,7 +1760,7 @@ class Partitioning(object):
             finalstatus = "OK"
 
             # To test realistic fluxes
-            if E > 1.01 * ET:
+            if E > ET:
                 finalstatus = "E>ET"
                 E, T, R, P = np.nan, np.nan, np.nan, np.nan
                 E_m, T_m = np.nan, np.nan
